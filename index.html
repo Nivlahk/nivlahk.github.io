@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Professional IS Portfolio</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4f7fb;
+        --card: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --accent: #1d4ed8;
+        --border: #dbe2ea;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+        color: var(--text);
+        background: linear-gradient(180deg, #eef3ff 0%, var(--bg) 40%, #ffffff 100%);
+      }
+
+      .container {
+        width: min(1180px, 94vw);
+        margin: 0 auto;
+      }
+
+      header {
+        padding: 3rem 0 1.75rem;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 5vw, 3rem);
+      }
+
+      .subtitle {
+        margin-top: 0.75rem;
+        color: var(--muted);
+        max-width: 70ch;
+      }
+
+      .window-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1rem;
+        padding-bottom: 2rem;
+      }
+
+      .window {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--card);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+        min-height: 320px;
+      }
+
+      .window-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 0.9rem;
+        border-bottom: 1px solid var(--border);
+        background: #f8faff;
+      }
+
+      .window-title {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+      }
+
+      .window-actions {
+        display: flex;
+        gap: 0.4rem;
+      }
+
+      button,
+      .window-link {
+        font: inherit;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        border-radius: 8px;
+        padding: 0.25rem 0.6rem;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      button:hover,
+      .window-link:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      iframe {
+        width: 100%;
+        border: 0;
+        min-height: 250px;
+        flex: 1;
+      }
+
+      .window[data-collapsed="true"] iframe {
+        display: none;
+      }
+
+      footer {
+        padding: 0.5rem 0 2rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 700px) {
+        .window {
+          min-height: 260px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Professional IS Portfolio</h1>
+        <p class="subtitle">
+          Boilerplate portfolio homepage with interactive preview windows. Update the
+          four URLs below to point to your maintained sites.
+        </p>
+      </header>
+
+      <main class="window-grid" id="window-grid" aria-label="Portfolio windows"></main>
+
+      <footer>
+        Tip: if a site blocks embedding, keep the preview window and use “Open” to view
+        the full site in a new tab.
+      </footer>
+    </div>
+
+    <script>
+      const portfolioSites = [
+        { name: "Technical Blog", url: "https://example.com/blog" },
+        { name: "Project Lab", url: "https://example.com/lab" },
+        { name: "Knowledge Base", url: "https://example.com/wiki" },
+        { name: "Consulting Profile", url: "https://example.com/profile" }
+      ];
+
+      const grid = document.getElementById("window-grid");
+
+      portfolioSites.forEach((site, index) => {
+        const card = document.createElement("section");
+        card.className = "window";
+        card.dataset.collapsed = "false";
+
+        const titleId = `window-title-${index}`;
+
+        card.innerHTML = `
+          <div class="window-header">
+            <h2 class="window-title" id="${titleId}">${site.name}</h2>
+            <div class="window-actions">
+              <button type="button" aria-expanded="true" aria-controls="frame-${index}">Collapse</button>
+              <a class="window-link" href="${site.url}" target="_blank" rel="noopener noreferrer">Open</a>
+            </div>
+          </div>
+          <iframe
+            id="frame-${index}"
+            src="${site.url}"
+            title="${site.name}"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          ></iframe>
+        `;
+
+        const collapseBtn = card.querySelector("button");
+        collapseBtn.addEventListener("click", () => {
+          const isCollapsed = card.dataset.collapsed === "true";
+          card.dataset.collapsed = String(!isCollapsed);
+          collapseBtn.textContent = isCollapsed ? "Collapse" : "Expand";
+          collapseBtn.setAttribute("aria-expanded", String(isCollapsed));
+        });
+
+        grid.appendChild(card);
+      });
+    </script>
+  </body>
+</html>
