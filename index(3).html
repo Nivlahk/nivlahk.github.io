@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Calvin W. Hancock - systems, DevOps, hardware, and language tooling portfolio.">
+  <title>Calvin W. Hancock | Systems &amp; DevOps</title>
+  <style>
+    :root {
+      --ink: #f7f4ec;
+      --muted: #b7b8b1;
+      --paper: #111410;
+      --panel: #191d18;
+      --line: #343a31;
+      --lime: #ff9d61; 
+      --orange: #ff6b35;
+      --max: 1120px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 85% 4%, rgba(255, 107, 53, .12), transparent 30rem),
+        var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    a { color: inherit; }
+
+    .shell { width: min(calc(100% - 2.5rem), var(--max)); margin: 0 auto; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .mark {
+      color: var(--lime);
+      font: 700 .9rem/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .08em;
+      text-decoration: none;
+    }
+
+    .nav { display: flex; gap: 1.1rem; font-size: .88rem; color: var(--muted); }
+    .nav a { text-decoration: none; }
+    .nav a:hover, .nav a:focus-visible { color: var(--lime); }
+
+    .hero {
+      min-height: 33rem;
+      display: grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 3rem;
+      align-items: center;
+      padding: 4.5rem 0 4rem;
+    }
+
+    .eyebrow {
+      margin: 0 0 .8rem;
+      color: var(--orange);
+      font: 700 .78rem/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 10ch;
+      margin-bottom: 1.2rem;
+      font-size: clamp(3.5rem, 8vw, 7.2rem);
+      line-height: .9;
+      letter-spacing: -.075em;
+    }
+
+    .lede {
+      max-width: 39rem;
+      margin-bottom: 1.5rem;
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+
+    .contact {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .55rem 1rem;
+      margin: 0;
+      color: var(--ink);
+      font-size: .95rem;
+    }
+
+    .contact a { text-underline-offset: .22em; }
+    .contact a:hover, .contact a:focus-visible { color: var(--lime); }
+
+    .hero-card {
+      padding: 1.35rem;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: rgba(25, 29, 24, .78);
+      box-shadow: 1rem 1rem 0 rgba(255, 107, 53, .08);
+    }
+
+    .hero-card p { margin-bottom: 0; color: var(--muted); }
+
+    .facts {
+      display: grid;
+      gap: 1rem;
+      margin: 0;
+    }
+
+    .facts div { padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+    .facts div:last-child { padding-bottom: 0; border-bottom: 0; }
+    .facts dt { color: var(--lime); font: 700 .72rem/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .1em; text-transform: uppercase; }
+    .facts dd { margin: .3rem 0 0; }
+
+    section { padding: 4.8rem 0; border-top: 1px solid var(--line); }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .section-heading h2 { margin-bottom: 0; font-size: clamp(2rem, 4vw, 3.4rem); letter-spacing: -.05em; }
+    .section-heading span { color: var(--muted); font: .75rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .projects { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+    .project {
+      display: flex;
+      flex-direction: column;
+      min-height: 22rem;
+      padding: 1.35rem;
+      border: 1px solid var(--line);
+      border-radius: .8rem;
+      background: var(--panel);
+    }
+
+    .project-number { color: var(--orange); font: 700 .75rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .project h3 { margin: .8rem 0 .6rem; font-size: 1.45rem; letter-spacing: -.035em; }
+    .project p { color: var(--muted); font-size: .95rem; }
+
+    .stack { display: flex; flex-wrap: wrap; gap: .4rem; margin: auto 0 1rem; }
+    .stack span { padding: .25rem .5rem; border: 1px solid var(--line); border-radius: 999px; color: var(--lime); font: .72rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .outcome { padding: .8rem 0; border-top: 1px solid var(--line); color: var(--ink) !important; font-size: .87rem !important; }
+    .outcome strong { color: var(--orange); }
+
+    .project-link { color: var(--lime); font-size: .9rem; text-underline-offset: .22em; }
+
+    .about-grid { display: grid; grid-template-columns: .85fr 1.15fr; gap: 3rem; }
+    .about-grid p { color: var(--muted); font-size: 1.05rem; }
+    .about-grid p:last-child { margin-bottom: 0; }
+
+    .resume-row { display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
+    .resume-row p { max-width: 38rem; margin-bottom: 0; color: var(--muted); }
+    .button { display: inline-block; padding: .75rem 1rem; border-radius: .45rem; background: var(--lime); color: #111410; font-weight: 750; text-decoration: none; white-space: nowrap; }
+    .button:hover, .button:focus-visible { background: var(--orange); }
+
+    footer { padding: 1.5rem 0 2.5rem; color: var(--muted); font-size: .82rem; }
+
+    @media (max-width: 800px) {
+      .hero, .about-grid { grid-template-columns: 1fr; }
+      .hero { min-height: auto; padding: 3.5rem 0; gap: 2rem; }
+      .projects { grid-template-columns: 1fr; }
+      .project { min-height: auto; }
+      .resume-row { align-items: flex-start; flex-direction: column; gap: 1rem; }
+    }
+
+    @media (max-width: 520px) {
+      .shell { width: min(calc(100% - 1.5rem), var(--max)); }
+      .topbar { align-items: flex-start; gap: 1rem; }
+      .nav { gap: .7rem; font-size: .78rem; }
+      h1 { font-size: clamp(3.2rem, 18vw, 5rem); }
+      section { padding: 3.5rem 0; }
+      .section-heading { display: block; }
+      .section-heading span { display: block; margin-top: .4rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell topbar">
+    <a class="mark" href="#top" aria-label="Calvin Hancock home">CH / 2026</a>
+    <nav class="nav" aria-label="Primary navigation">
+      <a href="#projects">Projects</a>
+      <a href="#about">About</a>
+      <a href="#resume">Resume</a>
+    </nav>
+  </header>
+
+  <main id="top" class="shell">
+    <section class="hero" aria-labelledby="intro-title">
+      <div>
+        <p class="eyebrow">Systems · DevOps · Language tooling</p>
+        <h1 id="intro-title">Calvin W. Hancock</h1>
+        <p class="lede">Information Systems student building practical bridges between low-level systems, machine learning, automation, and human-readable interfaces.</p>
+        <p class="contact">
+          <a href="mailto:yefoolfish@gmail.com">yefoolfish@gmail.com</a>
+          <span aria-hidden="true">·</span>
+          <a href="tel:+13856259416">385-625-9416</a>
+        </p>
+      </div>
+
+      <aside class="hero-card" aria-label="Quick facts">
+        <dl class="facts">
+          <div>
+            <dt>Target role</dt>
+            <dd>Systems &amp; DevOps Engineering Intern</dd>
+          </div>
+          <div>
+            <dt>Graduation</dt>
+            <dd>April 2029 · B.S. Information Systems</dd>
+          </div>
+          <div>
+            <dt>Based in</dt>
+            <dd>Provo, Utah</dd>
+          </div>
+          <div>
+            <dt>Elsewhere</dt>
+            <dd><a href="https://github.com/Nivlahk" target="_blank" rel="noreferrer">GitHub</a> · <a href="https://linkedin.com/in/calvin-hancock-a1a711342" target="_blank" rel="noreferrer">LinkedIn</a></dd>
+          </div>
+        </dl>
+      </aside>
+    </section>
+
+    <section id="projects" aria-labelledby="projects-title">
+      <div class="section-heading">
+        <h2 id="projects-title">Selected projects</h2>
+        <span>01 — 03 / built and measured</span>
+      </div>
+
+      <div class="projects">
+        <article class="project">
+          <span class="project-number">01 / VERTEX</span>
+          <h3>Browser-native language tooling</h3>
+          <p>A no-install programming environment that makes code structure visible through live flowcharts, with a path from source to a custom instruction set.</p>
+          <div class="stack" aria-label="Technology stack">
+            <span>JavaScript</span><span>HTML/CSS</span><span>Custom ISA</span>
+          </div>
+          <p class="outcome"><strong>Outcome:</strong> working compiler-to-SEER path, live abstraction lens, and in-browser Python/JavaScript execution.</p>
+          <a class="project-link" href="https://github.com/Nivlahk/Vertex" target="_blank" rel="noreferrer">View repository ↗</a>
+        </article>
+
+        <article class="project">
+          <span class="project-number">02 / PHYLph</span>
+          <h3>Phonetics encoding &amp; teaching tools</h3>
+          <p>A featural representation of speech sounds combining a byte encoding, a script and font, a browser teaching site, and experimental synthesis code.</p>
+          <div class="stack" aria-label="Technology stack">
+            <span>Python</span><span>JavaScript</span><span>Fontlab</span><span>HTML/CSS</span>
+          </div>
+          <p class="outcome"><strong>Outcome:</strong> 79.3% target-grid coverage, 203 byte-to-IPA mappings, and lossless round-trip conversion verified.</p>
+          <a class="project-link" href="https://github.com/Nivlahk/Phylph" target="_blank" rel="noreferrer">View repository ↗</a>
+        </article>
+
+        <article class="project">
+          <span class="project-number">03 / NIVLAHK.COM</span>
+          <h3>Hosted project hub</h3>
+          <p>A public home for programming-language experiments and interactive technical work, designed to make unusual systems ideas easy to explore.</p>
+          <div class="stack" aria-label="Technology stack">
+            <span>HTML/CSS</span><span>JavaScript</span><span>Git</span>
+          </div>
+          <p class="outcome"><strong>Outcome:</strong> one live site with 2 public project experiences: a resume and an interactive breathing simulator.</p>
+          <a class="project-link" href="https://nivlahk.com" target="_blank" rel="noreferrer">Open live site ↗</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="about" aria-labelledby="about-title">
+      <div class="section-heading">
+        <h2 id="about-title">About</h2>
+        <span>curious by default</span>
+      </div>
+      <div class="about-grid">
+        <p>My work sits at the intersection of systems thinking and clear communication. I like taking a complicated technical idea, building the smallest useful version, and giving people a way to understand what it is doing.</p>
+        <p>I am pursuing a B.S. in Information Systems at Brigham Young University with a DevOps emphasis and a minor in Linguistics. My toolkit spans SystemVerilog/VHDL, Python, JavaScript, SQL, AWS, Git, Tableau, Power BI, and advanced Excel.</p>
+      </div>
+    </section>
+
+    <section id="resume" aria-labelledby="resume-title">
+      <div class="resume-row">
+        <div>
+          <p class="eyebrow">More context</p>
+          <h2 id="resume-title">Read the full resume</h2>
+          <p>Education, experience, technical skills, and additional project work in one page.</p>
+        </div>
+        <a class="button" href="My%20Resume.pdf">Download resume PDF</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell">
+    © 2026 Calvin W. Hancock · Built with plain HTML and CSS.
+  </footer>
+</body>
+</html>
