@@ -8,11 +8,11 @@
   <style>
     :root {
       --ink: #f7f4ec;
-      --muted: #b7b8b1;
-      --paper: #111410;
-      --panel: #191d18;
-      --line: #343a31;
-      --lime: #ff9d61; 
+      --muted: #c2a69a;
+      --paper: #160b06;
+      --panel: #24120b;
+      --line: #5a2a18;
+      --accent: #ff9d61;
       --orange: #ff6b35;
       --max: 1120px;
     }
@@ -44,7 +44,7 @@
     }
 
     .mark {
-      color: var(--lime);
+      color: var(--accent);
       font: 700 .9rem/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       letter-spacing: .08em;
       text-decoration: none;
@@ -52,7 +52,7 @@
 
     .nav { display: flex; gap: 1.1rem; font-size: .88rem; color: var(--muted); }
     .nav a { text-decoration: none; }
-    .nav a:hover, .nav a:focus-visible { color: var(--lime); }
+    .nav a:hover, .nav a:focus-visible { color: var(--accent); }
 
     .hero {
       min-height: 33rem;
@@ -98,13 +98,13 @@
     }
 
     .contact a { text-underline-offset: .22em; }
-    .contact a:hover, .contact a:focus-visible { color: var(--lime); }
+    .contact a:hover, .contact a:focus-visible { color: var(--accent); }
 
     .hero-card {
       padding: 1.35rem;
       border: 1px solid var(--line);
       border-radius: 1rem;
-      background: rgba(25, 29, 24, .78);
+      background: rgba(36, 18, 11, .78);
       box-shadow: 1rem 1rem 0 rgba(255, 107, 53, .08);
     }
 
@@ -118,7 +118,7 @@
 
     .facts div { padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
     .facts div:last-child { padding-bottom: 0; border-bottom: 0; }
-    .facts dt { color: var(--lime); font: 700 .72rem/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .1em; text-transform: uppercase; }
+    .facts dt { color: var(--accent); font: 700 .72rem/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .1em; text-transform: uppercase; }
     .facts dd { margin: .3rem 0 0; }
 
     section { padding: 4.8rem 0; border-top: 1px solid var(--line); }
@@ -151,12 +151,12 @@
     .project p { color: var(--muted); font-size: .95rem; }
 
     .stack { display: flex; flex-wrap: wrap; gap: .4rem; margin: auto 0 1rem; }
-    .stack span { padding: .25rem .5rem; border: 1px solid var(--line); border-radius: 999px; color: var(--lime); font: .72rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .stack span { padding: .25rem .5rem; border: 1px solid var(--line); border-radius: 999px; color: var(--accent); font: .72rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
     .outcome { padding: .8rem 0; border-top: 1px solid var(--line); color: var(--ink) !important; font-size: .87rem !important; }
     .outcome strong { color: var(--orange); }
 
-    .project-link { color: var(--lime); font-size: .9rem; text-underline-offset: .22em; }
+    .project-link { color: var(--accent); font-size: .9rem; text-underline-offset: .22em; }
 
     .about-grid { display: grid; grid-template-columns: .85fr 1.15fr; gap: 3rem; }
     .about-grid p { color: var(--muted); font-size: 1.05rem; }
@@ -164,7 +164,7 @@
 
     .resume-row { display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
     .resume-row p { max-width: 38rem; margin-bottom: 0; color: var(--muted); }
-    .button { display: inline-block; padding: .75rem 1rem; border-radius: .45rem; background: var(--lime); color: #111410; font-weight: 750; text-decoration: none; white-space: nowrap; }
+    .button { display: inline-block; padding: .75rem 1rem; border-radius: .45rem; background: var(--accent); color: #160b06; font-weight: 750; text-decoration: none; white-space: nowrap; }
     .button:hover, .button:focus-visible { background: var(--orange); }
 
     footer { padding: 1.5rem 0 2.5rem; color: var(--muted); font-size: .82rem; }
@@ -293,7 +293,7 @@
           <h2 id="resume-title">Read the full resume</h2>
           <p>Education, experience, technical skills, and additional project work in one page.</p>
         </div>
-        <a class="button" href="My%20Resume.pdf">Download resume PDF</a>
+        <a class="button" href="./My%20Resume.pdf" download="My Resume.pdf">Download resume PDF</a>
       </div>
     </section>
   </main>
