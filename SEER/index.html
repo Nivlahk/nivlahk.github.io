@@ -5239,7 +5239,7 @@ function soakContinue() { soak1Runner.cont(); }
 // service (seer_compile_server.py: clang riscv64 front end -> strip target ->
 // llc -mtriple=seer -O1) and loads the returned .s into the Source box.
 // ============================================================================
-const C_SERVICE_DEFAULT = "http://127.0.0.1:8765";
+const C_SERVICE_DEFAULT = "https://3-17-158-170.sslip.io";
 let cPrevSource = null;
 function cServiceUrl() {
   const el = document.getElementById("cServiceUrl");
