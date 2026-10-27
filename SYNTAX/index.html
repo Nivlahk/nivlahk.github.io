@@ -150,6 +150,13 @@ button{font:inherit;color:inherit}
 .layout{max-width:1480px;width:100%;margin:0 auto;display:grid;grid-template-columns:290px minmax(0,1fr);gap:14px;align-items:stretch;flex:1}
 .top{width:100%;align-items:flex-start}
 .legendbar{flex:1;min-width:0}
+.scorebar{display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;margin-left:auto;font-size:13px;color:var(--ink2)}
+.scorebar .sc b{font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;margin-right:3px}
+.sc-gain{font-weight:700;color:var(--ok);opacity:0;transform:translateY(4px);transition:opacity .25s,transform .25s}
+.sc-gain.show{opacity:1;transform:none}
+.scorebar.bump .sc b{animation:scorebump .5s ease}
+@keyframes scorebump{40%{transform:scale(1.25);color:var(--ok)}}
+@media (prefers-reduced-motion: reduce){.scorebar.bump .sc b{animation:none}.sc-gain{transition:none}}
 .exportbtn{flex:none;font-weight:600;padding:7px 14px;border-color:var(--ink);background:var(--panel)}
 @media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
 .docks{display:flex;flex-direction:column;gap:14px;min-width:0}
@@ -342,6 +349,7 @@ details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text
 <header class="top">
   <h1 class="sr-only">Syntax Tree Sandbox</h1>
   <div class="legendbar" id="lexInv" aria-label="Word class colors"></div>
+  <div class="scorebar" id="scoreBar" aria-live="polite"><span class="sc"><b id="scorePts">0</b> points</span><span class="sc"><b id="scoreBlocks">0</b> blocks completed</span><span class="sc-gain" id="scoreGain"></span></div>
   <button class="btn exportbtn" type="button" id="exportBtn" title="Download the bench as an SVG image">Export SVG</button>
 </header>
 
@@ -457,8 +465,15 @@ const coordOut=X=>isLex(X)?X+'_Conj':X;
 const coordRule=X=>({lhs:coordOut(X),els:[{alts:[X],min:1,max:Infinity},{alts:CLAUSES.includes(X)?['Conj','Semi']:['Conj'],min:1,max:1},{alts:[X],min:1,max:1}]});
 function coordCands(n){const kids=n.children.map(opts);return COORD_HEADS.filter(X=>align(coordRule(X).els,kids,true))}
 /* friendly display names; rules keep TP/CP internally and accept either name */
-const DISPLAY={TP:'Block',CP:'Clause'};
-const shown=c=>DISPLAY[c]||c;
+const DISPLAY={TP:'Block',CP:'Clause',X_Conj:'Coord'};
+/* a coordinated X ("cats and dogs") is still an X, so N_Conj, V_Conj… display as N, V… */
+const shown=c=>DISPLAY[c]||(/_Conj$/.test(c)?shown(c.slice(0,-5)):c);
+const altsLabel=alts=>[...new Set(alts.map(a=>a==='Semi'?';':shown(a)))].join('/');
+/* a rule token as written, minus the X_Conj alternatives that coordination already implies */
+function tokLabel(t){let pre='',post='',b=t;if(b.startsWith('(')&&b.endsWith(')')){pre='(';post=')';b=b.slice(1,-1)}
+  let plus='';if(b.endsWith('+')){plus='+';b=b.slice(0,-1)}
+  const alts=b.startsWith('{')?b.slice(1,-1).split('/'):[b],lab=[...new Set(alts.map(shown))];
+  return pre+(lab.length>1?'{'+lab.join('/')+'}':lab[0])+plus+post}
 const toDisplay=t=>t.replace(/\b(TP|CP)\b/g,m=>DISPLAY[m]);
 const fromDisplay=t=>t.replace(/\b(Block|Sentence)\b/g,'TP').replace(/\bClause\b/g,'CP');
 function rawCat(n){if(n.type==='empty')return'∅';if(n.cat!=='X_Conj')return n.cat;const c=coordCands(n);return c.length===1?coordOut(c[0]):'X_Conj'}
@@ -493,7 +508,7 @@ function checkRule(line,skip){
   const lhs=m[0].trim(),rhs=m[1].trim();
   if(!ID.test(lhs))return`“${lhs}” isn't a valid category name. Use letters, digits and _.`;
   if(isLex(lhs))return`${lhs} is a word class. Put a phrase name on the left, such as ${lhs}P.`;
-  if(/_Conj$/.test(lhs))return'Coordination is built in through X_Conj. Pick another name.';
+  if(/_Conj$/.test(lhs))return'Coordination is built in (Coord). Pick a name that doesn\'t end in _Conj.';
   if(lhs in PUNCT)return`${lhs} is built in. Pick another name.`;
   if(!rhs)return'Add at least one part after the arrow.';
   const known=new Set([...LEX,...G.rules.filter((_,i)=>i!==skip).map(lhsOf),lhs,'X_Conj',COMPS]);
@@ -523,7 +538,7 @@ function deleteRule(i){
   G.rules=others;applyGrammar();renderAll();
 }
 function deleteClass(tag){
-  if(tag==='Conj'){toast('Conj is needed for coordination (X_Conj), so it stays.');return}
+  if(tag==='Conj'){toast('Conj is needed for coordination, so it stays.');return}
   const users=[...new Set(G.rules.filter(r=>ruleRefs(r).some(a=>a===tag||a===tag+'_Conj')).map(lhsOf))];
   if(users.length){toast(`${tag} is used in ${users.join(', ')}. Remove it there first.`);return}
   const only=S.words.filter(w=>!w.gone&&w.cats.length===1&&w.cats[0]===tag).map(w=>w.text);
@@ -641,7 +656,7 @@ function align(els,kids,partial){
       const el=els[i],min=partial?0:el.min,maxK=Math.min(el.max,C-j);
       for(let k=maxK;k>=min&&!res;k--){
         const picks=[];let ok=true;
-        for(let t=0;t<k;t++){const c=kids[j+t][0]==='*'?el.alts[0]:kids[j+t].find(x=>el.alts.includes(x));if(!c){ok=false;break}picks.push(c)}
+        for(let t=0;t<k;t++){const c=kids[j+t][0]==='*'?el.alts[0]:kids[j+t].find(x=>el.alts.includes(x)||(/_Conj$/.test(x)&&el.alts.includes(x.slice(0,-5))));if(!c){ok=false;break}picks.push(c)}
         if(!ok)continue;
         const rest=f(i+1,j+k);if(rest)res=[{el:i,from:j,picks},...rest];
       }
@@ -659,7 +674,7 @@ function evalNode(n,anyFrame){
   return{status:'invalid',rule:rules[0],al:null};
 }
 function kidCats(n,ev){const m={};n.children.forEach(c=>m[c]=opts(c)[0]);if(ev&&ev.al)ev.al.forEach(s=>s.picks.forEach((cat,t)=>m[n.children[s.from+t]]=cat));if(isLex(n.cat))n.children.forEach(c=>m[c]=n.cat);return m}
-function missing(ev){if(!ev.al)return[];return ev.al.filter(s=>!s.picks.length&&ev.rule.els[s.el].min>0).map(s=>ev.rule.els[s.el].alts.join('/'))}
+function missing(ev){if(!ev.al)return[];return ev.al.filter(s=>!s.picks.length&&ev.rule.els[s.el].min>0).map(s=>altsLabel(ev.rule.els[s.el].alts))}
 /* ---------- built-in conditions (licensing that rule notation can't express) ---------- */
 const PREDET=new Set(['all','both','half','such']);
 const wordOf=id=>{const n=S.nodes[id];return n&&n.type==='word'?S.words[n.wid].text.toLowerCase():null};
@@ -746,16 +761,16 @@ function explain(c,d){
     return`“${vt}” is ${can}. Tap the word in the inventory to change what it takes.`}
   const cats=opts(d.id),alts=new Set(cr.flatMap(r=>expandRule(r,FKEYS)).flatMap(r=>r.els.flatMap(e=>e.alts)));
   const fit=cats.filter(x=>alts.has(x));
-  if(fit.length)return`${dispCat(c)} has no open ${fit[0]} slot in that position.`;
+  if(fit.length)return`${dispCat(c)} has no open ${shown(fit[0])} slot in that position.`;
   const wrap=cats.map(x=>x+'P').find(x=>alts.has(x));
-  const label=d.type==='word'?`“${S.words[d.wid].text}” (${cats.join('/')})`:cats[0];
+  const label=d.type==='word'?`“${S.words[d.wid].text}” (${cats.join('/')})`:shown(cats[0]);
   return`${dispCat(c)} has no slot for ${label}.`+(wrap?` Wrap it in ${wrap} first.`:'');
 }
 function candOrds(cid){const ks=S.nodes[cid].children.map(key);if(!ks.length)return[0];const o=[ks[0]-.5];for(let i=0;i<ks.length-1;i++)o.push((ks[i]+ks[i+1])/2);o.push(ks[ks.length-1]+.5);return o}
 
 /* ---------- rendering ---------- */
 function chipBg(cats,k){const col=c=>c==='V'&&k!=null?FRAMECOL[wordFrames(k)[0]]:COLORS[c];if(cats.length===1)return col(cats[0]);const step=100/cats.length;return`linear-gradient(120deg,${cats.map((c,i)=>`${col(c)} ${i*step}% ${(i+1)*step}%`).join(',')})`}
-function slotPill(el){const lab=el.alts.map(a=>a==='Semi'?';':shown(a)).join('/')+(el.max===Infinity?'+':'');const a0=el.alts[0],tc=isLex(a0)?COLORS[a0]:(headOf(a0)?COLORS[headOf(a0)]:null);const st=[isLex(a0)&&el.min?`--c:${COLORS[a0]}`:'',tc?`--tc:${tc}`:''].filter(Boolean).join(';');return`<span class="slot${el.min?' req':' opt'}"${st?` style="${st}"`:''}>${esc(lab)}</span>`}
+function slotPill(el){const lab=altsLabel(el.alts)+(el.max===Infinity?'+':'');const a0=el.alts[0],tc=isLex(a0)?COLORS[a0]:(headOf(a0)?COLORS[headOf(a0)]:null);const st=[isLex(a0)&&el.min?`--c:${COLORS[a0]}`:'',tc?`--tc:${tc}`:''].filter(Boolean).join(';');return`<span class="slot${el.min?' req':' opt'}"${st?` style="${st}"`:''}>${esc(lab)}</span>`}
 const sel=id=>S.sel===id?' selected':'';
 function frameTitle(id){const n=S.nodes[id],f=FPICK.get(id)||wordFrames(n.wid)[0];return`${FRAMES[f].name}: ${FRAMES[f].hint}`}
 const delBtn=id=>S.sel===id?`<button class="del" type="button" data-del="${id}" aria-label="Delete">×</button>`:'';
@@ -896,10 +911,43 @@ function pivotsFor(root){
   return out;
 }
 
+/* ---------- score: points for every phrase (two words or more) and Block the first time it is built ----------
+   Each finished structure is remembered by its labelled bracketing, so rebuilding the same tree,
+   or undoing and redoing, earns nothing new. The score survives reloads and Clear all. */
+const SCORE_KEY='syntax-sandbox-score-v1',PHRASE_PTS=5,BLOCK_PTS=50;
+let SCORE={points:0,blocks:0,seen:{}};
+try{const o=JSON.parse(localStorage.getItem(SCORE_KEY)||'null');if(o&&typeof o.points==='number')SCORE={points:o.points,blocks:o.blocks||0,seen:o.seen||{}}}catch(e){}
+function saveScore(){try{localStorage.setItem(SCORE_KEY,JSON.stringify(SCORE))}catch(e){}}
+function phraseDone(id){const n=S.nodes[id];return!!n&&n.type==='node'&&!isLex(n.cat)&&fullYield(id)&&deepComplete(id)&&!treeProblem(id)}
+let gainT;
+function scoreBench(){
+  if(!drag){
+    const gains=[];
+    for(const id of Object.keys(S.nodes)){
+      if(!phraseDone(id))continue;
+      const n=S.nodes[id],block=n.cat==='TP';
+      if(!block&&yieldIdx(id).length<2)continue; /* a one-word phrase is just a wrapped word, not a build */
+      const k=(block?'B ':'P ')+bracket(id);
+      if(SCORE.seen[k])continue;
+      SCORE.seen[k]=1;const pts=block?BLOCK_PTS:PHRASE_PTS;SCORE.points+=pts;if(block)SCORE.blocks++;
+      gains.push({pts,block,text:words(id)});
+    }
+    if(gains.length){
+      saveScore();
+      const total=gains.reduce((a,g)=>a+g.pts,0),b=gains.find(g=>g.block);
+      const g=$('#scoreGain');g.textContent=`+${total}`+(b?` · Block complete: “${b.text}”`:'');g.classList.add('show');
+      const bar=$('#scoreBar');bar.classList.remove('bump');void bar.offsetWidth;bar.classList.add('bump');
+      clearTimeout(gainT);gainT=setTimeout(()=>g.classList.remove('show'),b?3200:1600);
+    }
+  }
+  $('#scorePts').textContent=SCORE.points.toLocaleString();$('#scoreBlocks').textContent=SCORE.blocks.toLocaleString();
+}
+
 function renderAll(){
   renderChrome();
   const done=renderCanvas();
   commit();
+  scoreBench();
   const used=new Set(Object.values(S.nodes).filter(n=>n.type==='word').map(n=>n.wid));
   const live=S.words.filter(w=>!w.gone);
   $('#wordInv').innerHTML=live.length?live.map(w=>`<span class="word inv-word${used.has(w.idx)?' used':''}${S.edit===w.idx?' editing':''}${onWhite(w.cats)}" data-inv="word" data-k="${w.idx}" style="background:${chipBg(w.cats,w.idx)}" title="${w.cats.join(' / ')}${w.cats.includes('V')?' · verb: '+wordFrames(w.idx).map(f=>FRAMES[f].name.toLowerCase()).join(', '):''}">${esc(w.text)}${w.cats.length>1?`<small>${w.cats.join('·')}</small>`:''}</span>`).join(''):`<span class="inv-empty">No words yet.</span>`;
@@ -922,10 +970,10 @@ function renderAll(){
 /* ---------- chrome ---------- */
 function ruleChips(line){
   const R1=parseRules(line),r=Object.values(R1)[0][0];
-  return`<span>${esc(shown(r.lhs))}</span><span class="arr">→</span>${r.toks.map((t,i)=>{const a=r.els[i].alts[0];if(r.els[i].comps)return`<span class="compsc" title="Whatever the verb's frame asks for">${esc(t)}</span>`;return isLex(a)?`<span class="lexc" style="--c:${COLORS[a]}">${esc(t)}</span>`:`<span>${esc(toDisplay(t))}</span>`}).join('')}`;
+  return`<span>${esc(shown(r.lhs))}</span><span class="arr">→</span>${r.toks.map((t,i)=>{const a=r.els[i].alts[0];if(r.els[i].comps)return`<span class="compsc" title="Whatever the verb's frame asks for">${esc(tokLabel(t))}</span>`;return isLex(a)?`<span class="lexc" style="--c:${COLORS[a]}">${esc(tokLabel(t))}</span>`:`<span>${esc(toDisplay(t))}</span>`}).join('')}`;
 }
 function ruleFormHTML(){
-  return`<form class="ruleform" id="ruleForm"><input id="ruleInput" aria-label="Rule" placeholder="QP -> (Deg) {Q/Q_Conj} (PP+)" value="${esc(ruleForm.text||'')}" autocomplete="off" spellcheck="false">
+  return`<form class="ruleform" id="ruleForm"><input id="ruleInput" aria-label="Rule" placeholder="QP -> (Deg) Q (PP+)" value="${esc(ruleForm.text||'')}" autocomplete="off" spellcheck="false">
   <div class="rf-row"><button class="btn small" type="submit">${ruleForm.index<0?'Add rule':'Save'}</button><button class="btn small" type="button" data-rulecancel>Cancel</button><span class="rf-help">(X) optional · X+ repeatable · {A/B} either</span></div>
   ${ruleForm.err?`<p class="formerr">${esc(ruleForm.err)}</p>`:''}</form>`;
 }
@@ -943,7 +991,7 @@ function renderChrome(){
       :`<div class="rule editable" data-editrule="${i}" title="Click to edit">${ruleChips(line)}<button class="rx" type="button" data-delrule="${i}" aria-label="Delete rule">×</button></div>`).join('')
     +`<div class="rule builtin conds"><em class="rule-note"><b>Built-in conditions.</b> ∅ can be an understood subject only in a to-clause, an -ing/-ed clause, a command, or after a fronted wh- or relative word; it can stand for a verb only when an auxiliary or "be" has moved into C (Is he ∅ happy?). Only all, both, half or such can precede another determiner. A clause used as a subject needs a complementizer or a ∅ subject.</em></div>`
     +`<div class="rule builtin frames"><span class="compsc">Comps</span><span class="arr">→</span><em class="rule-note">Built in. Filled by the verb's frame. ${FKEYS.map(f=>`<span class="lexc" style="--c:${FRAMECOL[f]}">${FRAMES[f].name}</span> ${FRAMES[f].pat?esc(toDisplay(FRAMES[f].pat)):'nothing'}`).join(' · ')}. Tap a verb in the inventory to set its frames.</em></div>`
-    +`<div class="rule builtin"><span>X_Conj</span><span class="arr">→</span><span>X+</span><span class="lexc" style="--c:${COLORS.Conj||'#888'}">Conj</span><span>X</span><em class="rule-note">Built in. X is any word class or phrase, the same throughout, so lists like red, white and blue work. Clauses and sentences can also be joined with ;</em></div>`
+    +`<div class="rule builtin"><span>Coord</span><span class="arr">→</span><span>X+</span><span class="lexc" style="--c:${COLORS.Conj||'#888'}">Conj</span><span>X</span><em class="rule-note">Built in. X is any word class or phrase, the same throughout, so lists like red, white and blue work. Clauses and sentences can also be joined with ;</em></div>`
 
     +(ruleForm&&ruleForm.index<0?ruleFormHTML():`<div class="rule-actions"><button class="btn small" type="button" data-addrule>+ New rule</button><button class="btn small" type="button" data-legendedit aria-pressed="${legendEdit}">${legendEdit?'Done editing classes':'Edit word classes'}</button><button class="linkbtn" type="button" data-resetgrammar>Reset to default grammar</button></div>`);
   const ri=$('#ruleInput');if(ri&&ruleForm.focus){ri.focus();ri.setSelectionRange(ri.value.length,ri.value.length);ruleForm.focus=false}
