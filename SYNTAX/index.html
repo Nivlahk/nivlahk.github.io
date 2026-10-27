@@ -1,1 +1,1203 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Syntax Tree Sandbox</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
+<style>
+/* Layout: workbench — inventory docks on the left, dotted bench canvas on the right; trees grow on the bench. */
+:root{
+  --bg:#e8ebf0; --panel:#f6f7fa; --bench:#fbfcfd; --dot:#cdd3dd;
+  --ink:#151921; --ink2:#535c6c; --line:#cfd4dd; --line2:#97a0b0;
+  --chip:#d6d9df; --box:#ffffff; --ok:#14965a; --warn:#b86f00; --bad:#d4344b;
+  --cls-white:#6e7685; --on-white:#ffffff;
+  --display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1117; --panel:#151920; --bench:#11151b; --dot:#262c37;
+  --ink:#e8ebf1; --ink2:#959daa; --line:#29303b; --line2:#4d5767;
+  --chip:#2b313c; --box:#1a1f28; --ok:#3fcf82; --warn:#f2a73a; --bad:#ff6177; --cls-white:#eef0f4; --on-white:#151921; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1117; --panel:#151920; --bench:#11151b; --dot:#262c37;
+  --ink:#e8ebf1; --ink2:#959daa; --line:#29303b; --line2:#4d5767;
+  --chip:#2b313c; --box:#1a1f28; --ok:#3fcf82; --warn:#f2a73a; --bad:#ff6177; --cls-white:#eef0f4; --on-white:#151921; color-scheme:dark}
 
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;box-sizing:border-box}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;max-width:1480px;margin:0 auto 14px}
+.brand h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,3.2vw,34px);letter-spacing:-.02em;margin:0;line-height:1.05;text-wrap:balance}
+.brand p{margin:4px 0 0;color:var(--ink2);max-width:62ch}
+.btn{border:1px solid var(--line2);background:transparent;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px}
+.btn:hover{background:var(--chip)}
+.addwords{display:flex;gap:6px;margin-bottom:10px}
+.addwords input{flex:1;min-width:0;font:inherit;font-family:var(--mono);font-size:13px;padding:6px 9px;border-radius:8px;border:1px solid var(--line2);background:var(--bench);color:var(--ink)}
+.inv .word.editing{outline:2px solid var(--ink);outline-offset:2px}
+.inv .word.used{cursor:pointer}
+.wedit{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.wedit-head{display:flex;align-items:baseline;gap:8px;width:100%}
+.wedit-head b{font-family:var(--mono);font-size:15px}
+.wedit-head span{color:var(--ink2);font-size:12.5px}
+.wedit-head .btn{margin-left:auto}
+.wedit-pos{display:flex;flex-wrap:wrap;gap:6px}
+.posbtn{font-family:var(--mono);font-size:12px;font-weight:700;border:2px solid var(--c);color:var(--c);background:transparent;border-radius:8px;padding:4px 9px;cursor:pointer}
+.posbtn[aria-pressed="true"]{background:var(--c);color:#fff}
+.word.on-white,.posbtn.on-white[aria-pressed="true"]{color:var(--on-white);text-shadow:none}
+.word.on-white small{background:rgba(127,127,127,.22)}
+.btn.small{padding:3px 9px;font-size:12px}
+.btn.danger{border-color:var(--bad);color:var(--bad)}
+.nullchip{background:var(--chip);color:var(--ink);text-shadow:none;font-family:var(--mono)}
+.nullchip small{background:transparent;border:1px solid var(--line2)}
+.nullpill{font-weight:700;padding-inline:14px}
+.tword.null{border-bottom:3px dashed var(--line2);color:var(--ink2)}
+.inv-empty{color:var(--ink2);font-size:12.5px}
+
+.layout{max-width:1480px;width:100%;margin:0 auto;display:grid;grid-template-columns:290px minmax(0,1fr);gap:14px;align-items:stretch;flex:1}
+.top{width:100%;align-items:flex-start}
+.legendbar{flex:1;min-width:0}
+.exportbtn{flex:none;font-weight:600;padding:7px 14px;border-color:var(--ink);background:var(--panel)}
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+.docks{display:flex;flex-direction:column;gap:14px;min-width:0}
+.dock{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px 14px;transition:background .15s}
+.dock.drop-ok{background:color-mix(in srgb,var(--bad) 10%,var(--panel))}
+.dock h2{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);font-weight:500;margin:0 0 10px;display:flex;justify-content:space-between}
+.dock h3{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);font-weight:400;margin:12px 0 6px}
+.inv{display:flex;flex-wrap:wrap;gap:7px}
+
+/* chips */
+.word{display:inline-flex;align-items:center;gap:6px;color:#fff;font-weight:600;border-radius:999px;padding:5px 12px;font-size:15px;
+  text-shadow:0 1px 0 rgba(0,0,0,.22);cursor:grab;touch-action:none;user-select:none;white-space:nowrap;line-height:1.2}
+.word small{font-family:var(--mono);font-size:10px;font-weight:500;opacity:.9;background:rgba(0,0,0,.18);border-radius:6px;padding:1px 5px}
+.inv .word.used{opacity:.22;cursor:default;filter:grayscale(.6)}
+.inv-lex,.inv-phr{font-family:var(--mono);font-size:13px;border-radius:999px;padding:4px 11px;cursor:grab;touch-action:none;user-select:none}
+.inv-lex{border:2px solid var(--c);color:var(--c);background:var(--box);font-weight:700}
+.inv-lex.legend{cursor:default;touch-action:auto}
+.dock-hint{margin:-4px 0 10px;color:var(--ink2);font-size:12.5px;line-height:1.4}
+.cardgrid{display:grid;grid-template-columns:1fr;gap:6px}
+@media (max-width:860px){.cardgrid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
+.pcard{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:9px;background:var(--box);border:1px solid var(--line2);border-radius:10px;padding:7px 10px 7px 8px;
+  cursor:grab;touch-action:none;user-select:none;box-shadow:0 1px 0 var(--line),0 3px 8px -6px rgba(0,0,0,.4);transition:transform .12s,box-shadow .12s,border-color .12s}
+.pcard:hover{transform:translateY(-1px);border-color:var(--ink);box-shadow:0 2px 0 var(--line),0 8px 16px -8px rgba(0,0,0,.45)}
+.pcard:active{cursor:grabbing}
+.grip{width:8px;height:14px;background-image:radial-gradient(var(--ink2) 1.2px,transparent 1.6px);background-size:4px 4.6px;opacity:.8}
+.pc-tag{font-family:var(--mono);font-weight:700;font-size:13px;background:var(--chip);border-radius:999px;padding:2px 9px}
+.pc-name{color:var(--ink2);font-size:12.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.legendbar{display:flex;flex-wrap:wrap;gap:6px}
+.legendgrid{display:grid;grid-template-columns:1fr;gap:5px}
+.legrow{display:flex;align-items:center;gap:10px;min-width:0}
+.legrow .inv-lex{min-width:52px;text-align:center}
+.legname{font-size:13px;color:var(--ink);min-width:0}
+@media (max-width:860px){.legendgrid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}}
+.legend-note{text-transform:none;letter-spacing:0;margin-left:6px;opacity:.8}
+.inv-phr{background:var(--chip);border:1px solid transparent}
+.inv-phr.co{font-size:12px}
+.inv-phr:hover{border-color:var(--line2)}
+
+/* bench */
+.work{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0}
+.benchwrap{position:relative;flex:1;display:flex;flex-direction:column;min-height:440px}
+@media (max-width:860px){.benchwrap{min-height:72vh}}
+.benchbar{position:absolute;top:8px;right:10px;z-index:5;display:flex;gap:6px;background:color-mix(in srgb,var(--bench) 85%,transparent);padding:4px;border-radius:10px}
+.benchbar .btn{background:var(--panel)}
+.benchbar .btn:disabled{opacity:.4;cursor:default}
+.bench{position:relative;flex:1;min-height:0;overflow:auto;border:1px solid var(--line);border-radius:14px;
+  background-color:var(--bench);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.6px);background-size:22px 22px;background-attachment:local}
+.canvas{position:relative;min-width:100%;min-height:100%}
+.hint-empty{position:absolute;left:24px;top:22px;color:var(--ink2);font-family:var(--mono);font-size:12px;pointer-events:none;max-width:44ch}
+.rootwrap{position:absolute;pointer-events:none}
+/* only the visible pieces catch the pointer; the empty area of a big node lets clicks through */
+.rootwrap .tlabel,.rootwrap .tword,.rootwrap .slot,.rootwrap .pbox,.rootwrap .lbox,.rootwrap>.word,.rootwrap button{pointer-events:auto}
+
+/* box mode */
+.pbox{display:inline-flex;flex-direction:column;gap:7px;border:2px dashed var(--line2);border-radius:13px;background:var(--box);padding:6px 9px 9px;
+  box-shadow:0 1px 0 var(--line),0 6px 16px -10px rgba(0,0,0,.35);transition:border-color .2s}
+.pbox[data-status="complete"]{border-style:solid;border-color:var(--ink)}
+.phead{display:flex;align-items:center;gap:8px}
+.ptag{font-family:var(--mono);font-size:13px;font-weight:700;background:var(--chip);border-radius:999px;padding:2px 10px;cursor:grab;touch-action:none;user-select:none}
+.pbox[data-status="complete"]>.phead .ptag{background:var(--ink);color:var(--bg)}
+.pstate{font-family:var(--mono);font-size:10.5px;color:var(--ink2)}
+.slots{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.slot{font-family:var(--mono);font-size:11.5px;border:1.5px dashed var(--c,var(--line2));color:var(--c,var(--ink2));border-radius:999px;padding:3px 9px;white-space:nowrap;user-select:none}
+.slot.opt{opacity:.85;border-color:var(--line2);color:color-mix(in srgb,var(--tc,var(--ink2)) 55%,var(--ink2))}
+.slot.req{border:2px dashed color-mix(in srgb,var(--ink) 80%,transparent);color:var(--tc,var(--ink));font-weight:700;opacity:1}
+.lbox{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--c);border-radius:999px;padding:2px 3px 2px 9px;background:var(--box)}
+.lbox[data-status="partial"]{border-style:dashed}
+.ltag{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--c);cursor:grab;touch-action:none;user-select:none}
+.lbox .word{font-size:14px;padding:3px 10px}
+
+/* tree mode */
+.troot{position:relative;isolation:isolate;padding:12px 16px 14px}
+.troot svg.lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}
+.troot svg line{stroke:var(--ink);stroke-width:1.4;stroke-linecap:round}
+.troot svg line.grow{stroke-dasharray:1;stroke-dashoffset:1;animation:grow .55s .12s cubic-bezier(.3,.7,.2,1) forwards}
+@keyframes grow{to{stroke-dashoffset:0}}
+.tnode{position:relative;display:flex;flex-direction:column;align-items:center;border-radius:10px;padding:2px 4px}
+.tlabel{position:relative;z-index:1;font-family:var(--mono);font-size:14px;padding:2px 8px;border-radius:6px;cursor:grab;touch-action:none;user-select:none;background:var(--bench);white-space:nowrap}
+.tnode[data-status="partial"]>.tlabel{outline:1.5px dashed var(--warn);outline-offset:1px}
+.tnode[data-status="partial"]>.tlabel:not(.headed){color:var(--warn)}
+.tlabel.headed{color:var(--hc);font-weight:700}
+.inv-phr.headed{background:color-mix(in srgb,var(--c) 22%,var(--panel));border-color:color-mix(in srgb,var(--c) 70%,transparent);color:var(--ink)}
+.tkids{display:flex;align-items:flex-start;gap:20px;margin-top:40px}
+.tword{position:relative;z-index:1;margin-top:8px;font-family:var(--mono);font-size:17px;border-bottom:4px solid var(--c);line-height:1.15;cursor:grab;touch-action:none;user-select:none;white-space:nowrap;background:var(--bench);padding:0 2px}
+.tnode .slot{margin-top:8px;position:relative;z-index:1;background:var(--bench)}
+.tkids>.ghost{position:relative;z-index:1;background:var(--bench);margin-top:0;border-radius:999px}
+.tkids>.ghost.opt .slot{opacity:.8}
+.tnode.morph::before{content:"";position:absolute;inset:-6px -8px;border:2px solid var(--ink);border-radius:13px;background:var(--box);z-index:-1;pointer-events:none;animation:dissolve .7s cubic-bezier(.4,0,.2,1) forwards}
+.tnode.morph>.tlabel{animation:unbox .7s ease forwards}
+@keyframes dissolve{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
+@keyframes unbox{0%{background:var(--chip);border-radius:999px}100%{background:var(--bench)}}
+
+/* selection & delete */
+.word,.ltag{position:relative}
+.del{position:absolute;top:-11px;right:-13px;width:20px;height:20px;border-radius:50%;border:2px solid var(--bench);background:var(--bad);color:#fff;font:700 12px/1 var(--body);padding:0;cursor:pointer;z-index:3;display:grid;place-items:center;text-shadow:none}
+.del:hover{filter:brightness(1.1)}
+.word.selected,.lbox.selected{outline:2px solid var(--ink);outline-offset:2px}
+.tnode.selected>.tlabel,.tword.selected{outline:2px solid var(--ink);outline-offset:2px}
+
+.optbtn{position:absolute;left:100%;top:50%;transform:translateY(-50%);margin-left:6px;font-family:var(--mono);font-size:10.5px;white-space:nowrap;border:1px solid var(--line2);background:var(--bench);color:var(--ink2);border-radius:999px;padding:1px 7px;cursor:pointer;z-index:2}
+.optbtn:hover{color:var(--ink);border-color:var(--ink)}
+.optbtn{display:none;z-index:4}
+.tlabel:hover>.optbtn,.tnode.selected>.tlabel>.optbtn{display:block}
+.tnode.selected>.tlabel .optbtn{margin-left:18px}
+
+/* drag feedback */
+.can-drop.pbox,.can-drop.lbox{border-color:var(--ok)}
+.tnode.can-drop>.tlabel{box-shadow:0 0 0 2px color-mix(in srgb,var(--ok) 55%,transparent)}
+.drop-ok.pbox,.drop-ok.lbox{outline:3px solid var(--ok);outline-offset:3px}
+.drop-no.pbox,.drop-no.lbox{outline:3px solid var(--bad);outline-offset:3px}
+.tnode.drop-ok>.tlabel{background:var(--ok);color:#fff}
+.tnode.drop-no>.tlabel{background:var(--bad);color:#fff}
+.ghost-drag{position:fixed;left:0;top:0;z-index:50;pointer-events:none;will-change:transform}
+.ghost-inner{animation:lift .14s ease-out forwards;filter:drop-shadow(0 10px 18px rgba(0,0,0,.3))}
+@keyframes lift{from{transform:scale(1)}to{transform:scale(1.03)}}
+.ghost-tree{background:color-mix(in srgb,var(--bench) 92%,transparent);border-radius:14px;border:1px solid var(--line)}
+.ghost-inner>.word{display:inline-flex}
+.gchip{display:inline-flex;gap:8px;align-items:center;background:var(--box);border:2px solid var(--c,var(--ink));border-radius:999px;padding:4px 12px;font-family:var(--mono);font-size:13px;white-space:nowrap}
+.gchip b{color:var(--c,var(--ink))}
+body.dragging,body.dragging *{cursor:grabbing!important}
+
+/* status */
+.status{display:flex;flex-wrap:wrap;gap:10px}
+.status:empty{display:none}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat .k{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2)}
+.stat .v{font-weight:600;font-variant-numeric:tabular-nums}
+.stat.goal{flex:1 1 240px}
+.stat.goal.done{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 9%,var(--panel))}
+.stat.goal.done .v{color:var(--ok)}
+.bracket{flex:1 1 100%;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 12px;min-width:0}
+.bracket .k{display:block;font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);margin-bottom:3px}
+.bracket code{display:block;font-family:var(--mono);font-size:12px;line-height:1.5;white-space:normal;overflow-wrap:anywhere;padding-block:3px;border-top:1px dashed var(--line)}
+.bracket code:first-of-type{border-top:0}
+
+.readings{background:var(--panel);border:1px solid var(--ok);border-radius:14px;padding:12px 16px}
+.readings h3{font-family:var(--display);font-size:18px;margin:0 0 4px}
+.readings>p{margin:0 0 10px;color:var(--ink2);max-width:70ch}
+.reading{display:flex;flex-direction:column;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.reading p{margin:0;max-width:72ch}
+.reading em{color:var(--ink2);font-style:normal;display:block;margin-top:2px}
+.reading .opts{display:flex;flex-wrap:wrap;gap:8px}
+.pivot{border:1.5px solid var(--ok);background:transparent;border-radius:999px;padding:5px 12px;cursor:pointer;font-size:13px;text-align:left}
+.pivot:hover{background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.pivot b{font-family:var(--mono)}
+
+details.rules{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2)}
+.rulelist{display:flex;flex-direction:column;gap:7px;margin-top:10px;overflow-x:auto;padding-bottom:4px}
+.rule{display:flex;flex-wrap:wrap;gap:4px;align-items:center;white-space:nowrap;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.rule:last-child{border-bottom:0}
+.rule span{font-size:11px!important;padding:2px 7px!important}
+.rule-note{white-space:normal}
+.rule.editable{cursor:pointer;position:relative;padding-right:22px;border-radius:6px}
+.rule.editable:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.rx,.lx{border:0;background:transparent;color:var(--ink2);font:700 14px/1 var(--body);cursor:pointer;padding:2px 4px;border-radius:4px}
+.rx{position:absolute;right:0;top:2px}
+.rx:hover,.lx:hover{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.rule.builtin{opacity:.8}
+.rule-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding-top:4px}
+.linkbtn{border:0;background:none;color:var(--ink2);font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
+.ruleform{display:flex;flex-direction:column;gap:6px;padding:6px 0 8px;border-bottom:1px solid var(--line)}
+.ruleform input{font:inherit;font-family:var(--mono);font-size:12.5px;padding:6px 8px;border-radius:8px;border:1px solid var(--line2);background:var(--bench);color:var(--ink);width:100%;min-width:0}
+.rf-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.rf-help{font-family:var(--mono);font-size:10.5px;color:var(--ink2)}
+.formerr{margin:0;color:var(--bad);font-size:12.5px;flex-basis:100%}
+.legend.editable{cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding-right:4px}
+.legend.editable small{font-size:10.5px;opacity:.75;font-weight:500}
+.legend.editable:hover{background:color-mix(in srgb,var(--c) 12%,var(--box))}
+.legend-toggle{margin-left:auto}
+.classform{flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}
+.classform input[type=text],.classform input:not([type]){font:inherit;font-size:13px;padding:5px 8px;border-radius:8px;border:1px solid var(--line2);background:var(--bench);color:var(--ink);min-width:0;flex:1 1 140px}
+.classform input:disabled{opacity:.6}
+.classform input[type=color]{width:38px;height:30px;padding:2px;border:1px solid var(--line2);border-radius:8px;background:var(--bench)}
+.tnode[data-status="invalid"]>.tlabel{color:var(--bad);outline:1.5px dashed var(--bad);outline-offset:1px}
+.rule span{font-family:var(--mono);font-size:12px;border-radius:999px;padding:3px 10px;background:var(--chip)}
+.rule span.lexc{background:var(--c);color:#fff}
+.rule span.compsc{background:none;border:1.5px dashed var(--ink2);color:var(--ink)}
+.rule-note .lexc{display:inline-block;margin:2px 0}
+.rule-note{font-style:normal;color:var(--ink2);font-size:12px;margin-left:6px}
+.rule .arr{background:none;padding:0 2px;font-size:15px}
+
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--bg);
+  padding:9px 16px;border-radius:10px;font-size:13.5px;max-width:min(560px,calc(100vw - 32px));transition:.25s;pointer-events:none;z-index:60}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+
+<header class="top">
+  <h1 class="sr-only">Syntax Tree Sandbox</h1>
+  <div class="legendbar" id="lexInv" aria-label="Word class colors"></div>
+  <button class="btn exportbtn" type="button" id="exportBtn" title="Download the bench as an SVG image">Export SVG</button>
+</header>
+
+<main class="layout">
+  <aside class="docks">
+    <section class="dock" data-dock id="wordDock">
+      <h2><span>Word inventory</span><span id="wordCount"></span></h2>
+      <form class="addwords" id="addForm"><input id="addInput" aria-label="Words to add" placeholder="Type words or a sentence" autocomplete="off"><button class="btn" type="submit">Add</button></form>
+      <p class="dock-hint">Added words land on the bench. Tap or drag a word here to put it back; tap one that's on the bench to change its class.</p>
+      <div class="inv" id="wordInv"></div>
+      <div class="wedit" id="wedit" hidden></div>
+    </section>
+    <section class="dock" data-dock>
+      <h2><span>Containers</span></h2>
+      <p class="dock-hint">Drag a container onto the bench to start a tree, or tap it to add it.</p>
+      <div class="inv" id="phrInv"></div>
+    </section>
+    <details class="rules"><summary>Phrase-structure rules</summary><div class="rulelist" id="ruleList"></div></details>
+    <div class="status" id="status"></div>
+  </aside>
+  <section class="work">
+    <div class="benchwrap">
+      <div class="benchbar" role="toolbar" aria-label="History">
+        <button class="btn small" type="button" id="undoBtn" title="Undo (Ctrl+Z)">Undo</button>
+        <button class="btn small" type="button" id="redoBtn" title="Redo (Ctrl+Shift+Z)">Redo</button>
+        <button class="btn small" type="button" id="clearBtn">Clear all</button>
+      </div>
+      <div class="bench" id="bench"><div class="canvas" id="canvas"></div></div>
+    </div>
+    <div class="readings" id="readings" hidden></div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const DEFAULT_GRAMMAR={
+  pos:[['N','Noun','#a0693a'],['D','Determiner','var(--cls-white)'],['V','Verb','#2f78f0'],['Adj','Adjective','#df12ae'],['Adv','Adverb','#e82a5b'],['P','Preposition','#f3661f'],['T','Tense','#e09f00'],['C','Complementizer','#1faa3a'],['Conj','Conjunction','#8f45f0']].map(([tag,name,color])=>({tag,name,color})),
+  rules:['CP -> (Conj) ({NP/PP/AdvP/AdjP/CP}) ({C/T}) TP','TP -> {NP/CP} (AdvP+) (T) VP','VP -> (AdvP+) {V/V_Conj} Comps (AdvP+) (PP+) (AdvP+)','NP -> (AdvP) (D) ({D/DP}) (AdjP+) (N+) {N/N_Conj} (PP+) (CP)','NP -> (AdvP) {D/DP} AdjP+ (PP+)','PP -> (AdvP) {P/P_Conj} ({NP/CP})','AdvP -> (AdvP) {Adv/Adv_Conj} (PP)','AdjP -> (AdvP) {Adj/Adj_Conj} ({PP/CP})','DP -> NP D']
+};
+const cloneG=g=>JSON.parse(JSON.stringify(g));
+let G=cloneG(DEFAULT_GRAMMAR);
+let COLORS={},LEX=[],LEXNAMES={},RULES={},PHRASES=[],COORD_HEADS=[];
+const COORD=['X_Conj'];
+/* built-in punctuation class: Semi ( ; ) joins clauses inside X_Conj */
+const PUNCT={Semi:{name:'Semicolon',color:'#8b93a3'}};
+const CLAUSES=['CP','TP'];
+const isLex=c=>LEX.includes(c)||c in PUNCT;
+function applyGrammar(){
+  COLORS={};LEXNAMES={};G.pos.forEach(p=>{COLORS[p.tag]=p.color;LEXNAMES[p.tag]=p.name});
+  for(const k in PUNCT){COLORS[k]=PUNCT[k].color;LEXNAMES[k]=PUNCT[k].name}
+  LEX=G.pos.map(p=>p.tag);
+  RULES=parseRules(G.rules.join('\n'));
+  PHRASES=Object.keys(RULES);
+  COORD_HEADS=[...LEX.filter(c=>c!=='Conj'),...PHRASES];
+  if(typeof frameColors==='function')frameColors();
+}
+/* ---------- verb frames (subcategorization): the verb decides what follows it ----------
+   A rule can say Comps where the head verb's complements go; each frame fills Comps differently. */
+const COMPS='Comps';
+const FRAMES={
+  i:{name:'Intransitive',hint:'takes nothing after it',pat:'',mix:['#0ec8f0',.6],col:'#1fa2e6'},
+  t:{name:'Transitive',hint:'takes one object: a noun phrase, a clause or a verb phrase',pat:'{NP/CP/VP}',mix:null,col:'#2f78f0'},
+  d:{name:'Ditransitive',hint:'takes two complements',pat:'NP {NP/PP/CP/AdjP/VP}',mix:['#0b1450',.6],col:'#1e2f8a'},
+  l:{name:'Linking',hint:'links to a description or another verb: is happy, seems fine, has eaten',pat:'{AdjP/NP/PP/VP/CP}',mix:['#b4a8ff',.6],col:'#7b8cf5'}
+};
+const FKEYS=Object.keys(FRAMES);
+const FRAME_ELS={};FKEYS.forEach(f=>FRAME_ELS[f]=FRAMES[f].pat?FRAMES[f].pat.split(/\s+/).map(parseTok):[]);
+let FRAMECOL={};
+function mixHex(a,b,t){const h=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16));const A=h(a),B=h(b);return'#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')}
+function frameColors(){const base=COLORS.V||'#2f78f0',hex=/^#[0-9a-f]{6}$/i.test(base);FRAMECOL={};FKEYS.forEach(f=>{const m=FRAMES[f].mix;FRAMECOL[f]=base.toLowerCase()==='#2f78f0'?FRAMES[f].col:hex&&m?mixHex(base,m[0],m[1]):base})}
+const VERB_FRAMES={
+ sleep:'i',arrive:'i',die:'i',laugh:'i',cry:'i',sneeze:'i',bark:'i',smile:'i',go:'i',come:'i',fall:'i',exist:'i',happen:'i',sit:'i',lie:'i',jump:'i',wait:'i',rise:'i',disappear:'i',occur:'i',live:'i',work:'i',talk:'i',dance:'i',snore:'i',yawn:'i',vanish:'i',emerge:'i',
+ stand:'it',swim:'it',run:'it',walk:'it',fly:'it',sing:'itd',play:'it',smell:'lti',stay:'li',appear:'li',grow:'itl',turn:'lti',
+ see:'tid',like:'t',love:'t',hate:'t',want:'t',need:'t',know:'ti',think:'ti',say:'t',eat:'ti',drink:'ti',read:'tid',write:'tid',chase:'t',hit:'t',kick:'t',build:'td',open:'ti',close:'ti',break:'ti',watch:'tid',hear:'tid',use:'t',hold:'t',carry:'t',catch:'t',
+ buy:'td',sell:'tdi',keep:'tdl',leave:'tid',help:'tid',meet:'ti',believe:'t',remember:'t',forget:'t',enjoy:'t',destroy:'t',create:'t',print:'t',call:'td',find:'td',visit:'t',cut:'t',wash:'t',push:'t',pull:'t',save:'t',load:'t',delete:'t',
+ try:'t',plan:'t',decide:'ti',hope:'ti',expect:'t',start:'ti',stop:'ti',begin:'ti',finish:'ti',draw:'tid',cook:'tid',bake:'tdi',throw:'td',take:'td',make:'td',do:'t',get:'tdl',have:'tl',
+ give:'dt',put:'d',place:'d',set:'dt',show:'dt',tell:'dt',send:'dt',lend:'d',offer:'dt',teach:'dti',ask:'dt',pay:'dti',hand:'d',pass:'dti',owe:'d',bring:'dt',move:'tid',add:'td',remove:'td',copy:'td',store:'td',return:'tid',wish:'dt',
+ be:'l',seem:'l',become:'l',remain:'l',look:'li',feel:'ltd',let:'d',sound:'l',taste:'lt',prove:'lt'};
+const IRREG={am:'be',is:'be',are:'be',was:'be',were:'be',been:'be',being:'be',has:'have',had:'have',having:'have',did:'do',done:'do',does:'do',went:'go',gone:'go',saw:'see',seen:'see',ate:'eat',eaten:'eat',gave:'give',given:'give',took:'take',taken:'take',made:'make',said:'say',thought:'think',knew:'know',known:'know',wrote:'write',written:'write',ran:'run',came:'come',fell:'fall',fallen:'fall',found:'find',got:'get',gotten:'get',brought:'bring',bought:'buy',sold:'sell',told:'tell',taught:'teach',caught:'catch',built:'build',sent:'send',lent:'lend',left:'leave',kept:'keep',held:'hold',met:'meet',sat:'sit',stood:'stand',lay:'lie',lain:'lie',slept:'sleep',drank:'drink',drunk:'drink',swam:'swim',swum:'swim',flew:'fly',flown:'fly',drew:'draw',drawn:'draw',threw:'throw',thrown:'throw',broke:'break',broken:'break',began:'begin',begun:'begin',sang:'sing',sung:'sing',rose:'rise',risen:'rise',grew:'grow',grown:'grow',became:'become',felt:'feel',heard:'hear',paid:'pay',forgot:'forget',forgotten:'forget',showed:'show',shown:'show'};
+function lemma(t){const w=t.toLowerCase();if(IRREG[w])return IRREG[w];if(VERB_FRAMES[w])return w;
+  const c=[];if(/ies$/.test(w))c.push(w.slice(0,-3)+'y');if(/ied$/.test(w))c.push(w.slice(0,-3)+'y');
+  if(/es$/.test(w))c.push(w.slice(0,-2));if(/s$/.test(w))c.push(w.slice(0,-1));
+  if(/ed$/.test(w)){c.push(w.slice(0,-2),w.slice(0,-1));if(/(.)\1ed$/.test(w))c.push(w.slice(0,-3))}
+  if(/ing$/.test(w)){c.push(w.slice(0,-3),w.slice(0,-3)+'e');if(/(.)\1ing$/.test(w))c.push(w.slice(0,-4))}
+  return c.find(x=>VERB_FRAMES[x])||null}
+function guessFrames(t){const l=lemma(t);return l?[...VERB_FRAMES[l]]:['t','i']}
+function wordFrames(k){const w=S.words[k];return w.frames&&w.frames.length?w.frames:guessFrames(w.text)}
+/* the frames a child offers if it is the verb of its phrase (a verb word, a V box, or verbs joined by and) */
+function verbFrames(id){const n=S.nodes[id];if(!n)return null;
+  if(n.type==='word')return S.words[n.wid].cats.includes('V')?wordFrames(n.wid):null;
+  if(n.type!=='node')return null;
+  if(n.cat==='V'){const c=n.children[0];return c?verbFrames(c):null}
+  if(n.cat==='X_Conj'&&coordCands(n).includes('V')){const fs=n.children.map(verbFrames).filter(Boolean);if(!fs.length)return null;const both=fs[0].filter(f=>fs.every(x=>x.includes(f)));return both.length?both:fs[0]}
+  return null}
+function headFrames(n){for(const c of n.children){const f=verbFrames(c);if(f)return f}return null}
+const hasComps=rules=>rules.some(r=>r.els.some(e=>e.comps));
+function expandRule(r,fr){const ci=r.els.findIndex(e=>e.comps);if(ci<0)return[r];
+  return fr.map(f=>({lhs:r.lhs,toks:r.toks,frame:f,els:[...r.els.slice(0,ci),...FRAME_ELS[f],...r.els.slice(ci+1)]}))}
+/* which frame each verb ended up using in the current render */
+let FPICK=new Map();
+function markFrame(id,f){const n=S.nodes[id];if(!n)return;if(n.type==='word')FPICK.set(id,f);else if(n.type==='node')n.children.forEach(c=>markFrame(c,f))}
+function noteFrames(n,ev){if(ev&&ev.al&&ev.rule&&ev.rule.frame)n.children.forEach(c=>{if(verbFrames(c))markFrame(c,ev.rule.frame)})}
+function catColor(cat,id){if(cat!=='V')return COLORS[cat];const n=S.nodes[id];const f=FPICK.get(id)||(n&&n.type==='word'?wordFrames(n.wid)[0]:null);return f?FRAMECOL[f]:COLORS.V}
+/* head of a phrase: XP is headed by X; otherwise the first required word class in its rule */
+function headOf(cat){
+  if(!cat||!RULES[cat])return null;
+  if(cat.endsWith('P')&&LEX.includes(cat.slice(0,-1)))return cat.slice(0,-1);
+  for(const r of RULES[cat])for(const el of r.els)if(el.min>0){const a=el.alts.map(x=>x.replace(/_Conj$/,'')).find(x=>LEX.includes(x));if(a)return a}
+  return null;
+}
+/* X_Conj -> X Conj X, both X the same. Heads give N_Conj, V_Conj…; phrases give the phrase itself (NP Conj NP is an NP). */
+const coordOut=X=>isLex(X)?X+'_Conj':X;
+const coordRule=X=>({lhs:coordOut(X),els:[{alts:[X],min:1,max:Infinity},{alts:CLAUSES.includes(X)?['Conj','Semi']:['Conj'],min:1,max:1},{alts:[X],min:1,max:1}]});
+function coordCands(n){const kids=n.children.map(opts);return COORD_HEADS.filter(X=>align(coordRule(X).els,kids,true))}
+/* friendly display names; rules keep TP/CP internally and accept either name */
+const DISPLAY={TP:'Block',CP:'Clause'};
+const shown=c=>DISPLAY[c]||c;
+const toDisplay=t=>t.replace(/\b(TP|CP)\b/g,m=>DISPLAY[m]);
+const fromDisplay=t=>t.replace(/\b(Block|Sentence)\b/g,'TP').replace(/\bClause\b/g,'CP');
+function rawCat(n){if(n.type==='empty')return'∅';if(n.cat!=='X_Conj')return n.cat;const c=coordCands(n);return c.length===1?coordOut(c[0]):'X_Conj'}
+function dispCat(n){return shown(rawCat(n))}
+function parseTok(raw){
+  let tok=raw,opt=false,plus=false;
+  if(tok.startsWith('(')&&tok.endsWith(')')){opt=true;tok=tok.slice(1,-1)}
+  if(tok.endsWith('+')){plus=true;tok=tok.slice(0,-1)}
+  const alts=tok.startsWith('{')?tok.slice(1,-1).split('/'):[tok];
+  return {alts,min:opt?0:1,max:plus?Infinity:1,raw,comps:tok===COMPS};
+}
+function parseRules(t){
+  const R={};
+  t.trim().split('\n').filter(l=>l.trim()).forEach(line=>{
+    const [lhs,rhs]=line.split(/->|→/).map(s=>s.trim());
+    const toks=rhs.split(/\s+/);
+    const els=toks.map(parseTok);
+    (R[lhs]=R[lhs]||[]).push({lhs,els,toks});
+  });
+  return R;
+}
+applyGrammar();
+
+/* ---------- grammar editing ---------- */
+const ID=/^[A-Za-z][A-Za-z0-9_']*$/;
+const lhsOf=line=>line.split(/->|→/)[0].trim();
+function tokAlts(raw){let t=raw;if(t.startsWith('(')&&t.endsWith(')'))t=t.slice(1,-1);if(t.endsWith('+'))t=t.slice(0,-1);return t.startsWith('{')&&t.endsWith('}')?t.slice(1,-1).split('/'):[t]}
+function ruleRefs(line){const r=line.split(/->|→/)[1]||'';return r.trim().split(/\s+/).filter(Boolean).flatMap(tokAlts)}
+function checkRule(line,skip){
+  const m=line.split(/->|→/);
+  if(m.length!==2)return'Write it as a phrase, an arrow, then its parts, e.g. QP -> (Deg) Q';
+  const lhs=m[0].trim(),rhs=m[1].trim();
+  if(!ID.test(lhs))return`“${lhs}” isn't a valid category name. Use letters, digits and _.`;
+  if(isLex(lhs))return`${lhs} is a word class. Put a phrase name on the left, such as ${lhs}P.`;
+  if(/_Conj$/.test(lhs))return'Coordination is built in through X_Conj. Pick another name.';
+  if(lhs in PUNCT)return`${lhs} is built in. Pick another name.`;
+  if(!rhs)return'Add at least one part after the arrow.';
+  const known=new Set([...LEX,...G.rules.filter((_,i)=>i!==skip).map(lhsOf),lhs,'X_Conj',COMPS]);
+  for(const raw of rhs.split(/\s+/)){
+    let t=raw;
+    if(t.startsWith('(')!==t.endsWith(')'))return`Unmatched parenthesis in “${raw}”.`;
+    if(t.startsWith('('))t=t.slice(1,-1);
+    if(t.endsWith('+'))t=t.slice(0,-1);
+    let alts=[t];
+    if(t.startsWith('{')||t.endsWith('}')){if(!(t.startsWith('{')&&t.endsWith('}')))return`Unmatched brace in “${raw}”.`;alts=t.slice(1,-1).split('/')}
+    for(const a of alts){
+      if(!ID.test(a))return`“${raw}” isn't valid notation. Use (X) optional, X+ repeatable, {A/B} either.`;
+      const base=a.endsWith('_Conj')?a.slice(0,-5):null;
+      if(!known.has(a)&&!(base&&isLex(base)))return`Unknown category “${a}”. Add it as a word class, or give it its own rule first.`;
+    }
+  }
+  return null;
+}
+const normRule=line=>{const [l,r]=line.split(/->|→/);return`${l.trim()} -> ${r.trim().split(/\s+/).join(' ')}`};
+function deleteRule(i){
+  const lhs=lhsOf(G.rules[i]);
+  const others=G.rules.filter((r,j)=>j!==i);
+  if(!others.some(r=>lhsOf(r)===lhs)){
+    const users=[...new Set(others.filter(r=>ruleRefs(r).includes(lhs)).map(lhsOf))];
+    if(users.length){toast(`${lhs} is still used in ${users.join(', ')}. Remove it there first.`);return}
+  }
+  G.rules=others;applyGrammar();renderAll();
+}
+function deleteClass(tag){
+  if(tag==='Conj'){toast('Conj is needed for coordination (X_Conj), so it stays.');return}
+  const users=[...new Set(G.rules.filter(r=>ruleRefs(r).some(a=>a===tag||a===tag+'_Conj')).map(lhsOf))];
+  if(users.length){toast(`${tag} is used in ${users.join(', ')}. Remove it there first.`);return}
+  const only=S.words.filter(w=>!w.gone&&w.cats.length===1&&w.cats[0]===tag).map(w=>w.text);
+  if(only.length){toast(`${only.slice(0,4).map(t=>'“'+t+'”').join(', ')} ${only.length>1?'only have':'only has'} this class. Give ${only.length>1?'them':'it'} another class first.`);return}
+  S.words.forEach(w=>w.cats=w.cats.filter(c=>c!==tag));
+  G.pos=G.pos.filter(p=>p.tag!==tag);applyGrammar();renderAll();
+}
+const NEW_COLORS=['#7c5cff','#0f9f8f','#c2410c','#65a30d','#be185d','#0369a1','#a16207','#6d28d9','#0891b2','#b91c1c'];
+let legendEdit=false,classForm=null,ruleForm=null;
+function resetGrammar(){
+  G=cloneG(DEFAULT_GRAMMAR);applyGrammar();
+  S.words.forEach(w=>{w.cats=w.cats.filter(isLex);if(!w.cats.length)w.cats=['N']});
+  ruleForm=null;classForm=null;renderAll();toast('Grammar reset to the default. Undo brings yours back.');
+}
+
+const LEXICON={the:['D'],a:['D'],an:['D'],this:['D'],that:['C','D'],these:['D'],those:['D'],his:['D'],her:['D','N'],my:['D'],your:['D'],their:['D'],our:['D'],its:['D'],every:['D'],some:['D'],no:['D'],
+ and:['Conj'],or:['Conj'],but:['Conj'],if:['C'],whether:['C'],
+ will:['T'],would:['T'],can:['T','N','V'],could:['T'],should:['T'],must:['T'],might:['T'],may:['T'],did:['T','V'],does:['T','V'],do:['T','V'],
+ to:['P'],in:['P'],on:['P'],at:['P'],with:['P'],from:['P'],by:['P'],for:['P'],of:['P'],under:['P'],over:['P'],near:['P'],into:['P'],after:['P'],before:['P'],about:['P'],
+ i:['N'],you:['N'],he:['N'],she:['N'],it:['N'],we:['N'],they:['N'],me:['N'],him:['N'],us:['N'],them:['N'],
+ saw:['V','N'],man:['N','V'],old:['Adj','N'],cut:['V','N','Adj'],iron:['N','V','Adj'],fish:['N','V'],duck:['N','V'],watch:['N','V'],watched:['V'],light:['N','V','Adj'],home:['N','Adv'],fast:['Adj','Adv'],well:['Adv','Adj','N'],
+ dog:['N','V'],cat:['N'],girl:['N'],boy:['N'],telescope:['N'],park:['N','V'],book:['N','V'],ran:['V'],run:['V','N'],quickly:['Adv'],slowly:['Adv'],very:['Adv'],small:['Adj'],big:['Adj'],happy:['Adj'],red:['Adj','N'],
+ said:['V'],thinks:['V'],know:['V'],chased:['V'],barked:['V'],mouse:['N'],boats:['N','V'],friend:['N'],letter:['N'],wrote:['V'],gave:['V'],owner:['N'],binoculars:['N']};
+/* contextual tagging via compromise; small curated list of genuinely ambiguous words adds extra classes */
+const ALTS={saw:['V','N'],old:['Adj','N'],that:['C','D'],home:['N','Adv'],cut:['V','N','Adj'],iron:['N','V','Adj'],fish:['N','V'],duck:['N','V'],watch:['V','N'],light:['N','V','Adj'],fast:['Adj','Adv'],well:['Adv','Adj'],can:['T','N'],run:['V','N'],down:['P','Adv'],up:['P','Adv'],out:['P','Adv'],like:['P','V'],before:['P'],after:['P'],since:['P'],her:['D','N']};
+const FORCE={forward:['Adv'],forwards:['Adv'],backward:['Adv'],backwards:['Adv'],ahead:['Adv'],away:['Adv'],onward:['Adv'],upward:['Adv'],downward:['Adv'],homeward:['Adv']};
+/* place and direction words: the tagger often calls these nouns or adjectives, but after a verb they are adverbs (go there, come inside) */
+const EXTRA={than:['P'],as:['P'],there:['Adv'],here:['Adv'],where:['Adv'],upstairs:['Adv'],downstairs:['Adv'],indoors:['Adv'],outdoors:['Adv'],inside:['P','Adv'],outside:['P','Adv'],downtown:['Adv'],overseas:['Adv']};
+const SUBORD=new Set(['if','whether','lest']);   /* CGEL: the true subordinators (with that, for) */
+/* modern descriptive classes (CGEL) */
+const PREP_SUB=new Set(['because','before','after','since','until','till','while','whilst','though','although','unless','whereas','once','like','as','than']);
+const STAND_D=new Set(['this','that','these','those','all','both','half','each','some','any','either','neither','another']);
+const QUANT=new Set(['many','few','several','much','more','most','less','least','enough']);
+const NUMWORDS=new Set('one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty thirty forty fifty sixty seventy eighty ninety hundred thousand million billion dozen'.split(' '));
+function adjust(l,cats){
+  cats=[...cats];const add=c=>{if(!cats.includes(c))cats.push(c)};
+  if(PREP_SUB.has(l))cats=['P',...cats.filter(c=>c!=='P'&&c!=='C'&&c!=='Conj')];
+  if(STAND_D.has(l)||QUANT.has(l)){cats=cats.filter(c=>c!=='Adj');if(!cats.length||!['C'].includes(cats[0]))cats=['D',...cats.filter(c=>c!=='D')];add('D');add('N')}
+  if(/^\d[\d,.]*$/.test(l)||NUMWORDS.has(l)){add('Adj');add('N')}
+  return cats;
+}
+function mapTags(tags){const t=new Set(tags);
+  if(t.has('Preposition'))return'P';
+  if(t.has('Determiner')||t.has('Possessive'))return'D';
+  if(t.has('Pronoun'))return'N';
+  if(t.has('Modal')||t.has('Auxiliary'))return'T';
+  if(t.has('Conjunction'))return'Conj';
+  if(t.has('Adverb')||t.has('Date'))return'Adv';
+  if(t.has('Adjective')||t.has('Value'))return'Adj';
+  if(t.has('Verb'))return'V';
+  if(t.has('Noun'))return'N';
+  return null}
+/* the tagging library is only needed when words are added, so it loads on demand, not before first paint */
+const NLP_SRC='https://cdn.jsdelivr.net/npm/compromise@14.18.0/builds/compromise.js';
+let nlpLoad=null;
+function loadNlp(){
+  if(window.nlp)return Promise.resolve();
+  if(!nlpLoad)nlpLoad=new Promise(res=>{const sc=document.createElement('script');sc.src=NLP_SRC;sc.async=true;sc.onload=sc.onerror=()=>res();document.head.appendChild(sc)});
+  /* never hold up adding words for long: fall back to the built-in lexicon */
+  return Promise.race([nlpLoad,new Promise(r=>setTimeout(r,4000))]);
+}
+function tagWords(toks){
+  if(!window.nlp)return toks.map(t=>adjust(t.toLowerCase(),lookup(t)));
+  let terms=[];try{terms=nlp(toks.join(' ')).json().flatMap(x=>x.terms)}catch(e){}
+  return toks.map((t,i)=>{
+    const l=t.toLowerCase();
+    if(FORCE[l])return[...FORCE[l]];
+    const ctx=terms.length===toks.length?mapTags(terms[i].tags):null;
+    let iso=null;try{const it=nlp(t).json()[0];iso=it?mapTags(it.terms[0].tags):null}catch(e){}
+    let primary=ctx||iso||'N';
+    if(SUBORD.has(l))primary='C';
+    if(l==='that'&&primary==='Conj')primary='C';
+    if(l==='to'){const nx=terms.length===toks.length&&terms[i+1]?mapTags(terms[i+1].tags):null;return nx==='V'?['T','P']:['P','T']}
+    const cats=[primary];
+    if(iso&&iso!==primary&&['N','V'].includes(iso)&&['N','V'].includes(primary))cats.push(iso);
+    if(ALTS[l]&&ALTS[l].includes(primary))ALTS[l].forEach(c=>{if(!cats.includes(c))cats.push(c)});
+    (EXTRA[l]||[]).forEach(c=>{if(!cats.includes(c))cats.push(c)});
+    return adjust(l,cats);
+  });
+}
+function lookup(t){const l=t.toLowerCase();if(LEXICON[l])return LEXICON[l];if(/ly$/.test(l))return['Adv','Adj'];if(/ed$/.test(l))return['V','Adj'];if(/ing$/.test(l))return['V','N','Adj'];if(/s$/.test(l))return['N','V'];return['N','V','Adj']}
+
+const $=s=>document.querySelector(s);
+const canvas=$('#canvas'),bench=$('#bench');
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let S={words:[],nodes:{},roots:[]},uid=0,prevMode={},modes={},prevLines=new Set();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- state helpers ---------- */
+function mkWord(k){const n={id:'n'+(++uid),type:'word',wid:k,parent:null,children:[]};S.nodes[n.id]=n;return n}
+function mkEmpty(){const n={id:'n'+(++uid),type:'empty',parent:null,children:[],ord:0};S.nodes[n.id]=n;return n}
+function mkNode(cat){const n={id:'n'+(++uid),type:'node',cat,parent:null,children:[],ord:0};S.nodes[n.id]=n;return n}
+function yieldIdx(id){const n=S.nodes[id];if(n.type==='word')return[S.words[n.wid].idx];return n.children.flatMap(yieldIdx)}
+function key(id){const y=yieldIdx(id);return y.length?Math.min(...y):(S.nodes[id].ord??0)}
+function sortKids(n){n.children.sort((a,b)=>key(a)-key(b))}
+function resortUp(pid){let a=pid;while(a){sortKids(S.nodes[a]);a=S.nodes[a].parent}}
+function attach(id,pid,ord){const n=S.nodes[id];if(ord!==undefined)n.ord=ord;n.parent=pid;S.nodes[pid].children.push(id);resortUp(pid)}
+function detach(id){const n=S.nodes[id];if(n.parent){const p=S.nodes[n.parent];p.children=p.children.filter(c=>c!==id);n.parent=null;resortUp(p.id)}else S.roots=S.roots.filter(r=>r!==id)}
+function setRoot(id,x,y){const n=S.nodes[id];n.parent=null;n.x=Math.max(4,x);n.y=Math.max(4,y);S.roots.push(id)}
+function delTree(id){const n=S.nodes[id];[...n.children].forEach(delTree);delete S.nodes[id]}
+function opts(id){const n=S.nodes[id];if(n.type==='empty')return['NP','V'];if(n.type==='word')return S.words[n.wid].cats;if(n.cat==='X_Conj')return coordCands(n).map(coordOut);return[n.cat]}
+function isUsed(k){return Object.values(S.nodes).some(n=>n.type==='word'&&n.wid===k)}
+function depth(id){const n=S.nodes[id];if(n.type!=='node'||isLex(n.cat))return 0;return 1+Math.max(0,...n.children.map(depth))}
+function subtree(id){const n=S.nodes[id];return[id,...n.children.flatMap(subtree)]}
+function words(id){return yieldIdx(id).map(i=>S.words[i].text).join(' ')}
+
+/* ---------- grammar matching ---------- */
+function align(els,kids,partial){
+  const E=els.length,C=kids.length,memo=new Map();
+  function f(i,j){
+    const k0=i*1000+j;if(memo.has(k0))return memo.get(k0);
+    let res=null;
+    if(i===E)res=j===C?[]:null;
+    else{
+      const el=els[i],min=partial?0:el.min,maxK=Math.min(el.max,C-j);
+      for(let k=maxK;k>=min&&!res;k--){
+        const picks=[];let ok=true;
+        for(let t=0;t<k;t++){const c=kids[j+t][0]==='*'?el.alts[0]:kids[j+t].find(x=>el.alts.includes(x));if(!c){ok=false;break}picks.push(c)}
+        if(!ok)continue;
+        const rest=f(i+1,j+k);if(rest)res=[{el:i,from:j,picks},...rest];
+      }
+    }
+    memo.set(k0,res);return res;
+  }
+  return f(0,0);
+}
+function evalNode(n,anyFrame){
+  if(isLex(n.cat)){const c=n.children[0];if(!c)return{status:'partial'};return{status:opts(c).includes(n.cat)?'complete':'invalid'}}
+  let rules=n.cat==='X_Conj'?COORD_HEADS.map(coordRule):(RULES[n.cat]||[]);const kids=n.children.map(opts);
+  if(hasComps(rules)){const hf=anyFrame?FKEYS:(headFrames(n)||FKEYS);rules=rules.flatMap(r=>expandRule(r,hf))}
+  for(const r of rules){const a=align(r.els,kids,false);if(a)return{status:'complete',rule:r,al:a}}
+  for(const r of rules){const a=align(r.els,kids,true);if(a)return{status:'partial',rule:r,al:a}}
+  return{status:'invalid',rule:rules[0],al:null};
+}
+function kidCats(n,ev){const m={};n.children.forEach(c=>m[c]=opts(c)[0]);if(ev&&ev.al)ev.al.forEach(s=>s.picks.forEach((cat,t)=>m[n.children[s.from+t]]=cat));if(isLex(n.cat))n.children.forEach(c=>m[c]=n.cat);return m}
+function missing(ev){if(!ev.al)return[];return ev.al.filter(s=>!s.picks.length&&ev.rule.els[s.el].min>0).map(s=>ev.rule.els[s.el].alts.join('/'))}
+/* ---------- built-in conditions (licensing that rule notation can't express) ---------- */
+const PREDET=new Set(['all','both','half','such']);
+const wordOf=id=>{const n=S.nodes[id];return n&&n.type==='word'?S.words[n.wid].text.toLowerCase():null};
+function catKids(n){const kc=kidCats(n,evalNode(n));return n.children.map(c=>({id:c,cat:kc[c]}))}
+function cpFrontOrC(cp){if(!cp||cp.cat!=='CP')return false;return catKids(cp).some(k=>['NP','PP','AdvP','AdjP','C'].includes(k.cat)||(k.cat==='CP'&&k.id!==undefined))}
+function treeProblem(rootId){
+  for(const id of subtree(rootId)){
+    const n=S.nodes[id];if(n.type!=='node'||isLex(n.cat))continue;
+    const kids=catKids(n),par=n.parent?S.nodes[n.parent]:null;
+    for(const k of kids){
+      if(S.nodes[k.id].type!=='empty')continue;
+      if(n.cat==='TP'&&k.cat==='NP'){
+        const t=kids.find(x=>x.cat==='T');
+        if(t&&wordOf(t.id)!=='to'&&par&&par.cat==='CP'&&!cpFrontOrC(par))
+          return'∅ can only be an understood subject: in a to-clause, an -ing or -ed clause, a command, or right after a fronted wh-word or relative word.';
+      }else if(n.cat==='VP'&&k.cat==='V'){
+        if(par&&par.cat==='TP'){
+          if(catKids(par).some(x=>x.cat==='T'))return'The verb can only be left as ∅ when it has moved up into C, as in "Is he ∅ happy?". This clause still has its own T.';
+          const cp=par.parent?S.nodes[par.parent]:null;
+          if(cp&&cp.cat==='CP'&&!catKids(cp).some(x=>x.cat==='T'))return'The verb can only be left as ∅ when an auxiliary or "be" sits in C above it, as in "Is he ∅ happy?".';
+        }
+      }else return'∅ only stands for an understood subject, or for a verb that moved up into C. An object can simply be left out.';
+    }
+    if(n.cat==='NP'){const ds=kids.filter(k=>k.cat==='D'||k.cat==='DP');if(ds.length>=2&&!PREDET.has(wordOf(ds[0].id)))return'Only all, both, half or such can come before another determiner.'}
+    if(n.cat==='TP'){const subj=kids[0];
+      if(subj&&subj.cat==='CP'){const cp=S.nodes[subj.id],ck=catKids(cp);const tp=ck.find(x=>x.cat==='TP');
+        const ok=ck.some(x=>x.cat==='C')||(tp&&catKids(S.nodes[tp.id])[0]&&S.nodes[catKids(S.nodes[tp.id])[0].id].type==='empty');
+        if(!ok)return'A clause used as a subject needs a complementizer ("that he lied …") or an understood ∅ subject ("∅ swimming is fun").'}}
+  }
+  return null;
+}
+function rootOf(id){while(S.nodes[id].parent)id=S.nodes[id].parent;return id}
+function deepComplete(id){const n=S.nodes[id];if(n.type!=='node')return true;return evalNode(n).status==='complete'&&n.children.every(deepComplete)}
+function orderOk(n){let last=-1;for(const c of n.children){const y=yieldIdx(c);if(!y.length)continue;const mn=Math.min(...y),mx=Math.max(...y);if(mn<=last)return false;last=mx}return true}
+function fullYield(id){const y=yieldIdx(id);return y.length>0&&y.every((v,i)=>v===y[0]+i)}
+
+/* auto-wrap: a bare word dropped into a slot for its phrase gets that phrase built around it */
+function wrapOk(did,cid,ord,W){
+  const w=mkNode(W);attach(did,w.id);
+  const ok=evalNode(w).status==='complete'&&tryDirect(w.id,cid,ord).ok;
+  detach(did);delete S.nodes[w.id];return ok;
+}
+function tryAttach(did,cid,ord){
+  const direct=tryDirect(did,cid,ord),c=S.nodes[cid],d=S.nodes[did];
+  if(!c||c.type!=='node'||isLex(c.cat)||!d||d.type!=='word')return direct;
+  let dcat=null;
+  if(direct.ok){const o=d.ord;attach(did,cid,ord);dcat=kidCats(c,evalNode(c))[did];detach(did);d.ord=o}
+  if(direct.ok&&dcat&&dcat===headOf(c.cat))return direct;
+  for(const x of S.words[d.wid].cats){
+    if(direct.ok&&dcat===x)return direct;
+    const W=RULES[x+'P']?x+'P':null;
+    if(W&&wrapOk(did,cid,ord,W))return{ok:true,wrap:W};
+  }
+  return direct;
+}
+function dropEmptyAuto(pid){const p=S.nodes[pid];if(p&&p.auto&&!p.children.length){detach(pid);delete S.nodes[pid]}}
+function tryDirect(did,cid,ord){
+  const c=S.nodes[cid],d=S.nodes[did];
+  if(!c||c.type!=='node')return{ok:false};
+  if(isLex(c.cat)){
+    if(c.children.length)return{ok:false,reason:`That ${c.cat} already holds a word.`};
+    if(d.type!=='word')return{ok:false,reason:`A ${c.cat} box holds a single word, not a ${d.cat}.`};
+    const w=S.words[d.wid];
+    if(!w.cats.includes(c.cat))return{ok:false,reason:`“${w.text}” can't be ${c.cat}. It can be ${w.cats.join(' or ')}.`};
+    return{ok:true};
+  }
+  const oldOrd=d.ord;attach(did,cid,ord);
+  let ok=evalNode(c).status!=='invalid',reason='';
+  if(!ok)reason=explain(c,d);
+  else{let a=cid;while(a){const an=S.nodes[a];if(!orderOk(an)){ok=false;reason='That would put words out of sentence order.';break}
+    if(a!==cid&&evalNode(an).status==='invalid'){ok=false;reason=`That would make ${dispCat(c)} something the ${dispCat(an)} above it can't hold.`;break}a=an.parent}
+    if(ok){const pr=treeProblem(rootOf(cid));if(pr){ok=false;reason=pr}}}
+  detach(did);d.ord=oldOrd;
+  return{ok,reason};
+}
+function explain(c,d){
+  if(d.type==='empty')return'∅ only stands for an understood subject (a TP\'s subject slot) or a verb that moved up into C (a VP\'s verb slot).';
+  const cr=RULES[c.cat]||[],hf=headFrames(c);
+  if(hasComps(cr)&&hf&&evalNode(c,true).status!=='invalid'){
+    const v=c.children.find(x=>verbFrames(x)),vt=words(v)||'This verb';
+    const can=hf.map(f=>`${FRAMES[f].name.toLowerCase()} (${FRAMES[f].hint.split(':')[0]})`).join(' or ');
+    return`“${vt}” is ${can}. Tap the word in the inventory to change what it takes.`}
+  const cats=opts(d.id),alts=new Set(cr.flatMap(r=>expandRule(r,FKEYS)).flatMap(r=>r.els.flatMap(e=>e.alts)));
+  const fit=cats.filter(x=>alts.has(x));
+  if(fit.length)return`${dispCat(c)} has no open ${fit[0]} slot in that position.`;
+  const wrap=cats.map(x=>x+'P').find(x=>alts.has(x));
+  const label=d.type==='word'?`“${S.words[d.wid].text}” (${cats.join('/')})`:cats[0];
+  return`${dispCat(c)} has no slot for ${label}.`+(wrap?` Wrap it in ${wrap} first.`:'');
+}
+function candOrds(cid){const ks=S.nodes[cid].children.map(key);if(!ks.length)return[0];const o=[ks[0]-.5];for(let i=0;i<ks.length-1;i++)o.push((ks[i]+ks[i+1])/2);o.push(ks[ks.length-1]+.5);return o}
+
+/* ---------- rendering ---------- */
+function chipBg(cats,k){const col=c=>c==='V'&&k!=null?FRAMECOL[wordFrames(k)[0]]:COLORS[c];if(cats.length===1)return col(cats[0]);const step=100/cats.length;return`linear-gradient(120deg,${cats.map((c,i)=>`${col(c)} ${i*step}% ${(i+1)*step}%`).join(',')})`}
+function slotPill(el){const lab=el.alts.map(a=>a==='Semi'?';':shown(a)).join('/')+(el.max===Infinity?'+':'');const a0=el.alts[0],tc=isLex(a0)?COLORS[a0]:(headOf(a0)?COLORS[headOf(a0)]:null);const st=[isLex(a0)&&el.min?`--c:${COLORS[a0]}`:'',tc?`--tc:${tc}`:''].filter(Boolean).join(';');return`<span class="slot${el.min?' req':' opt'}"${st?` style="${st}"`:''}>${esc(lab)}</span>`}
+const sel=id=>S.sel===id?' selected':'';
+function frameTitle(id){const n=S.nodes[id],f=FPICK.get(id)||wordFrames(n.wid)[0];return`${FRAMES[f].name}: ${FRAMES[f].hint}`}
+const delBtn=id=>S.sel===id?`<button class="del" type="button" data-del="${id}" aria-label="Delete">×</button>`:'';
+const hcol=n=>{const h=headOf(rawCat(n));return h?COLORS[h]:null};
+const WHITE='var(--cls-white)';
+const onWhite=cats=>cats.some(c=>COLORS[c]===WHITE)?' on-white':'';
+function par(n){return n.parent?` data-parent="${n.parent}"`:''}
+
+function rBox(id,pick){
+  const n=S.nodes[id];
+  if(n.type==='empty')return`<span class="word nullchip${sel(id)}" data-id="${id}" data-drag="${id}"${par(n)}>${pick&&pick!=='*'?`<small>${pick}</small>`:''}∅${delBtn(id)}</span>`;
+  if(n.type==='word'){
+    const w=S.words[n.wid],bg=pick?catColor(pick,id):chipBg(w.cats,n.wid);
+    return`<span class="word${sel(id)}${onWhite(pick?[pick]:w.cats)}" data-id="${id}" data-drag="${id}"${par(n)} style="background:${bg}">${pick?`<small>${pick}</small>`:''}${esc(w.text)}${!pick&&w.cats.length>1?`<small>${w.cats.join('·')}</small>`:''}${delBtn(id)}</span>`;
+  }
+  modes[id]='box';
+  if(isLex(n.cat)){
+    const c=n.children[0],ev=evalNode(n);
+    return`<span class="lbox${sel(id)}" data-id="${id}" data-drop data-status="${ev.status}"${par(n)} style="--c:${COLORS[n.cat]}"><span class="ltag" data-drag="${id}">${n.cat}${delBtn(id)}</span>${c?rBox(c,n.cat):`<span class="slot req">word</span>`}</span>`;
+  }
+  const ev=evalNode(n);noteFrames(n,ev);let inner='';
+  if(ev.al){for(const s of ev.al){const el=ev.rule.els[s.el];if(s.picks.length)s.picks.forEach((cat,t)=>inner+=rBox(n.children[s.from+t],cat));else inner+=slotPill(el)}}
+  else inner=n.children.map(c=>rBox(c)).join('');
+  const miss=missing(ev),st=ev.status==='complete'?'':miss.length?'needs '+miss.join(', '):'';
+  return`<div class="pbox" data-id="${id}" data-drop data-status="${ev.status}"${par(n)}><div class="phead"><span class="ptag" data-drag="${id}">${esc(dispCat(n))}</span><span class="pstate">${esc(st)}</span></div><div class="slots">${inner}</div></div>`;
+}
+function rTree(id,pick){
+  const n=S.nodes[id];
+  if(n.type==='empty'){const cat=pick&&pick!=='*'?pick:'?';
+    return`<div class="tnode leaf empty${sel(id)}" data-id="${id}"${par(n)}><span class="tlabel">${esc(cat)}</span><span class="tword null" data-drag="${id}">∅${delBtn(id)}</span></div>`}
+  if(n.type==='word'){
+    const w=S.words[n.wid],cat=pick||w.cats[0];
+    return`<div class="tnode leaf${sel(id)}" data-id="${id}"${par(n)}><span class="tlabel">${cat}</span><span class="tword" data-drag="${id}" style="--c:${catColor(cat,id)}"${cat==='V'?` title="${esc(frameTitle(id))}"`:''}>${esc(w.text)}${delBtn(id)}</span></div>`;
+  }
+  const m=prevMode[id]==='box'?' morph':'';modes[id]='tree';
+  if(isLex(n.cat)){
+    const c=n.children[0],ev=evalNode(n);
+    const body=c?`<span class="tword${sel(c)}" data-drag="${c}" style="--c:${catColor(n.cat,c)}">${esc(S.words[S.nodes[c].wid].text)}${delBtn(c)}</span>`:`<span class="slot req" style="--c:${COLORS[n.cat]}">word</span>`;
+    return`<div class="tnode leaf${m}${sel(id)}" data-id="${id}" data-drop data-status="${ev.status}"${par(n)}><span class="tlabel" data-drag="${id}">${n.cat}${delBtn(id)}</span>${body}</div>`;
+  }
+  const ev=evalNode(n);noteFrames(n,ev);let kids='';
+  let hasOpt=false;
+  if(ev.al){for(const s of ev.al){const el=ev.rule.els[s.el];if(s.picks.length)s.picks.forEach((cat,t)=>kids+=rTree(n.children[s.from+t],cat));else if(el.min)kids+=`<div class="ghost">${slotPill(el)}</div>`;else{hasOpt=true;if(n.showOpt)kids+=`<div class="ghost opt">${slotPill(el)}</div>`}}}
+  else kids=n.children.map(c=>rTree(c)).join('');
+  const optBtn=hasOpt?`<button class="optbtn" type="button" data-opt="${id}" title="${n.showOpt?'Hide optional slots':'Show optional slots'}">${n.showOpt?'− optional':'+ optional'}</button>`:'';
+  return`<div class="tnode${m}${sel(id)}" data-id="${id}" data-drop data-status="${ev.status}"${par(n)}><span class="tlabel${hcol(n)?' headed':''}" data-drag="${id}"${hcol(n)?` style="--hc:${hcol(n)}"`:''}>${esc(dispCat(n))}${delBtn(id)}${optBtn}</span>${kids?`<div class="tkids">${kids}</div>`:''}</div>`;
+}
+function rRoot(id,done){
+  const n=S.nodes[id],tree=n.type==='node'&&!isLex(n.cat);
+  const html=tree?`<div class="troot"><svg class="lines" aria-hidden="true"></svg>${rTree(id)}</div>`:rBox(id);
+  return`<div class="rootwrap${done.includes(id)?' solved':''}" style="left:${n.x}px;top:${n.y}px">${html}</div>`;
+}
+
+let lineRefs=[];
+function drawLines(){
+  lineRefs=[];const keys=new Set();
+  canvas.querySelectorAll('.troot').forEach(root=>{
+    const svg=root.querySelector('svg.lines');svg.innerHTML='';
+    root.querySelectorAll('.tnode:not(.leaf)').forEach(node=>{
+      const lab=node.querySelector(':scope>.tlabel');
+      node.querySelectorAll(':scope>.tkids>.tnode, :scope>.tkids>.ghost').forEach((kid,i)=>{
+        const tgt=kid.classList.contains('ghost')?kid:kid.querySelector(':scope>.tlabel');
+        const k=node.dataset.id+'>'+(kid.dataset.id||'g'+i);keys.add(k);
+        const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+        ln.setAttribute('pathLength','1');
+        if(!prevLines.has(k)&&!reduceMotion)ln.classList.add('grow');
+        if(kid.classList.contains('ghost'))ln.style.strokeDasharray='4 4',ln.style.opacity=kid.classList.contains('opt')?'.28':'.55',ln.removeAttribute('pathLength'),ln.classList.remove('grow');
+        svg.appendChild(ln);lineRefs.push({ln,a:lab,b:tgt,root});
+      });
+    });
+  });
+  prevLines=keys;updateLines();
+}
+function updateLines(){
+  for(const r of lineRefs){
+    const rr=r.root.getBoundingClientRect(),a=r.a.getBoundingClientRect(),b=r.b.getBoundingClientRect();
+    r.ln.setAttribute('x1',a.left+a.width/2-rr.left);r.ln.setAttribute('y1',a.bottom-rr.top+2);
+    r.ln.setAttribute('x2',b.left+b.width/2-rr.left);r.ln.setAttribute('y2',b.top-rr.top-2);
+  }
+}
+
+function renderCanvas(){
+  FPICK=new Map();
+  const before={};canvas.querySelectorAll('[data-id]').forEach(el=>before[el.dataset.id]=el.getBoundingClientRect());
+  if(flipFrom&&!before[flipFrom.id])before[flipFrom.id]=flipFrom.rect;flipFrom=null;
+  modes={};
+  const done=completeRoots();
+  canvas.innerHTML=S.roots.map(r=>rRoot(r,done)).join('')+(S.roots.length?'':`<div class="hint-empty">${S.words.length?'Drag a word or a container from the inventory onto the bench.':'Add some words in the inventory, then drag words and containers onto the bench.'}</div>`);
+  prevMode=modes;
+  // size bench
+  let mx=0,my=0;canvas.querySelectorAll('.rootwrap').forEach(w=>{mx=Math.max(mx,w.offsetLeft+w.offsetWidth);my=Math.max(my,w.offsetTop+w.offsetHeight)});
+  canvas.style.width=(mx+260)+'px';canvas.style.height=(my+220)+'px';
+  // FLIP
+  if(!reduceMotion){
+    const vis=new Map(),moved=[];
+    canvas.querySelectorAll('[data-id]').forEach(el=>{
+      const anc=el.parentElement.closest('[data-id]');const pv=anc&&vis.has(anc)?vis.get(anc):[0,0];
+      const b=before[el.dataset.id];
+      if(!b){vis.set(el,pv);return}
+      const a=el.getBoundingClientRect(),abs=[b.left-a.left,b.top-a.top];vis.set(el,abs);
+      const dx=abs[0]-pv[0],dy=abs[1]-pv[1];
+      if(Math.abs(dx)>.5||Math.abs(dy)>.5){el.style.transition='none';el.style.transform=`translate(${dx}px,${dy}px)`;moved.push(el)}
+    });
+    if(moved.length){canvas.offsetWidth;moved.forEach(el=>{el.style.transition='transform 380ms cubic-bezier(.2,.8,.2,1)';el.style.transform=''})}
+    drawLines();
+    const t0=performance.now();(function tick(t){updateLines();if(t-t0<420)requestAnimationFrame(tick)})(t0);
+  }else drawLines();
+  return done;
+}
+
+function completeRoots(){return S.roots.filter(r=>{const n=S.nodes[r];return n.type==='node'&&!isLex(n.cat)&&depth(r)>=2&&fullYield(r)&&deepComplete(r)&&!treeProblem(r)})}
+
+function resolvedCats(){
+  const m={};
+  (function walk(ids){ids.forEach(id=>{const n=S.nodes[id];if(n.type!=='node')return;const kc=kidCats(n,evalNode(n));n.children.forEach(c=>{if(S.nodes[c].type==='word')m[S.nodes[c].wid]=kc[c]});walk(n.children)})})(S.roots);
+  return m;
+}
+function bracket(id,pick){
+  const n=S.nodes[id];
+  if(n.type==='empty')return pick&&pick!=='*'?`[${pick} ∅]`:'∅';
+  if(n.type==='word'){const t=S.words[n.wid].text;return pick?`[${pick} ${t}]`:t}
+  if(isLex(n.cat)){const c=n.children[0];return`[${n.cat} ${c?S.words[S.nodes[c].wid].text:'_'}]`}
+  const kc=kidCats(n,evalNode(n));return`[${dispCat(n)} ${n.children.map(c=>bracket(c,kc[c])).join(' ')}]`;
+}
+
+function pivotsFor(root){
+  const out=[],nodes=subtree(root).filter(id=>id!==root&&S.nodes[id].type==='node'&&!isLex(S.nodes[id].cat));
+  for(const p of nodes){
+    const X=S.nodes[p].parent,inside=new Set(subtree(p)),alts=[];
+    for(const Y of subtree(root)){
+      const y=S.nodes[Y];if(Y===X||inside.has(Y)||y.type!=='node'||isLex(y.cat))continue;
+      detach(p);attach(p,Y);
+      if(fullYield(root)&&deepComplete(root)&&!treeProblem(root))alts.push(Y);
+      detach(p);attach(p,X);
+    }
+    if(alts.length)out.push({p,X,alts});
+  }
+  return out;
+}
+
+function renderAll(){
+  renderChrome();
+  const done=renderCanvas();
+  commit();
+  const used=new Set(Object.values(S.nodes).filter(n=>n.type==='word').map(n=>n.wid));
+  const live=S.words.filter(w=>!w.gone);
+  $('#wordInv').innerHTML=live.length?live.map(w=>`<span class="word inv-word${used.has(w.idx)?' used':''}${S.edit===w.idx?' editing':''}${onWhite(w.cats)}" data-inv="word" data-k="${w.idx}" style="background:${chipBg(w.cats,w.idx)}" title="${w.cats.join(' / ')}${w.cats.includes('V')?' · verb: '+wordFrames(w.idx).map(f=>FRAMES[f].name.toLowerCase()).join(', '):''}">${esc(w.text)}${w.cats.length>1?`<small>${w.cats.join('·')}</small>`:''}</span>`).join(''):`<span class="inv-empty">No words yet.</span>`;
+  $('#wordCount').textContent=live.length?`${used.size}/${live.length} on bench`:'';
+  const ew=S.words[S.edit],we=$('#wedit');
+  if(ew&&!ew.gone){we.hidden=false;we.innerHTML=`<div class="wedit-head"><b>${esc(ew.text)}</b><span>can be</span><button class="btn small" type="button" data-wclose>Done</button></div><div class="wedit-pos">${LEX.map(c=>`<button type="button" class="posbtn${onWhite([c])}" data-pos="${c}" aria-pressed="${ew.cats.includes(c)}" style="--c:${COLORS[c]}">${c}</button>`).join('')}</div>${ew.cats.includes('V')?`<div class="wedit-head"><span>as a verb it takes</span></div><div class="wedit-pos">${FKEYS.map(f=>`<button type="button" class="posbtn" data-frame="${f}" aria-pressed="${wordFrames(ew.idx).includes(f)}" title="${esc(FRAMES[f].hint)}" style="--c:${FRAMECOL[f]}">${FRAMES[f].name}</button>`).join('')}</div>`:''}<button class="btn small danger" type="button" data-wremove>${used.has(ew.idx)?'Remove word (also from the bench)':'Remove word'}</button>`}
+  else we.hidden=true;
+  const pieces=S.roots.filter(r=>S.nodes[r].type==='node');
+  $('#status').innerHTML=pieces.length?`<div class="bracket"><span class="k">Labelled bracketing</span>${pieces.map(r=>`<code>${esc(bracket(r))}</code>`).join('')}</div>`:'';
+  const rd=$('#readings');
+  const pv=done.flatMap(pivotsFor);
+  if(pv.length){
+    rd.hidden=false;
+    rd.innerHTML=`<h3>Other attachments</h3><p>These phrases can clip onto a different node without breaking the grammar or the word order. Pivot one to watch the branches shift.</p>`+
+    pv.map(o=>{const p=S.nodes[o.p],x=S.nodes[o.X];
+      return`<div class="reading"><p>“${esc(words(o.p))}” (${dispCat(p)}) attaches to <b>${dispCat(x)}</b> “${esc(words(o.X))}”.</p><div class="opts">${o.alts.map(Y=>{const y=S.nodes[Y];return`<button class="pivot" data-p="${o.p}" data-y="${Y}">Pivot onto <b>${dispCat(y)}</b> “${esc(words(Y))}”</button>`}).join('')}</div></div>`}).join('');
+  }else rd.hidden=true;
+}
+
+/* ---------- chrome ---------- */
+function ruleChips(line){
+  const R1=parseRules(line),r=Object.values(R1)[0][0];
+  return`<span>${esc(shown(r.lhs))}</span><span class="arr">→</span>${r.toks.map((t,i)=>{const a=r.els[i].alts[0];if(r.els[i].comps)return`<span class="compsc" title="Whatever the verb's frame asks for">${esc(t)}</span>`;return isLex(a)?`<span class="lexc" style="--c:${COLORS[a]}">${esc(t)}</span>`:`<span>${esc(toDisplay(t))}</span>`}).join('')}`;
+}
+function ruleFormHTML(){
+  return`<form class="ruleform" id="ruleForm"><input id="ruleInput" aria-label="Rule" placeholder="QP -> (Deg) {Q/Q_Conj} (PP+)" value="${esc(ruleForm.text||'')}" autocomplete="off" spellcheck="false">
+  <div class="rf-row"><button class="btn small" type="submit">${ruleForm.index<0?'Add rule':'Save'}</button><button class="btn small" type="button" data-rulecancel>Cancel</button><span class="rf-help">(X) optional · X+ repeatable · {A/B} either</span></div>
+  ${ruleForm.err?`<p class="formerr">${esc(ruleForm.err)}</p>`:''}</form>`;
+}
+function renderChrome(){
+  let lg=LEX.map(c=>legendEdit
+    ?`<span class="inv-lex legend editable" data-editclass="${c}" role="button" tabindex="0" title="Edit ${esc(LEXNAMES[c])}" style="--c:${COLORS[c]}">${esc(LEXNAMES[c])}<small>${esc(c)}</small><button class="lx" type="button" data-delclass="${c}" aria-label="Remove ${esc(LEXNAMES[c])}">×</button></span>`
+    :`<span class="inv-lex legend" style="--c:${COLORS[c]}">${esc(LEXNAMES[c])}</span>`).join('');
+  if(legendEdit&&!classForm)lg+=`<button class="btn small" type="button" data-addclass>+ Word class</button>`;
+  if(legendEdit)lg+=`<button class="btn small legend-toggle" type="button" data-legendedit aria-pressed="true">Done</button>`;
+  if(classForm){const f=classForm;
+    lg+=`<form class="classform" id="classForm"><input id="cfTag" aria-label="Abbreviation" placeholder="Abbreviation, e.g. Pron" value="${esc(f.tag||'')}" ${f.mode==='edit'?'disabled':''} autocomplete="off"><input id="cfName" aria-label="Full name" placeholder="Full name, e.g. Pronoun" value="${esc(f.name||'')}" autocomplete="off"><input id="cfColor" type="color" aria-label="Color" value="${f.color}"><button class="btn small" type="submit">${f.mode==='edit'?'Save':'Add class'}</button><button class="btn small" type="button" data-cfcancel>Cancel</button>${f.err?`<p class="formerr">${esc(f.err)}</p>`:''}</form>`}
+  $('#lexInv').innerHTML=lg;
+  $('#phrInv').innerHTML=[...PHRASES,...COORD].map(c=>{const h=headOf(c);return`<span class="inv-phr${h?' headed':''}" data-inv="class" data-cat="${c}"${h?` style="--c:${COLORS[h]}"`:''}>${esc(shown(c))}</span>`}).join('')+`<span class="inv-phr nullpill" data-inv="empty">∅</span>`;
+  $('#ruleList').innerHTML=G.rules.map((line,i)=>ruleForm&&ruleForm.index===i?ruleFormHTML()
+      :`<div class="rule editable" data-editrule="${i}" title="Click to edit">${ruleChips(line)}<button class="rx" type="button" data-delrule="${i}" aria-label="Delete rule">×</button></div>`).join('')
+    +`<div class="rule builtin conds"><em class="rule-note"><b>Built-in conditions.</b> ∅ can be an understood subject only in a to-clause, an -ing/-ed clause, a command, or after a fronted wh- or relative word; it can stand for a verb only when an auxiliary or "be" has moved into C (Is he ∅ happy?). Only all, both, half or such can precede another determiner. A clause used as a subject needs a complementizer or a ∅ subject.</em></div>`
+    +`<div class="rule builtin frames"><span class="compsc">Comps</span><span class="arr">→</span><em class="rule-note">Built in. Filled by the verb's frame. ${FKEYS.map(f=>`<span class="lexc" style="--c:${FRAMECOL[f]}">${FRAMES[f].name}</span> ${FRAMES[f].pat?esc(toDisplay(FRAMES[f].pat)):'nothing'}`).join(' · ')}. Tap a verb in the inventory to set its frames.</em></div>`
+    +`<div class="rule builtin"><span>X_Conj</span><span class="arr">→</span><span>X+</span><span class="lexc" style="--c:${COLORS.Conj||'#888'}">Conj</span><span>X</span><em class="rule-note">Built in. X is any word class or phrase, the same throughout, so lists like red, white and blue work. Clauses and sentences can also be joined with ;</em></div>`
+
+    +(ruleForm&&ruleForm.index<0?ruleFormHTML():`<div class="rule-actions"><button class="btn small" type="button" data-addrule>+ New rule</button><button class="btn small" type="button" data-legendedit aria-pressed="${legendEdit}">${legendEdit?'Done editing classes':'Edit word classes'}</button><button class="linkbtn" type="button" data-resetgrammar>Reset to default grammar</button></div>`);
+  const ri=$('#ruleInput');if(ri&&ruleForm.focus){ri.focus();ri.setSelectionRange(ri.value.length,ri.value.length);ruleForm.focus=false}
+  const ct=$('#cfName');if(ct&&classForm.focus){(classForm.mode==='add'?$('#cfTag'):ct).focus();classForm.focus=false}
+}
+function removeNode(id){
+  const n=S.nodes[id];if(!n)return;
+  let pos={x:40,y:40};const el=canvas.querySelector(`[data-id="${id}"]`)||canvas.querySelector(`[data-del="${id}"]`);
+  if(el){const r=el.getBoundingClientRect(),cr=canvas.getBoundingClientRect();pos={x:r.left-cr.left,y:r.top-cr.top}}
+  const oldParent=n.parent;detach(id);let k=0;
+  if(n.type==='node')[...n.children].forEach(c=>{const cn=S.nodes[c];cn.parent=null;if(cn.type==='word')delTree(c);else{setRoot(c,pos.x+k*28,pos.y+36+k*64);k++}});
+  delete S.nodes[id];if(oldParent)dropEmptyAuto(oldParent);S.sel=null;renderAll();
+  toast(n.type==='word'?`Returned “${S.words[n.wid].text}” to the inventory.`:`Deleted ${dispCat(n)}.`+(k?' Its phrases stay on the bench.':''));
+}
+/* ---------- history ---------- */
+const snap=()=>JSON.stringify({words:S.words,nodes:S.nodes,roots:S.roots,g:G});
+function loadSnap(str){const o=JSON.parse(str);S={words:o.words||[],nodes:o.nodes||{},roots:o.roots||[],sel:null,edit:null};
+  G=o.g&&o.g.pos&&o.g.rules?o.g:cloneG(DEFAULT_GRAMMAR);applyGrammar();
+  uid=Math.max(uid,0,...Object.keys(S.nodes).map(k=>+k.slice(1)||0))}
+let undoStack=[],redoStack=[],lastSnap=null;
+function commit(){
+  if(drag)return;
+  const now=snap();
+  if(lastSnap!==null&&now!==lastSnap){undoStack.push(lastSnap);if(undoStack.length>150)undoStack.shift();redoStack=[]}
+  lastSnap=now;
+  $('#undoBtn').disabled=!undoStack.length;$('#redoBtn').disabled=!redoStack.length;
+  $('#clearBtn').disabled=!S.words.length&&!S.roots.length;
+}
+function undo(){if(!undoStack.length)return;redoStack.push(lastSnap);const prev=undoStack.pop();loadSnap(prev);lastSnap=prev;renderAll()}
+function redo(){if(!redoStack.length)return;undoStack.push(lastSnap);const nx=redoStack.pop();loadSnap(nx);lastSnap=nx;renderAll()}
+function clearAll(){S={words:[],nodes:{},roots:[],sel:null,edit:null};renderAll();toast('Cleared. Undo brings it back.')}
+
+/* ---------- SVG export: redraws the bench as real vector shapes and text ---------- */
+function svgEsc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function isClear(c){return !c||c==='transparent'||/rgba\([^)]*,\s*0\)$/.test(c)}
+function buildSVG(){
+  const roots=[...canvas.querySelectorAll('.rootwrap')];if(!roots.length)return null;
+  const cr=canvas.getBoundingClientRect();let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+  roots.forEach(r=>{const b=r.getBoundingClientRect();x0=Math.min(x0,b.left);y0=Math.min(y0,b.top);x1=Math.max(x1,b.right);y1=Math.max(y1,b.bottom)});
+  const pad=24,ox=x0-pad,oy=y0-pad,W=Math.ceil(x1-x0+pad*2),H=Math.ceil(y1-y0+pad*2);
+  const rootCS=getComputedStyle(document.body),benchBg=getComputedStyle(bench).backgroundColor;
+  const out=[];let gid=0;const defs=[];
+  const X=v=>(v-ox).toFixed(1),Y=v=>(v-oy).toFixed(1);
+  const skip=el=>el.closest('.del,.optbtn');
+  // shapes, in document order so later elements sit on top
+  roots.forEach(root=>{
+    root.querySelectorAll('svg.lines line').forEach(l=>{
+      const svg=l.ownerSVGElement.getBoundingClientRect();const cs=getComputedStyle(l);
+      out.push(`<line x1="${X(svg.left+ +l.getAttribute('x1'))}" y1="${Y(svg.top+ +l.getAttribute('y1'))}" x2="${X(svg.left+ +l.getAttribute('x2'))}" y2="${Y(svg.top+ +l.getAttribute('y2'))}" stroke="${cs.stroke}" stroke-width="${cs.strokeWidth}" stroke-linecap="round"${l.style.strokeDasharray?` stroke-dasharray="${l.style.strokeDasharray}"`:''}${l.style.opacity?` opacity="${l.style.opacity}"`:''}/>`);
+    });
+    [root,...root.querySelectorAll('*')].forEach(el=>{
+      if(el instanceof SVGElement||skip(el))return;
+      const cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden')return;
+      const b=el.getBoundingClientRect();if(!b.width||!b.height)return;
+      const op=cs.opacity!=='1'?` opacity="${cs.opacity}"`:'';const rx=Math.min(parseFloat(cs.borderTopLeftRadius)||0,b.height/2);
+      const bgImg=cs.backgroundImage;let fill=null;
+      if(bgImg&&bgImg.startsWith('linear-gradient')){
+        const stops=[...bgImg.matchAll(/(rgba?\([^)]*\))\s+([\d.]+)%(?:\s+([\d.]+)%)?/g)];
+        if(stops.length){const id='g'+(gid++);const parts=[];stops.forEach(m=>{parts.push(`<stop offset="${m[2]}%" stop-color="${m[1]}"/>`);if(m[3])parts.push(`<stop offset="${m[3]}%" stop-color="${m[1]}"/>`)});
+          defs.push(`<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0.55">${parts.join('')}</linearGradient>`);fill=`url(#${id})`}
+      }
+      if(!fill&&!isClear(cs.backgroundColor)&&cs.backgroundColor!==benchBg)fill=cs.backgroundColor;
+      const bw=parseFloat(cs.borderTopWidth)||0,bbw=parseFloat(cs.borderBottomWidth)||0;
+      const allBorder=bw>0&&cs.borderTopStyle!=='none'&&parseFloat(cs.borderLeftWidth)>0;
+      if(fill||allBorder){
+        const dash=cs.borderTopStyle==='dashed'?` stroke-dasharray="${(bw*3).toFixed(1)} ${(bw*2).toFixed(1)}"`:'';
+        const stroke=allBorder&&!isClear(cs.borderTopColor)?` stroke="${cs.borderTopColor}" stroke-width="${bw}"${dash}`:'';
+        out.push(`<rect x="${X(b.left+bw/2)}" y="${Y(b.top+bw/2)}" width="${(b.width-bw).toFixed(1)}" height="${(b.height-bw).toFixed(1)}" rx="${Math.max(0,rx-bw/2).toFixed(1)}" fill="${fill||'none'}"${stroke}${op}/>`);
+      }else if(bbw>0&&cs.borderBottomStyle!=='none'&&!isClear(cs.borderBottomColor)){
+        out.push(`<rect x="${X(b.left)}" y="${Y(b.bottom-bbw)}" width="${b.width.toFixed(1)}" height="${bbw}" fill="${cs.borderBottomColor}"${op}/>`);
+      }
+    });
+    // text, measured from the page so it lands exactly where it is drawn
+    const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let tn;
+    while((tn=tw.nextNode())){
+      const txt=tn.nodeValue;if(!txt.trim())continue;const el=tn.parentElement;if(!el||skip(el))continue;
+      const cs=getComputedStyle(el);if(cs.display==='none')continue;
+      const rg=document.createRange();rg.selectNodeContents(tn);const b=rg.getBoundingClientRect();if(!b.width)continue;
+      let o=1;for(let a=el;a&&a!==canvas;a=a.parentElement)o*=parseFloat(getComputedStyle(a).opacity)||1;
+      out.push(`<text x="${X(b.left)}" y="${Y(b.top+b.height/2)}" dominant-baseline="central" font-family="${svgEsc(cs.fontFamily)}" font-size="${cs.fontSize}" font-weight="${cs.fontWeight}" fill="${cs.color}"${o<1?` opacity="${o.toFixed(2)}"`:''} xml:space="preserve">${svgEsc(txt.trim())}</text>`);
+    }
+  });
+  return`<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">\n<title>Syntax tree</title>\n<defs>${defs.join('')}</defs>\n<rect width="100%" height="100%" fill="${benchBg}"/>\n${out.join('\n')}\n</svg>\n`;
+}
+async function exportSVG(){
+  if(S.sel){S.sel=null;renderAll();await new Promise(r=>setTimeout(r,450))}
+  const svg=buildSVG();if(!svg){toast('Put something on the bench first, then export it.');return}
+  const filename='syntax-tree.svg';
+  let dl=null;
+  if(window.claude&&window.claude.use){try{dl=await window.claude.use('downloads')}catch(e){dl=null}}
+  if(dl){
+    try{await dl.save({filename,data:svg});toast('Saved syntax-tree.svg.')}
+    catch(err){const c=err&&err.code;if(c==='declined')return;if(c==='rate_limited'){toast('A save prompt is already open.');return}toast('Saving files isn\'t available in this view.')}
+    return;
+  }
+  if(window.claude){toast('Saving files isn\'t available in this view.');return}
+  const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
+/* ---------- tap-to-add placement ---------- */
+function nextRowY(){let y=0;canvas.querySelectorAll('.rootwrap').forEach(w=>{y=Math.max(y,w.offsetTop+w.offsetHeight)});return y?y+18:16}
+function reveal(y){
+  bench.scrollTo({top:Math.max(0,y-40),behavior:reduceMotion?'auto':'smooth'});
+  const r=bench.getBoundingClientRect();
+  if(r.top<0||r.top>innerHeight*.6)bench.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});
+}
+function placeWord(k){const y=nextRowY();setRoot(mkWord(k).id,16,y);renderAll();reveal(y)}
+function placeContainer(h){
+  const n=h.dataset.inv==='empty'?mkEmpty():mkNode(h.dataset.cat);
+  const y=nextRowY();setRoot(n.id,16,y);renderAll();reveal(y);
+}
+function addWords(text){
+  /* possessive 's (or a bare ' after plural s) splits off as its own determiner: the man + 's + hat */
+  const CONTR=new Set(["it's","he's","she's","that's","what's","there's","here's","who's","where's","let's","how's","when's","why's"]);
+  const toks=text.replace(/[.?!,:"“”()]/g,' ').replace(/;/g,' ; ').split(/\s+/).filter(Boolean)
+    .flatMap(t=>{const l=t.toLowerCase().replace(/’/g,"'");if(CONTR.has(l))return[t];
+      let m=t.match(/^(.+?)(['’]s)$/);if(m)return[m[1],m[2]];m=t.match(/^(.+s)(['’])$/);if(m)return[m[1],m[2]];return[t]});
+  const isPossMark=t=>/^['’]s?$/.test(t);
+  const wordToks=toks.filter(t=>t!==';'&&!isPossMark(t));
+  const tagged=tagWords(wordToks).map(cs=>{cs=cs.filter(c=>LEX.includes(c));return cs.length?cs:[LEX.includes('N')?'N':LEX[0]]});
+  let wi=0;const cats=toks.map(t=>t===';'?['Semi']:isPossMark(t)?['D']:tagged[wi++]);
+  const y0=nextRowY(),limit=Math.max(280,bench.clientWidth-40);let x=16,y=y0;
+  toks.forEach((t,i)=>{
+    const w={text:t,idx:S.words.length,cats:cats[i]};S.words.push(w);
+    const wd=t.length*9.5+30+(w.cats.length>1?w.cats.length*14+12:0);
+    if(x>16&&x+wd>limit){x=16;y+=46}
+    setRoot(mkWord(w.idx).id,x,y);x+=wd+10;
+  });
+  renderAll();reveal(y0);
+}
+
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800)}
+
+/* word-class editor buttons act on release, so a swallowed click can't leave them dead */
+let editHandledAt=0;
+function wordEditAction(e){
+  const t=e.target.closest&&e.target.closest('#wedit [data-pos],#wedit [data-frame],#wedit [data-wclose],#wedit [data-wremove]');if(!t)return false;
+  if(e.type==='click'&&performance.now()-editHandledAt<600)return true;
+  if(e.type==='pointerup')editHandledAt=performance.now();
+  const w=S.words[S.edit];
+  if(t.dataset.pos!==undefined&&w){const c=t.dataset.pos;if(w.cats.includes(c)){if(w.cats.length>1)w.cats=w.cats.filter(x=>x!==c);else toast('A word needs at least one class.')}else w.cats.push(c);w.cats.sort((a,b)=>LEX.indexOf(a)-LEX.indexOf(b))}
+  else if(t.dataset.frame!==undefined&&w){const f=t.dataset.frame,cur=[...wordFrames(w.idx)];if(cur.includes(f)){if(cur.length>1)w.frames=cur.filter(x=>x!==f);else toast('A verb needs at least one frame.')}else w.frames=[...cur,f]}
+  else if(t.hasAttribute('data-wclose'))S.edit=null;
+  else if(t.hasAttribute('data-wremove')&&w){
+    Object.values(S.nodes).filter(n=>n.type==='word'&&n.wid===w.idx).forEach(n=>{const par=n.parent;detach(n.id);delete S.nodes[n.id];if(par)dropEmptyAuto(par)});
+    w.gone=true;S.edit=null;S.sel=null}
+  renderAll();return true;
+}
+document.addEventListener('pointerup',e=>{if(!drag&&!pending)wordEditAction(e)},true);
+document.addEventListener('click',e=>{
+  if(e.target.closest('#undoBtn')){undo();return}
+  if(e.target.closest('#redoBtn')){redo();return}
+  if(e.target.closest('#clearBtn')){clearAll();return}
+  if(e.target.closest('#exportBtn')){exportSVG();return}
+  if(e.target.closest('[data-legendedit]')){legendEdit=!legendEdit;if(!legendEdit)classForm=null;renderChrome();if(legendEdit){const lb=$('#lexInv');if(lb.getBoundingClientRect().top<0)lb.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'})}return}
+  if(e.target.closest('[data-addclass]')){const used=new Set(Object.values(COLORS));classForm={mode:'add',tag:'',name:'',color:NEW_COLORS.find(c=>!used.has(c))||'#666666',focus:true};renderChrome();return}
+  const dc=e.target.closest('[data-delclass]');if(dc){deleteClass(dc.dataset.delclass);return}
+  const ec=e.target.closest('[data-editclass]');if(ec){const p=G.pos.find(p=>p.tag===ec.dataset.editclass);classForm={mode:'edit',tag:p.tag,name:p.name,color:p.color.startsWith('#')?p.color:'#ffffff',focus:true};renderChrome();return}
+  if(e.target.closest('[data-cfcancel]')){classForm=null;renderChrome();return}
+  const dr=e.target.closest('[data-delrule]');if(dr){ruleForm=null;deleteRule(+dr.dataset.delrule);return}
+  if(e.target.closest('[data-addrule]')){ruleForm={index:-1,text:'',focus:true};renderChrome();return}
+  if(e.target.closest('[data-rulecancel]')){ruleForm=null;renderChrome();return}
+  if(e.target.closest('[data-resetgrammar]')){resetGrammar();return}
+  const er=e.target.closest('[data-editrule]');if(er){const i=+er.dataset.editrule;ruleForm={index:i,text:toDisplay(G.rules[i]),focus:true};renderChrome();return}
+  const d=e.target.closest('[data-del]');if(d){removeNode(d.dataset.del);return}
+  const ob=e.target.closest('[data-opt]');if(ob){const n=S.nodes[ob.dataset.opt];n.showOpt=!n.showOpt;renderAll();return}
+  if(wordEditAction(e))return;
+  const pv=e.target.closest('.pivot');
+  if(pv){const p=pv.dataset.p,y=pv.dataset.y;detach(p);attach(p,y);renderAll();toast(`Pivoted onto ${dispCat(S.nodes[y])}.`)}
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='ruleInput'&&ruleForm)ruleForm.text=e.target.value;
+  if(classForm){if(e.target.id==='cfTag')classForm.tag=e.target.value.trim();if(e.target.id==='cfName')classForm.name=e.target.value;if(e.target.id==='cfColor')classForm.color=e.target.value}
+});
+document.addEventListener('focusin',e=>{if(e.target.id==='addInput')loadNlp()});
+document.addEventListener('submit',e=>{
+  if(e.target.id==='ruleForm'){e.preventDefault();
+    const line=fromDisplay(($('#ruleInput').value||'').trim()),err=checkRule(line,ruleForm.index);
+    if(err){ruleForm.text=toDisplay(line);ruleForm.err=toDisplay(err);ruleForm.focus=true;renderChrome();return}
+    const n=normRule(line);if(ruleForm.index<0)G.rules.push(n);else G.rules[ruleForm.index]=n;
+    const isNew=!PHRASES.includes(lhsOf(n));ruleForm=null;applyGrammar();renderAll();
+    toast(isNew?`Added ${lhsOf(n)}. It's in your containers now.`:'Rule saved.');return}
+  if(e.target.id==='classForm'){e.preventDefault();const f=classForm;let err=null;
+    if(f.mode==='add'){
+      if(!ID.test(f.tag||''))err='Give it a short abbreviation using letters, like Pron.';
+      else if(isLex(f.tag)||PHRASES.includes(f.tag)||f.tag==='X_Conj'||/_Conj$/.test(f.tag))err=`${f.tag} is already in use.`;
+    }
+    if(!err&&!(f.name||'').trim())err='Give it a full name, like Pronoun.';
+    if(err){f.err=err;f.focus=true;renderChrome();return}
+    if(f.mode==='add')G.pos.push({tag:f.tag,name:f.name.trim(),color:f.color});
+    else{const p=G.pos.find(p=>p.tag===f.tag);p.name=f.name.trim();p.color=f.color}
+    classForm=null;applyGrammar();renderAll();return}
+  if(e.target.id==='addForm'){e.preventDefault();const i=$('#addInput'),v=i.value.trim();if(v){i.value='';loadNlp().then(()=>addWords(v))}}});
+
+/* ---------- drag & drop ---------- */
+let pending=null,drag=null;
+document.addEventListener('pointerdown',e=>{
+  if(e.button>0||e.target.closest('[data-del],[data-opt]'))return;
+  const h=e.target.closest('[data-drag],[data-inv]');
+  if(!h){if(S.sel&&!e.target.closest('#toast')){S.sel=null;renderAll()}return}
+  e.preventDefault();
+  const ae=document.activeElement;if(ae&&ae.matches&&ae.matches('input,textarea'))ae.blur();
+  pending={h,x:e.clientX,y:e.clientY,noDrag:h.classList.contains('used')};
+  try{if(!pending.noDrag)h.setPointerCapture(e.pointerId)}catch(_){}
+});
+document.addEventListener('pointermove',e=>{
+  if(pending&&!pending.noDrag&&!drag&&Math.hypot(e.clientX-pending.x,e.clientY-pending.y)>4)startDrag(pending);
+  if(drag)moveDrag(e);
+});
+document.addEventListener('pointerup',e=>{if(drag)endDrag(e);else if(pending&&(pending.h.dataset.inv==='class'||pending.h.dataset.inv==='empty'))placeContainer(pending.h);else if(pending&&pending.h.dataset.inv==='word'){const k=+pending.h.dataset.k;
+    if(!isUsed(k))placeWord(k);
+    else if(!S.words[k].cats.some(c=>c in PUNCT)){S.edit=S.edit===k?null:k;renderAll()}}else if(pending&&pending.h.dataset.drag&&S.nodes[pending.h.dataset.drag]){S.sel=pending.h.dataset.drag;renderAll()}pending=null});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&e.target.id==='ruleInput'){ruleForm=null;renderChrome();return}
+  if(e.key==='Escape'&&e.target.closest&&e.target.closest('#classForm')){classForm=null;renderChrome();return}
+  if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.editclass){e.target.click();return}
+  if(e.target.closest&&e.target.closest('input,textarea'))return;
+  const mod=e.ctrlKey||e.metaKey,k=e.key.toLowerCase();
+  if(mod&&k==='z'){e.preventDefault();e.shiftKey?redo():undo();return}
+  if(mod&&k==='y'){e.preventDefault();redo();return}
+  if((e.key==='Delete'||e.key==='Backspace')&&S.sel&&S.nodes[S.sel]){e.preventDefault();removeNode(S.sel)}
+  else if(e.key==='Escape'&&S.sel){S.sel=null;renderAll()}
+});
+document.addEventListener('pointercancel',()=>{if(drag){restore();finish()}pending=null});
+
+function ghostHTML(id){
+  const n=S.nodes[id];
+  if(n.type==='empty')return`<span class="word nullchip">∅</span>`;
+  if(n.type==='word'){const w=S.words[n.wid];return`<span class="word" style="background:${chipBg(w.cats)}">${esc(w.text)}</span>`}
+  const ws=words(id),c=isLex(n.cat)?` style="--c:${COLORS[n.cat]}"`:'';
+  return`<span class="gchip"${c}><b>${dispCat(n)}</b>${ws?esc(ws):''}</span>`;
+}
+/* the ghost is a faithful copy of what was picked up, held at the grab point */
+function ghostLines(root){
+  const svg=root.querySelector(':scope>svg.lines');if(!svg)return;svg.innerHTML='';const rr=root.getBoundingClientRect();
+  root.querySelectorAll('.tnode:not(.leaf)').forEach(node=>{
+    const a=node.querySelector(':scope>.tlabel').getBoundingClientRect();
+    node.querySelectorAll(':scope>.tkids>.tnode, :scope>.tkids>.ghost').forEach(kid=>{
+      const t=(kid.classList.contains('ghost')?kid:kid.querySelector(':scope>.tlabel')).getBoundingClientRect();
+      const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln.setAttribute('x1',a.left+a.width/2-rr.left);ln.setAttribute('y1',a.bottom-rr.top+2);
+      ln.setAttribute('x2',t.left+t.width/2-rr.left);ln.setAttribute('y2',t.top-rr.top-2);
+      if(kid.classList.contains('ghost')){ln.style.strokeDasharray='4 4';ln.style.opacity=kid.classList.contains('opt')?'.28':'.55'}
+      svg.appendChild(ln);
+    });
+  });
+}
+function makeGhost(id,src,p){
+  const g=document.createElement('div');g.className='ghost-drag';
+  const inner=document.createElement('div');inner.className='ghost-inner';g.appendChild(inner);
+  let grab,isTree=false;
+  if(src){
+    const r=src.getBoundingClientRect(),c=src.cloneNode(true);
+    c.querySelectorAll('.del,.optbtn').forEach(x=>x.remove());
+    [c,...c.querySelectorAll('*')].forEach(x=>{['data-id','data-drop','data-drag','data-parent','data-inv'].forEach(a=>x.removeAttribute(a));x.classList&&x.classList.remove('selected','can-drop','drop-ok','drop-no','morph','used','editing')});
+    c.style.transform='';c.style.transition='';
+    isTree=src.classList.contains('tnode');
+    if(isTree){const t=document.createElement('div');t.className='troot ghost-tree';t.innerHTML='<svg class="lines" aria-hidden="true"></svg>';t.appendChild(c);inner.appendChild(t)}
+    else inner.appendChild(c);
+    grab={x:p.x-r.left+(isTree?16:0),y:p.y-r.top+(isTree?12:0)};
+  }else{
+    isTree=true;inner.innerHTML=`<div class="troot ghost-tree"><svg class="lines" aria-hidden="true"></svg>${rTree(id)}</div>`;
+    inner.querySelectorAll('[data-id],[data-drop],[data-drag],[data-parent]').forEach(x=>['data-id','data-drop','data-drag','data-parent'].forEach(a=>x.removeAttribute(a)));
+  }
+  document.body.appendChild(g);
+  if(isTree)ghostLines(g.querySelector('.troot'));
+  if(!grab){const gr=g.getBoundingClientRect(),lr=g.querySelector('.tlabel').getBoundingClientRect();grab={x:lr.left-gr.left+lr.width/2,y:lr.top-gr.top+lr.height/2}}
+  inner.style.transformOrigin=`${grab.x}px ${grab.y}px`;
+  /* hotspot: the centre of the dragged piece's own top label (or chip), so drops follow what you're carrying, not where you grabbed it */
+  const gr=g.getBoundingClientRect(),head=g.querySelector('.tlabel')||inner.firstElementChild,hr=head.getBoundingClientRect();
+  const hot={x:hr.left-gr.left+hr.width/2,y:hr.top-gr.top+hr.height/2};
+  return{g,grab,hot};
+}
+let flipFrom=null;
+function startDrag(p){
+  const h=p.h;let id,isNew=false,origin=null;
+  if(h.dataset.inv==='word'){id=mkWord(+h.dataset.k).id;isNew=true}
+  else if(h.dataset.inv==='class'){id=mkNode(h.dataset.cat).id;isNew=true}
+  else if(h.dataset.inv==='empty'){id=mkEmpty().id;isNew=true}
+  let src=null;
+  if(h.dataset.inv==='word')src=h;
+  else if(!isNew){id=h.dataset.drag;const n=S.nodes[id];if(!n)return;
+    src=canvas.querySelector(`[data-id="${id}"]`)||h;
+    origin={parent:n.parent,ord:n.ord,x:n.x,y:n.y}}
+  const {g,grab,hot}=makeGhost(id,src,p);
+  if(!isNew)detach(id);
+  drag={id,isNew,origin,ghost:g,grab,hot,target:null,hl:null};
+  g.style.transform=`translate(${p.x-grab.x}px,${p.y-grab.y}px)`;
+  document.body.classList.add('dragging');
+  if(!isNew)renderAll();
+  // mark every container that would accept this piece
+  for(const nid of S.roots.flatMap(subtree)){
+    const n=S.nodes[nid];if(n.type!=='node')continue;
+    if(candOrds(nid).some(o=>tryAttach(id,nid,o).ok)){const el=canvas.querySelector(`[data-id="${nid}"]`);el&&el.classList.add('can-drop')}
+  }
+}
+function ordAt(cid,x){
+  const kids=S.nodes[cid].children;if(!kids.length)return 0;
+  const cs=kids.map(k=>{const el=canvas.querySelector(`[data-id="${k}"]`);const r=el?el.getBoundingClientRect():{left:0,width:0};return{k:key(k),cx:r.left+r.width/2}});
+  const p=cs.filter(c=>c.cx<x).length;
+  if(p===0)return cs[0].k-.5;if(p===cs.length)return cs[cs.length-1].k+.5;return(cs[p-1].k+cs[p].k)/2;
+}
+function moveDrag(e){
+  drag.ghost.style.transform=`translate(${e.clientX-drag.grab.x}px,${e.clientY-drag.grab.y}px)`;
+  if(drag.hl){drag.hl.classList.remove('drop-ok','drop-no');drag.hl=null}
+  const br=bench.getBoundingClientRect(),m=36;
+  if(e.clientX>br.left&&e.clientX<br.right&&e.clientY>br.top&&e.clientY<br.bottom){
+    if(e.clientX>br.right-m)bench.scrollLeft+=10;else if(e.clientX<br.left+m)bench.scrollLeft-=10;
+    if(e.clientY>br.bottom-m)bench.scrollTop+=10;else if(e.clientY<br.top+m)bench.scrollTop-=10;
+  }
+  const hx=e.clientX-drag.grab.x+drag.hot.x,hy=e.clientY-drag.grab.y+drag.hot.y;
+  const el=document.elementFromPoint(hx,hy);drag.target=null;if(!el)return;
+  const cont=el.closest('#canvas [data-drop]'),dock=el.closest('[data-dock]');
+  if(cont){
+    const cid=cont.dataset.id,ord=ordAt(cid,hx),res=tryAttach(drag.id,cid,ord);
+    cont.classList.add(res.ok?'drop-ok':'drop-no');drag.hl=cont;drag.target={kind:'node',cid,ord,res};
+  }else if(dock){dock.classList.add('drop-ok');drag.hl=dock;drag.target={kind:'inv'}}
+  else if(el.closest('#bench')){const cr=canvas.getBoundingClientRect();drag.target={kind:'canvas',x:e.clientX-drag.grab.x-cr.left,y:e.clientY-drag.grab.y-cr.top}}
+}
+function restore(){
+  const {id,isNew,origin}=drag;
+  if(isNew||!S.nodes[id]){if(S.nodes[id])delTree(id);return}
+  if(origin.parent&&S.nodes[origin.parent])attach(id,origin.parent,origin.ord);else setRoot(id,origin.x??40,origin.y??40);
+}
+function endDrag(){
+  const t=drag.target,id=drag.id;
+  if(!t)restore();
+  let moved=!!t;
+  if(t&&t.kind==='node'){
+    if(t.res.ok){if(t.res.wrap){const w=mkNode(t.res.wrap);w.auto=true;attach(id,w.id);attach(w.id,t.cid,t.ord)}else attach(id,t.cid,t.ord)}
+    else{if(t.res.reason)toast(t.res.reason);restore();moved=false}
+  }
+  else if(t&&t.kind==='canvas')setRoot(id,t.x,t.y);
+  else if(t&&t.kind==='inv')delTree(id);
+  if(moved&&drag.origin&&drag.origin.parent)dropEmptyAuto(drag.origin.parent);
+  finish();
+}
+function finish(){
+  if(drag.hl)drag.hl.classList.remove('drop-ok','drop-no');
+  const gt=drag.ghost.querySelector('.ghost-tree>.tnode')||drag.ghost.querySelector('.ghost-inner>*');
+  if(gt&&S.nodes[drag.id])flipFrom={id:drag.id,rect:gt.getBoundingClientRect()};
+  drag.ghost.remove();document.body.classList.remove('dragging');drag=null;renderAll();
+}
+
+try{localStorage.removeItem('syntax-tree-sandbox-v1')}catch(e){} /* clear state saved by earlier versions */
+renderAll();
+</script>
+
+</body></html>
