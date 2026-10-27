@@ -698,8 +698,10 @@ function fullYield(id){const y=yieldIdx(id);return y.length>0&&y.every((v,i)=>v=
 
 /* auto-wrap: a bare word dropped into a slot for its phrase gets that phrase built around it */
 function wrapOk(did,cid,ord,W){
+  /* the word heads the new phrase, so anything still missing is a complement that can be added later:
+     a verb on its own may still be transitive, ditransitive or linking until its objects arrive */
   const w=mkNode(W);attach(did,w.id);
-  const ok=evalNode(w).status==='complete'&&tryDirect(w.id,cid,ord).ok;
+  const ok=evalNode(w).status!=='invalid'&&tryDirect(w.id,cid,ord).ok;
   detach(did);delete S.nodes[w.id];return ok;
 }
 function tryAttach(did,cid,ord){
