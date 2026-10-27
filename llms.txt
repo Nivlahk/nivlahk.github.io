@@ -1,0 +1,15 @@
+# Calvin W. Hancock
+
+> Portfolio of Calvin W. Hancock (GitHub: Nivlahk), an Information Systems student at Brigham Young University in Provo, Utah. He builds browser-native tools at the intersection of programming languages and linguistics. Every project runs in the browser with no install or signup.
+
+## Projects
+
+- [SPOKEN](https://calvinhancock.com/SPOKEN/): Voice-driven code dictation. You speak a program in Vertex, an English-like programming language, and run it in a built-in console. Includes a voice guide and a reserved-keyword reference.
+- [NEFS](https://calvinhancock.com/NEFS/): Featural script designer for the International Phonetic Alphabet. Assign a radical to each phonetic feature (place, manner, voicing, height, backness, rounding), draw special symbols, and export SVG, PNG, or a .ttf font. Starts from Tessera, Hancock's featural script for the IPA.
+- [Syntax Tree Sandbox](https://calvinhancock.com/SYNTAX/): Drag-and-drop constituency parser. Drop words into phrase-structure containers (NP, VP, PP) and watch nested boxes become a syntax tree. Open-ended, with SVG export.
+
+## About
+
+- [Home and contact](https://calvinhancock.com/): background, skills, and links
+- [Resume (PDF)](https://calvinhancock.com/resume.pdf)
+- [GitHub](https://github.com/Nivlahk)

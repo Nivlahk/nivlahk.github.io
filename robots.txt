@@ -1,0 +1,5 @@
+# calvinhancock.com: everything is public. AI and search crawlers are welcome.
+User-agent: *
+Allow: /
+
+Sitemap: https://calvinhancock.com/sitemap.xml

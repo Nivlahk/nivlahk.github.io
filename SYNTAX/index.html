@@ -1,5 +1,95 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Syntax Tree Sandbox</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Syntax Tree Sandbox: Drag-and-Drop Constituency Parser | Calvin W. Hancock</title>
+  <!-- SEO + social -->
+  <meta name="description" content="Build syntax trees by hand in your browser. Drag words into phrase-structure containers and watch nested boxes become constituency trees. Open-ended, with SVG export.">
+  <link rel="canonical" href="https://calvinhancock.com/SYNTAX/">
+  <meta name="author" content="Calvin W. Hancock">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#160b06">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Calvin W. Hancock">
+  <meta property="og:title" content="Syntax Tree Sandbox: Drag-and-Drop Constituency Parser | Calvin W. Hancock">
+  <meta property="og:description" content="Build syntax trees by hand in your browser. Drag words into phrase-structure containers and watch nested boxes become constituency trees. Open-ended, with SVG export.">
+  <meta property="og:url" content="https://calvinhancock.com/SYNTAX/">
+  <meta property="og:image" content="https://calvinhancock.com/assets/og-syntax.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Syntax Tree Sandbox: Drag-and-Drop Constituency Parser | Calvin W. Hancock">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Syntax Tree Sandbox: Drag-and-Drop Constituency Parser | Calvin W. Hancock">
+  <meta name="twitter:description" content="Build syntax trees by hand in your browser. Drag words into phrase-structure containers and watch nested boxes become constituency trees. Open-ended, with SVG export.">
+  <meta name="twitter:image" content="https://calvinhancock.com/assets/og-syntax.png">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": [
+        "WebApplication"
+      ],
+      "@id": "https://calvinhancock.com/SYNTAX/#app",
+      "name": "Syntax Tree Sandbox",
+      "alternateName": "SYNTAX",
+      "url": "https://calvinhancock.com/SYNTAX/",
+      "description": "Build syntax trees by hand in your browser. Drag words into phrase-structure containers and watch nested boxes become constituency trees. Open-ended, with SVG export.",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Any (web browser)",
+      "browserRequirements": "Requires JavaScript.",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Drag-and-drop word inventory with word classes",
+        "Phrase-structure containers that become tree nodes",
+        "Nested-box and branching-tree views",
+        "Undo, redo, and phrase-structure rules panel",
+        "SVG export of finished trees"
+      ],
+      "keywords": "syntax tree generator, constituency parser, phrase structure tree, X-bar syntax, linguistics teaching tool",
+      "image": "https://calvinhancock.com/assets/og-syntax.png",
+      "inLanguage": "en",
+      "author": {
+        "@id": "https://calvinhancock.com/#person"
+      },
+      "creator": {
+        "@id": "https://calvinhancock.com/#person"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Calvin W. Hancock",
+          "item": "https://calvinhancock.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Syntax Tree Sandbox",
+          "item": "https://calvinhancock.com/SYNTAX/"
+        }
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://calvinhancock.com/#person",
+      "name": "Calvin W. Hancock",
+      "url": "https://calvinhancock.com/",
+      "sameAs": [
+        "https://github.com/Nivlahk",
+        "https://linkedin.com/in/calvin-hancock-a1a711342"
+      ]
+    }
+  ]
+}
+  </script>
+</head><body>
+<noscript><p style="max-width:40rem;margin:2rem auto;padding:0 1rem;font:16px/1.5 system-ui,sans-serif">Syntax Tree Sandbox is a browser-native tool for building constituency (phrase-structure) syntax trees by hand. You drag color-coded words into phrase containers such as NP, VP and PP, and the nested boxes morph into a branching tree. It is open-ended, with no preset puzzles, so you can compare different analyses of the same sentence, and export trees as SVG. JavaScript is required. Made by <a href="https://calvinhancock.com/">Calvin W. Hancock</a>.</p></noscript>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
