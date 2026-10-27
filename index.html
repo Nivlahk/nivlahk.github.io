@@ -380,6 +380,9 @@
     .outcome strong { color: var(--orange); }
 
     .project-link { color: var(--accent); font-size: .9rem; text-underline-offset: .22em; }
+    .project-links { display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; margin: 0; }
+    .project-link.quiet { color: var(--muted); }
+    .project-link.quiet:hover, .project-link.quiet:focus-visible { color: var(--accent); }
 
     .about-grid { display: grid; grid-template-columns: .85fr 1.15fr; gap: 3rem; }
     .about-grid p { color: var(--muted); font-size: 1.05rem; }
@@ -487,7 +490,7 @@
             <span>JavaScript</span><span>Web Speech API</span><span>Monaco</span>
           </div>
           <p class="outcome"><strong>Try it:</strong> speak a short program and run it, no install needed.</p>
-          <a class="project-link" href="./SPOKEN/">Open SPOKEN →</a>
+          <p class="project-links"><a class="project-link" href="./SPOKEN/">Open SPOKEN →</a> <a class="project-link quiet" href="./SPOKEN/about/">How it works</a></p>
         </article>
 
         <article class="project">
@@ -498,7 +501,7 @@
             <span>JavaScript</span><span>SVG</span><span>Font generation</span>
           </div>
           <p class="outcome"><strong>Try it:</strong> export your script as SVG, PNG, or an installable .ttf font.</p>
-          <a class="project-link" href="./NEFS/">Open NEFS →</a>
+          <p class="project-links"><a class="project-link" href="./NEFS/">Open NEFS →</a> <a class="project-link quiet" href="./NEFS/about/">How it works</a></p>
         </article>
 
         <article class="project">
@@ -509,7 +512,7 @@
             <span>JavaScript</span><span>HTML/CSS</span><span>Linguistics</span>
           </div>
           <p class="outcome"><strong>Try it:</strong> build two trees for an ambiguous sentence and compare them.</p>
-          <a class="project-link" href="./SYNTAX/">Open SYNTAX →</a>
+          <p class="project-links"><a class="project-link" href="./SYNTAX/">Open SYNTAX →</a> <a class="project-link quiet" href="./SYNTAX/about/">How it works</a></p>
         </article>
       </div>
     </section>

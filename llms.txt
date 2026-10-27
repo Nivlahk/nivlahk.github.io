@@ -8,6 +8,12 @@
 - [NEFS](https://calvinhancock.com/NEFS/): Featural script designer for the International Phonetic Alphabet. Assign a radical to each phonetic feature (place, manner, voicing, height, backness, rounding), draw special symbols, and export SVG, PNG, or a .ttf font. Starts from Tessera, Hancock's featural script for the IPA.
 - [Syntax Tree Sandbox](https://calvinhancock.com/SYNTAX/): Drag-and-drop constituency parser. Drop words into phrase-structure containers (NP, VP, PP) and watch nested boxes become a syntax tree. Open-ended, with SVG export.
 
+## How each project works
+
+- [SPOKEN: voice coding in the browser](https://calvinhancock.com/SPOKEN/about/): spoken commands for indentation, brackets and operators, speech-recognition corrections, and the Vertex language.
+- [NEFS: a featural script designer for the IPA](https://calvinhancock.com/NEFS/about/): the twelve feature slots, special symbols, and .ttf font export.
+- [Syntax Tree Sandbox: a drag-and-drop syntax tree generator](https://calvinhancock.com/SYNTAX/about/): containers, editable phrase-structure rules, verb transitivity, and ambiguous parses.
+
 ## About
 
 - [Home and contact](https://calvinhancock.com/): background, skills, and links

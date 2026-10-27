@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Syntax Tree Sandbox: Free Drag-and-Drop Syntax Tree Generator | Calvin W. Hancock</title>
+  <meta name="description" content="A free syntax tree generator you drive by hand. Drag words into phrase containers, watch them become constituency trees, edit the phrase-structure rules, and compare ambiguous parses.">
+  <link rel="canonical" href="https://calvinhancock.com/SYNTAX/about/">
+  <meta name="author" content="Calvin W. Hancock">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#160b06">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/about.css">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Calvin W. Hancock">
+  <meta property="og:title" content="Syntax Tree Sandbox: Free Drag-and-Drop Syntax Tree Generator | Calvin W. Hancock">
+  <meta property="og:description" content="A free syntax tree generator you drive by hand. Drag words into phrase containers, watch them become constituency trees, edit the phrase-structure rules, and compare ambiguous parses.">
+  <meta property="og:url" content="https://calvinhancock.com/SYNTAX/about/">
+  <meta property="og:image" content="https://calvinhancock.com/assets/og-syntax.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="article:author" content="https://calvinhancock.com/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Syntax Tree Sandbox: Free Drag-and-Drop Syntax Tree Generator | Calvin W. Hancock">
+  <meta name="twitter:description" content="A free syntax tree generator you drive by hand. Drag words into phrase containers, watch them become constituency trees, edit the phrase-structure rules, and compare ambiguous parses.">
+  <meta name="twitter:image" content="https://calvinhancock.com/assets/og-syntax.png">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://calvinhancock.com/SYNTAX/about/#article",
+      "headline": "Syntax Tree Sandbox: a drag-and-drop syntax tree generator",
+      "description": "A free syntax tree generator you drive by hand. Drag words into phrase containers, watch them become constituency trees, edit the phrase-structure rules, and compare ambiguous parses.",
+      "url": "https://calvinhancock.com/SYNTAX/about/",
+      "mainEntityOfPage": "https://calvinhancock.com/SYNTAX/about/",
+      "inLanguage": "en",
+      "image": "https://calvinhancock.com/assets/og-syntax.png",
+      "datePublished": "2026-10-27",
+      "dateModified": "2026-10-27",
+      "author": {
+        "@id": "https://calvinhancock.com/#person"
+      },
+      "publisher": {
+        "@id": "https://calvinhancock.com/#person"
+      },
+      "about": {
+        "@id": "https://calvinhancock.com/SYNTAX/#app"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://calvinhancock.com/SYNTAX/about/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I draw a syntax tree online?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Open Syntax Tree Sandbox, type your sentence into the word inventory, then drag phrase containers such as NP and VP onto the bench and drop words into them. The boxes become a tree, which you can export as SVG."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is constituency parsing?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Breaking a sentence into nested phrases, or constituents, such as noun phrases and verb phrases. The result is drawn as a phrase-structure tree."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can it show structural ambiguity?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Build two trees for the same sentence, for example attaching a prepositional phrase inside the NP in one and inside the VP in the other, and compare them on the bench."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I change the grammar?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The phrase-structure rules are editable, using (X) for optional, X+ for repeatable and {A/B} for either. You can also add your own categories."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is it free, and does it need an account?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It is free, runs in the browser, and needs no account."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I export a tree?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use Export SVG. SVG scales cleanly for slides, handouts and papers."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://calvinhancock.com/SYNTAX/#app",
+      "name": "Syntax Tree Sandbox",
+      "url": "https://calvinhancock.com/SYNTAX/",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Any (web browser)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@id": "https://calvinhancock.com/#person"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://calvinhancock.com/#person",
+      "name": "Calvin W. Hancock",
+      "url": "https://calvinhancock.com/",
+      "sameAs": [
+        "https://github.com/Nivlahk",
+        "https://linkedin.com/in/calvin-hancock-a1a711342"
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Calvin W. Hancock",
+          "item": "https://calvinhancock.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Syntax Tree Sandbox",
+          "item": "https://calvinhancock.com/SYNTAX/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "About",
+          "item": "https://calvinhancock.com/SYNTAX/about/"
+        }
+      ]
+    }
+  ]
+}
+  </script>
+</head>
+<body>
+  <div class="shell">
+    <nav class="topbar" aria-label="Breadcrumb">
+      <div class="crumbs">
+        <ol>
+          <li><a href="/">Calvin W. Hancock</a></li>
+          <li><a href="/SYNTAX/">Syntax Tree Sandbox</a></li>
+          <li><span aria-current="page">About</span></li>
+        </ol>
+      </div>
+      <a href="/#projects">All projects</a>
+    </nav>
+
+    <main>
+      <article>
+        <header class="intro">
+          <p class="eyebrow">Project 03 · SYNTAX</p>
+          <h1>Syntax Tree Sandbox: a drag-and-drop syntax tree generator</h1>
+          <p class="lede">Syntax Tree Sandbox is a syntax tree generator you build by hand. Drop words into phrase containers such as NP, VP and PP, and the nested boxes grow into a constituency tree. It checks your structure against phrase-structure rules you can edit, and it has no preset puzzles.</p>
+          <div class="actions">
+            <a class="button" href="/SYNTAX/">Open Syntax Tree Sandbox →</a>
+            <a class="button ghost" href="#faq">FAQ</a>
+          </div>
+        </header>
+
+        <section aria-labelledby="what-title">
+          <h2 id="what-title">What it does</h2>
+          <p>Most syntax tree tools take bracketed text such as <code>[S [NP …] [VP …]]</code> and draw it. Syntax Tree Sandbox works the other way: you build the structure directly, the way you would on a whiteboard, and the tree appears as you go.</p>
+          <ul>
+            <li><strong>Word inventory.</strong> Type a sentence and each word is tagged with a word class: noun, determiner, verb, adjective, adverb, preposition, tense, complementizer, or conjunction. Tap a word to change its class.</li>
+            <li><strong>Containers.</strong> Drag Clause (CP), Block (TP), VP, NP, PP, AdvP, AdjP, DP, coordination, or an empty node onto the bench, then drop words and other containers into them.</li>
+            <li><strong>Boxes become trees.</strong> Nested phrase boxes morph into a branching tree as the structure fills in.</li>
+            <li><strong>Rule checking.</strong> Each phrase is checked against the phrase-structure rules, so you can see at a glance which constituents are well-formed.</li>
+            <li><strong>Export.</strong> Undo and redo freely, and export the finished tree as SVG.</li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="example-title">
+          <h2 id="example-title">Example: one sentence, two trees</h2>
+          <p>"I saw the man with the telescope" is ambiguous. Did I use the telescope, or did the man have it? The sandbox lets you build both readings side by side, because the default grammar allows a prepositional phrase in either place.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Reading</th><th scope="col">Where the PP attaches</th><th scope="col">Structure</th></tr></thead>
+              <tbody>
+                <tr><td>I used the telescope</td><td>Inside the VP</td><td><code>[VP saw [NP the man] [PP with the telescope]]</code></td></tr>
+                <tr><td>The man had the telescope</td><td>Inside the NP</td><td><code>[VP saw [NP the man [PP with the telescope]]]</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Ambiguous words get more than one class, too. "Saw" can be a verb or a noun, and the sandbox offers both.</p>
+        </section>
+
+        <section aria-labelledby="rules-title">
+          <h2 id="rules-title">Editable phrase-structure rules</h2>
+          <p>The grammar is a list of rules you can read and change in the Phrase-structure rules panel. The notation is compact:</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Notation</th><th scope="col">Meaning</th></tr></thead>
+              <tbody>
+                <tr><td><code>(X)</code></td><td>X is optional</td></tr>
+                <tr><td><code>X+</code></td><td>X can repeat</td></tr>
+                <tr><td><code>{A/B}</code></td><td>Either A or B</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Two of the default rules:</p>
+          <pre><code>TP -&gt; {NP/CP} (AdvP+) (T) VP
+PP -&gt; (AdvP) {P/P_Conj} ({NP/CP})</code></pre>
+          <p>Coordination is built in: <code>X_Conj</code> joins two of the same category with a conjunction, so "the cat and the dog" is an NP made of two NPs. You can add your own categories, such as <code>QP -&gt; (Deg) Q</code>, and the sandbox checks each new rule for unknown categories and broken notation.</p>
+        </section>
+
+        <section aria-labelledby="verbs-title">
+          <h2 id="verbs-title">Verb transitivity</h2>
+          <p>Verbs are colored by how many complements they take, and the VP rule uses that frame to decide what may follow the verb:</p>
+          <ul>
+            <li><strong>Intransitive</strong> takes nothing after it: <em>sleep</em>, <em>arrive</em>.</li>
+            <li><strong>Transitive</strong> takes one object: <em>like</em>, <em>chase</em>.</li>
+            <li><strong>Ditransitive</strong> takes two complements: <em>give</em>, and <em>write</em> in "write her a letter".</li>
+            <li><strong>Linking</strong> connects to a description: <em>is happy</em>, <em>seems fine</em>.</li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="why-title">
+          <h2 id="why-title">Why an open-ended sandbox</h2>
+          <p>The sandbox is meant to work like a drawing tool, not a quiz. There are no target sentences and no score, so it suits students checking an analysis, teachers drawing trees for a lesson, and anyone comparing two theories of the same sentence.</p>
+          <p>It also feeds a larger project on this site: figuring out how programming could be expressed in natural language. Seeing exactly how English sentences nest is the starting point for designing code that reads like English, which is what <a href="/SPOKEN/about/">SPOKEN</a> does.</p>
+        </section>
+
+        <section id="faq" aria-labelledby="faq-title">
+          <h2 id="faq-title">Frequently asked questions</h2>
+          <dl class="faq">
+      <dt>How do I draw a syntax tree online?</dt>
+      <dd>Open Syntax Tree Sandbox, type your sentence into the word inventory, then drag phrase containers such as NP and VP onto the bench and drop words into them. The boxes become a tree, which you can export as SVG.</dd>
+      <dt>What is constituency parsing?</dt>
+      <dd>Breaking a sentence into nested phrases, or constituents, such as noun phrases and verb phrases. The result is drawn as a phrase-structure tree.</dd>
+      <dt>Can it show structural ambiguity?</dt>
+      <dd>Yes. Build two trees for the same sentence, for example attaching a prepositional phrase inside the NP in one and inside the VP in the other, and compare them on the bench.</dd>
+      <dt>Can I change the grammar?</dt>
+      <dd>Yes. The phrase-structure rules are editable, using (X) for optional, X+ for repeatable and {A/B} for either. You can also add your own categories.</dd>
+      <dt>Is it free, and does it need an account?</dt>
+      <dd>It is free, runs in the browser, and needs no account.</dd>
+      <dt>How do I export a tree?</dt>
+      <dd>Use Export SVG. SVG scales cleanly for slides, handouts and papers.</dd>
+          </dl>
+        </section>
+
+        <section aria-labelledby="more-title">
+          <h2 id="more-title">More from this site</h2>
+          <ul class="related">
+      <li><a href="/SPOKEN/about/"><strong>SPOKEN</strong><span>Voice coding in the browser with an English-like language</span></a></li>
+      <li><a href="/NEFS/about/"><strong>NEFS</strong><span>A featural script designer for the IPA, with .ttf font export</span></a></li>
+          </ul>
+        </section>
+      </article>
+    </main>
+
+    <footer class="site">
+      <p>Built by <a href="/" rel="author">Calvin W. Hancock</a>, an Information Systems student at Brigham Young University. <a href="https://github.com/Nivlahk" rel="me">GitHub</a> · <a href="https://linkedin.com/in/calvin-hancock-a1a711342" rel="me">LinkedIn</a></p>
+      <p>Last updated <time datetime="2026-10-27">October 27, 2026</time>.</p>
+    </footer>
+  </div>
+</body>
+</html>
