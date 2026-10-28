@@ -123,6 +123,31 @@
   h2{font-family:'Fraunces';font-weight:400;font-size:clamp(26px,4.4vw,38px);margin:0 0 6px;}
   h3{font-family:'Fraunces';font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:28px 0 10px;}
   .rule{height:1px;background:var(--line);margin:6px 0 22px;}
+  .lede{max-width:720px;margin:18px 0 0;font-size:18px;line-height:1.55;color:var(--dim);}
+  .lede b{color:var(--paper);font-weight:600;}
+  .startgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;align-items:start;}
+  @media(min-width:820px){.startgrid{grid-template-columns:minmax(0,400px) minmax(0,1fr);}}
+  #edPad.sketching .canvaswrap{border-color:var(--gold);box-shadow:0 0 0 1px color-mix(in srgb,var(--gold) 35%,transparent);}
+  #edPad.sketching #edGhostL,#edPad.sketching #edDefault{display:none;}
+  #edPad .canvaswrap{position:relative;}
+  #edPad.sketching.empty .canvaswrap::after{content:'Draw here';position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;font-family:'Fraunces';font-size:22px;letter-spacing:.06em;color:var(--faint);opacity:.75;}
+  .assign h4{font-family:'Fraunces';font-weight:500;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 8px;}
+  .assignhint{margin:0 0 14px;font-size:15px;color:var(--dim);}
+  .pickgrp{display:flex;flex-wrap:wrap;align-items:baseline;gap:5px 6px;margin:0 0 9px;}
+  .pickgrp .gl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);min-width:84px;}
+  .pick{background:var(--ink2);border:1px solid var(--line);color:var(--paper);border-radius:14px;padding:3px 10px;font-size:14px;cursor:pointer;font-family:inherit;}
+  .pick:hover:not([disabled]),.pick:focus-visible{border-color:var(--gold);color:var(--gold);}
+  .pick[disabled]{opacity:.38;cursor:default;}
+  .picksub{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:14px 0 8px;}
+  #assignDone .done{margin-top:16px;padding:12px 14px;border:1px solid var(--gold);border-radius:12px;background:color-mix(in srgb,var(--gold) 8%,transparent);}
+  #assignDone .done p{margin:0 0 8px;font-size:15px;}
+  #assignDone .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  table.ipa th .hdr{all:unset;cursor:pointer;display:block;padding:2px 4px;border-radius:6px;border:1px dashed transparent;}
+  table.ipa th .hdr:hover,table.ipa th .hdr:focus-visible{color:var(--gold);border-color:var(--gold);}
+  body.has-sketch table.ipa th .hdr{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent);}
+  .snd.just{animation:just 1.8s ease-out;}
+  @keyframes just{0%,35%{background:color-mix(in srgb,var(--gold) 28%,transparent);border-color:var(--gold);}100%{}}
+  @media (prefers-reduced-motion: reduce){.snd.just{animation:none;outline:1px solid var(--gold);}}
   p{max-width:680px;color:var(--dim);margin:0 0 12px;}
   p b{color:var(--paper);font-weight:500;}
 
@@ -257,19 +282,44 @@
 <div class="wrap">
 
 <h1 class="pagetitle">Build your own script</h1>
+<p class="lede">This is <b>Tessera</b>, a script for every sound in the IPA. Each glyph is built from strokes, one for each of its features, so sounds that share a feature share a stroke. Draw a new stroke for a feature and every sound with that feature changes with it.</p>
 
-<section id="slots" style="padding-top:30px">
-  <span class="secnum">I &middot; The slots</span>
-  <h2>Choose a radical for every slot</h2>
+<section id="start" style="padding-top:30px">
+  <span class="secnum">Start here</span>
+  <h2>Draw a stroke, then pick what it means</h2>
   <div class="rule"></div>
-  <p>Click a value to draw its radical, or start from one of Tessera's strokes. An <b>empty</b> radical is the default for its slot, the way plosive and voiced are blank in Tessera.</p>
+  <div class="startgrid">
+    <div id="sketchHost"></div>
+    <div class="assign">
+      <h4>Use it for</h4>
+      <p class="assignhint" id="assignHint"></p>
+      <div id="assignPicks"></div>
+      <div id="assignDone" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section id="sounds">
+  <span class="secnum">I &middot; Your script</span>
+  <h2>Every sound in your script</h2>
+  <div class="rule"></div>
+  <div id="clash"></div>
+  <div id="inv"></div>
+  <p style="margin-top:12px;font-size:14px;color:var(--faint)">Click a column or row heading to change that feature's stroke for every sound under it. Click a single sound to give it its own special symbol; a red dot marks sounds that already have one.</p>
+</section>
+
+<section id="slots">
+  <span class="secnum">II &middot; The strokes</span>
+  <h2>Every feature and its stroke</h2>
+  <div class="rule"></div>
+  <p>Every stroke in your script, grouped by feature. Click one to redraw it, or start from one of Tessera's strokes. An <b>empty</b> radical is the default for its slot, the way plosive and voiced are blank in Tessera.</p>
   <div id="slotC"></div>
   <div id="slotV"></div>
   <div id="slotM"></div>
 </section>
 
 <section id="specials">
-  <span class="secnum">II &middot; Special symbols</span>
+  <span class="secnum">III &middot; Special symbols</span>
   <h2>Give a sound its own symbol</h2>
   <div class="rule"></div>
   <p>A special symbol replaces the built-up glyph for one sound. It can also be a sequence, like <b>tʃ</b> or <b>aɪ</b>, which then draws as one square wherever it's typed.</p>
@@ -281,14 +331,6 @@
   <div class="inv" id="spList"></div>
 </section>
 
-<section id="sounds">
-  <span class="secnum">III &middot; The result</span>
-  <h2>Every sound in your script</h2>
-  <div class="rule"></div>
-  <div id="clash"></div>
-  <div id="inv"></div>
-  <p style="margin-top:12px;font-size:14px;color:var(--faint)">Click any sound to draw a special symbol for it. A red dot marks sounds that already have one.</p>
-</section>
 
 <section id="compose">
   <span class="secnum">IV &middot; Try it</span>
@@ -336,7 +378,7 @@
       <button class="btn" id="edClose" aria-label="Close the editor">Done</button>
     </div>
     <div class="edbody">
-      <div>
+      <div id="edPad">
         <div class="canvaswrap">
           <svg id="cv" viewBox="-6 -6 112 112" aria-label="Drawing area">
             <g id="cvGrid"></g><g id="cvGhost"></g><g id="cvInk"></g><g id="cvLive"></g>
@@ -353,7 +395,7 @@
         <div class="ctl">
           <label>Weight <input type="range" id="edW" min="3" max="22" step="0.5" value="12"></label>
           <label><input type="checkbox" id="edSnap" checked> Snap lines and dots</label>
-          <label><input type="checkbox" id="edGhost" checked> Show the rest</label>
+          <label id="edGhostL"><input type="checkbox" id="edGhost" checked> Show the rest</label>
         </div>
         <div class="ctl">
           <button class="btn" id="edUndo">Undo</button>
@@ -626,7 +668,7 @@ const cellRank = ch => { const f = featsOf(ch);
   return (f.voicing && f.voicing[0] === 'voiced' ? 1 : 0) + (f.articulator ? 2 : 0) +
          (f.rounding && f.rounding[0] === 'rounded' ? 1 : 0) + (f.tenseness ? 4 : 0) + (f['r-colour'] ? 8 : 0); };
 function chartsHTML(clashSet){
-  const btn = ch => `<button class="snd${SCRIPT.special[ch] ? ' sp' : ''}${clashSet.has(ch) ? ' clash' : ''}" data-snd="${esc(ch)}"
+  const btn = ch => `<button class="snd${justChanged && justChanged.has(ch) ? ' just' : ''}${SCRIPT.special[ch] ? ' sp' : ''}${clashSet.has(ch) ? ' clash' : ''}" data-snd="${esc(ch)}"
       title="${esc(DATA.symbols[ch].desc)}${clashSet.has(ch) ? ' — looks identical to another sound' : ''}">
       ${glyphSVG(glyphOf(ch), { size: 32 })}<span class="ipa">${esc(ch)}</span></button>`;
   const grid = {}, other = [];
@@ -637,12 +679,18 @@ function chartsHTML(clashSet){
     else if (s.type === 'V' && f.height && f.backness) put('V|' + cap(f.height[0]), f.backness[0], ch);
     else other.push(ch);
   }
+  const hdr = (key, label) => VALUE_BY_KEY[key]
+    ? `<button class="hdr" type="button" data-key="${esc(key)}" title="Change the ${esc(VALUE_BY_KEY[key].val)} stroke">${esc(label)}</button>` : esc(label);
+  const colKey = (type, c) => (type === 'C' ? 'place:' : 'backness:') + c;
+  const rowKey = (type, r) => type === 'V' ? 'height:' + r.toLowerCase()
+    : r === 'Implosive' ? 'airstream:glottalized ingressive'
+    : r.startsWith('Lateral') ? 'lateral:lateral' : 'manner:' + r.toLowerCase();
   const table = (cls, type, rows, cols) => {
     rows = rows.filter(r => grid[type + '|' + r]);
     cols = cols.filter(c => rows.some(r => (grid[type + '|' + r] || {})[c]));
     return `<div class="chartwrap${cls === 'vow' ? ' narrow' : ''}"><table class="ipa ${cls}"><thead><tr><th class="rh"></th>${
-      cols.map(c => `<th>${esc(cap(c))}</th>`).join('')}</tr></thead><tbody>${
-      rows.map(r => `<tr><th class="rh">${esc(r)}</th>${cols.map(c => {
+      cols.map(c => `<th>${hdr(colKey(type, c), cap(c))}</th>`).join('')}</tr></thead><tbody>${
+      rows.map(r => `<tr><th class="rh">${hdr(rowKey(type, r), r)}</th>${cols.map(c => {
         const l = ((grid[type + '|' + r] || {})[c] || []).sort((a, b) => cellRank(a) - cellRank(b));
         return `<td>${l.length ? `<div class="cell">${l.map(btn).join('')}</div>` : ''}</td>`;
       }).join('')}</tr>`).join('')}</tbody></table></div>`;
@@ -744,7 +792,7 @@ const SNAP = 6.25;
 const snapV = v => Math.max(-4, Math.min(104, Math.round(v / SNAP) * SNAP));
 
 function samplesFor(){
-  if (ED.mode === 'special') return [];
+  if (ED.mode === 'special' || ED.mode === 'sketch') return [];
   if (ED.key.startsWith('mark:')){
     const ch = ED.key.slice(5);
     const vowelish = ['̃', '˞', 'ː'].includes(ch);
@@ -753,12 +801,14 @@ function samplesFor(){
   return VALUE_BY_KEY[ED.key].sounds.filter(c => c !== 'ɡ');
 }
 function ghostStrokes(){
+  if (ED.mode === 'sketch') return [];
   if (ED.mode === 'special') return DATA.symbols[ED.ch] ? builtGlyph(ED.ch) : [];
   if (!ED.sample) return [];
   if (ED.key.startsWith('mark:')) return glyphOf(ED.sample);
   return SCRIPT.special[ED.sample] ? [] : builtGlyph(ED.sample, ED.key);
 }
 function commit(){
+  if (ED.mode === 'sketch'){ SK.strokes = ED.strokes; updateAssign(); return; }
   if (ED.mode === 'slot') SCRIPT.rad[ED.key] = ED.strokes;
   else if (ED.strokes.length) SCRIPT.special[ED.ch] = ED.strokes;
   else delete SCRIPT.special[ED.ch];
@@ -793,7 +843,8 @@ function drawEditor(){
   document.getElementById('edRedo').disabled = !ED.redo.length;
   // preview of everything this edit touches
   let prev;
-  if (ED.mode === 'special') prev = [{ strokes: ED.strokes, ch: ED.ch }];
+  if (ED.mode === 'sketch') prev = [];
+  else if (ED.mode === 'special') prev = [{ strokes: ED.strokes, ch: ED.ch }];
   else if (ED.key.startsWith('mark:')){
     const mk = ED.key.slice(5);
     prev = samplesFor().map(c => ({ strokes: dedupe(glyphOf(c).concat(ED.strokes)), ch: c + mk }));
@@ -802,6 +853,8 @@ function drawEditor(){
     `<span class="gcell" title="${p.sp ? 'has its own special symbol' : ''}">${glyphSVG(p.strokes, { size: 40 })}<span class="lab">${esc(p.ch)}${p.sp ? '•' : ''}</span></span>`).join('');
 }
 function openEditor(o){
+  if (ED.mode === 'sketch'){ SK.strokes = ED.strokes; SK.undo = ED.undo; SK.redo = ED.redo; }
+  padHome.prepend(pad); pad.classList.remove('sketching');
   Object.assign(ED, { open: true, mode: o.mode, key: o.key || null, ch: o.ch || null, undo: [], redo: [], live: null });
   if (ED.mode === 'slot') ED.strokes = clone(SCRIPT.rad[ED.key] || []);
   else ED.strokes = clone(SCRIPT.special[ED.ch] || []);
@@ -845,7 +898,7 @@ function closeEditor(){
   dlg.close();
   renderAll();
 }
-dlg.addEventListener('close', () => { ED.open = false; renderAll(); });
+dlg.addEventListener('close', () => { ED.open = false; toSketch(); renderAll(); });
 
 document.getElementById('edSamples').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
@@ -959,6 +1012,78 @@ function endStroke(){
 }
 cv.addEventListener('pointerup', endStroke);
 cv.addEventListener('pointercancel', () => { ED.live = null; drawLive(); });
+
+/* ======================================================================
+   Start here · the sketchpad. It is the editor's own drawing pad, parked
+   on the page in 'sketch' mode: draw first, then choose a feature and the
+   drawing becomes that feature's stroke in every sound that has it.
+   ====================================================================== */
+const SK = { strokes: [], undo: [], redo: [] };
+const pad = document.getElementById('edPad'), padHome = pad.parentElement;
+let lastAssign = null, justChanged = null;
+function toSketch(){
+  Object.assign(ED, { open: false, mode: 'sketch', key: null, ch: null, sample: null, live: null,
+                      strokes: SK.strokes, undo: SK.undo, redo: SK.redo });
+  document.getElementById('sketchHost').appendChild(pad);
+  pad.classList.add('sketching');
+  document.getElementById('cvGrid').innerHTML = gridSVG();
+  drawEditor(); updateAssign();
+}
+function renderPicks(){
+  const grp = (label, values) => `<div class="pickgrp"><span class="gl">${esc(label)}</span>${values.map(v =>
+    `<button class="pick" type="button" data-key="${esc(v.key)}" title="${v.sounds.length} ${v.sounds.length === 1 ? 'sound' : 'sounds'}">${esc(v.val)}</button>`).join('')}</div>`;
+  const block = (title, slots) => `<div class="picksub">${title}</div>` +
+    slots.filter(sl => sl.values.length > 1).map(sl => grp(sl.label, sl.values)).join('') +
+    grp('On or off', slots.filter(sl => sl.values.length === 1).map(sl => sl.values[0]));
+  document.getElementById('assignPicks').innerHTML = block('Consonants', SLOTS.C) + block('Vowels', SLOTS.V);
+}
+function updateAssign(){
+  const has = ED.mode === 'sketch' ? ED.strokes.length > 0 : SK.strokes.length > 0;
+  document.getElementById('assignHint').textContent = has
+    ? 'Now pick a feature. Every sound with it will use your stroke. You can also click a heading in the chart below.'
+    : 'Draw on the pad first: a line, a curve, a dot. Then pick the feature it should stand for.';
+  document.querySelectorAll('#assignPicks .pick').forEach(b => { b.disabled = !has; });
+  document.body.classList.toggle('has-sketch', has);
+  pad.classList.toggle('empty', !has);
+}
+function pickFeature(key){
+  if (!VALUE_BY_KEY[key]) return;
+  if (!(ED.mode === 'sketch' && ED.strokes.length)){ openEditor({ mode: 'slot', key }); return; }
+  const v = VALUE_BY_KEY[key];
+  lastAssign = { key, prev: clone(SCRIPT.rad[key] || []), sketch: clone(ED.strokes) };
+  SCRIPT.rad[key] = clone(ED.strokes); save();
+  ED.strokes = []; ED.undo = []; ED.redo = []; SK.strokes = []; SK.undo = []; SK.redo = [];
+  justChanged = new Set(v.sounds);
+  drawEditor(); updateAssign(); renderAll(); showAssigned(key);
+  setTimeout(() => { justChanged = null; }, 50);
+}
+function showAssigned(key){
+  const v = VALUE_BY_KEY[key], snds = v.sounds.filter(c => c !== 'ɡ');
+  document.getElementById('assignDone').innerHTML = `<div class="done">
+    <p><b>${esc(v.val)}</b> now uses your stroke. ${snds.length} ${snds.length === 1 ? 'sound changed' : 'sounds changed'}:</p>
+    <div class="prevstrip">${snds.map(c => `<span class="gcell">${glyphSVG(glyphOf(c), { size: 40 })}<span class="lab">${esc(c)}</span></span>`).join('')}</div>
+    <div class="acts"><button class="btn" type="button" data-undo>Undo</button>
+      <button class="btn" type="button" data-fine="${esc(key)}">Fine-tune ${esc(v.val)}</button></div></div>`;
+}
+document.getElementById('assignPicks').addEventListener('click', e => {
+  const b = e.target.closest('.pick'); if (b && !b.disabled) pickFeature(b.dataset.key);
+});
+document.getElementById('assignDone').addEventListener('click', e => {
+  if (e.target.closest('[data-undo]') && lastAssign){
+    SCRIPT.rad[lastAssign.key] = lastAssign.prev; save();
+    ED.strokes = lastAssign.sketch; SK.strokes = ED.strokes; lastAssign = null;
+    document.getElementById('assignDone').innerHTML = '';
+    drawEditor(); updateAssign(); renderAll();
+  }
+  const f = e.target.closest('[data-fine]'); if (f) openEditor({ mode: 'slot', key: f.dataset.fine });
+});
+// Ctrl+Z / Ctrl+Y on the sketchpad when no dialog is open
+document.addEventListener('keydown', e => {
+  if (ED.mode !== 'sketch' || dlg.open || /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'){ e.preventDefault();
+    (e.shiftKey ? document.getElementById('edRedo') : document.getElementById('edUndo')).click(); }
+  else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y'){ e.preventDefault(); document.getElementById('edRedo').click(); }
+});
 
 /* ======================================================================
    V · save / import / export / font
@@ -1129,6 +1254,7 @@ document.getElementById('slots').addEventListener('click', e => {
   const t = e.target.closest('.tile'); if (t) openEditor({ mode: 'slot', key: t.dataset.key });
 });
 document.getElementById('inv').addEventListener('click', e => {
+  const h = e.target.closest('.hdr'); if (h){ pickFeature(h.dataset.key); return; }
   const t = e.target.closest('.snd'); if (t) openEditor({ mode: 'special', ch: t.dataset.snd });
 });
 document.getElementById('spList').addEventListener('click', e => {
@@ -1148,6 +1274,8 @@ document.getElementById('bPng').onclick = () => {
   };
   img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
 };
+renderPicks();
+toSketch();
 renderAll();
 </script>
 </body>
