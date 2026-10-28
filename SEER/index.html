@@ -2257,13 +2257,22 @@ function simulateProgram(effectiveSourceText, maxSteps=SIM_MAX_STEPS, regDepth=2
         // Fail-closed, matching real hardware: the committed target must
         // actually be a nop, or this registration is invalid.
         if (targetPc < 0 || targetPc >= bytes.length || bytes[targetPc] !== 0x10) {
+          // REAL-TRAPS: once a trap vector base is set, a failed connector
+          // check traps like the RTL (seer_core cn_nop_check_trap ->
+          // TRAP_ILLEGAL_INSTR 0x01, SAVED_PC = this wrctrl), and the entry is
+          // left as it was. Without a vector table it stays a hard error.
+          if (!trapOpts && ivtSet) {
+            savedPc = pc; savedCn = cnCount; faultCause = 0x01; userMode = false; trapCount++;
+            nextPc = ivtBase + 0x01 * 8;
+          } else
           return {error: `CN registration fault: wrctrl committed PC ${targetPc} as slot ${stagedCnIndex}, `
                         + `but that address is not a nop (found 0x${(bytes[targetPc]||0).toString(16)}) -- `
                         + `likely a wrong li.pcrel/li.captr offset in the setup prologue`, trace, steps};
-        }
+        } else {
         cnTable[stagedCnIndex] = targetPc + 1; // landing = past the nop, matching hardware's stored convention
         cnEntry[stagedCnIndex] = isEntry;
         stagedCnIndex = null;
+        }
       }
     } else if (fmt === "BR") {
       const a = RD(b1), bb = RD(b2);
