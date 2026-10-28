@@ -1269,13 +1269,13 @@ function onZoningToggleChange() {
 //   alu/bit/cmp/csel/popcnt/clz/rdctrl/wrctrl_i/nop/fence, NOT-taken branch : 1
 //   mul, muli : 4      div, mod, divi, modi : 67      clmul, crc32 : 3
 //   cap ops (cget*/cset*/cincaddr/candperm/cmove/ccleartag/cgetroot) : 6
-//   ld64/ld.s32/sts32/sts64 : 7 (no overlap with following instructions)
+//   ld64/ld.s32/sts32/sts64 : 3 (seer_pkg LDST_FAST_CAPCHK=1: 1 stall cycle; was 7 on the Oct-4 snapshot)
 //   TAKEN branch / jmp / call / ret : 3 (= 1 + 2 bubble cycles, charged in the
-//   simulator when the transfer is taken); jmpr : 7 (= 1 + 6)
+//   simulator when the transfer is taken); jmpr : 2 (= 1 + JMPR_PENALTY, JMPR_FAST=1)
 const CYCLES = {
   "clmul": 3, "crc32": 3,
   "mul": 4, "muli": 4, "div": 67, "divi": 67, "mod": 67, "modi": 67,
-  "ld64": 7, "ld.s32": 7, "sts32": 7, "sts64": 7, "li.64": 4,
+  "ld64": 3, "ld.s32": 3, "sts32": 3, "sts64": 3, "li.64": 4,
   "feq": 4,
 };
 for (const m of ["cgetaddr","cgetbase","cgettop","cgetlen","cgetperm","cgettype","cgettag",
@@ -3441,7 +3441,7 @@ function sendVerifyFinalize() {
     const c = sendVerifyState.simCycles, s = sendVerifyState.simSteps;
     timingNote += `<div style="font-size:12px; margin-top:4px;"><b>Simulated (exact):</b> ${s.toLocaleString()} instructions executed, `
       + `<b>${c.toLocaleString()} cycles</b> = ${(c/CORE_MHZ).toFixed(2)} &micro;s at ${CORE_MHZ} MHz `
-      + `(counted per executed instruction from per-opcode costs measured on the RTL: ld/st 7, cap ops 6, mul 4, div/mod 67, clmul/crc32 3, `
+      + `(counted per executed instruction from per-opcode costs from the RTL: ld/st 3, cap ops 6, mul 4, div/mod 67, clmul/crc32 3, `
       + `taken branch/jmp/call/ret ${takenPenalty()+1}${takenPenalty()===0?' (assuming the ITB fill patch; untick the box for today\'s RTL = 3)':''}, jmpr 2, everything else 1; traps and cache effects not modeled).</div>`;
   }
   if (sendVerifyState.tSent && sendVerifyState.tHalt) {
