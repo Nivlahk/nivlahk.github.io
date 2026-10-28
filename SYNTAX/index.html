@@ -911,13 +911,11 @@ function pivotsFor(root){
   return out;
 }
 
-/* ---------- score: points for every phrase (two words or more) and Block the first time it is built ----------
+/* ---------- score: points for every phrase (two words or more), Block and Clause the first time it is built ----------
    Each finished structure is remembered by its labelled bracketing, so rebuilding the same tree,
-   or undoing and redoing, earns nothing new. The score survives reloads and Clear all. */
-const SCORE_KEY='syntax-sandbox-score-v1',PHRASE_PTS=5,BLOCK_PTS=50;
+   or undoing and redoing, earns nothing new. The score lasts for this visit only; reloading starts at 0. */
+const PHRASE_PTS=5,BLOCK_PTS=50,CLAUSE_PTS=100;
 let SCORE={points:0,blocks:0,seen:{}};
-try{const o=JSON.parse(localStorage.getItem(SCORE_KEY)||'null');if(o&&typeof o.points==='number')SCORE={points:o.points,blocks:o.blocks||0,seen:o.seen||{}}}catch(e){}
-function saveScore(){try{localStorage.setItem(SCORE_KEY,JSON.stringify(SCORE))}catch(e){}}
 function phraseDone(id){const n=S.nodes[id];return!!n&&n.type==='node'&&!isLex(n.cat)&&fullYield(id)&&deepComplete(id)&&!treeProblem(id)}
 let gainT;
 function scoreBench(){
@@ -925,17 +923,16 @@ function scoreBench(){
     const gains=[];
     for(const id of Object.keys(S.nodes)){
       if(!phraseDone(id))continue;
-      const n=S.nodes[id],block=n.cat==='TP';
-      if(!block&&yieldIdx(id).length<2)continue; /* a one-word phrase is just a wrapped word, not a build */
-      const k=(block?'B ':'P ')+bracket(id);
+      const n=S.nodes[id],block=n.cat==='TP',clause=n.cat==='CP';
+      if(!block&&!clause&&yieldIdx(id).length<2)continue; /* a one-word phrase is just a wrapped word, not a build */
+      const k=n.cat+' '+bracket(id);
       if(SCORE.seen[k])continue;
-      SCORE.seen[k]=1;const pts=block?BLOCK_PTS:PHRASE_PTS;SCORE.points+=pts;if(block)SCORE.blocks++;
-      gains.push({pts,block,text:words(id)});
+      SCORE.seen[k]=1;const pts=clause?CLAUSE_PTS:block?BLOCK_PTS:PHRASE_PTS;SCORE.points+=pts;if(block)SCORE.blocks++;
+      gains.push({pts,block,clause,text:words(id)});
     }
     if(gains.length){
-      saveScore();
-      const total=gains.reduce((a,g)=>a+g.pts,0),b=gains.find(g=>g.block);
-      const g=$('#scoreGain');g.textContent=`+${total}`+(b?` · Block complete: “${b.text}”`:'');g.classList.add('show');
+      const total=gains.reduce((a,g)=>a+g.pts,0),b=gains.find(g=>g.clause)||gains.find(g=>g.block);
+      const g=$('#scoreGain');g.textContent=`+${total}`+(b?` · ${b.clause?'Clause':'Block'} complete: “${b.text}”`:'');g.classList.add('show');
       const bar=$('#scoreBar');bar.classList.remove('bump');void bar.offsetWidth;bar.classList.add('bump');
       clearTimeout(gainT);gainT=setTimeout(()=>g.classList.remove('show'),b?3200:1600);
     }
