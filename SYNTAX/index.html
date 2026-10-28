@@ -150,13 +150,23 @@ button{font:inherit;color:inherit}
 .layout{max-width:1480px;width:100%;margin:0 auto;display:grid;grid-template-columns:290px minmax(0,1fr);gap:14px;align-items:stretch;flex:1}
 .top{width:100%;align-items:flex-start}
 .legendbar{flex:1;min-width:0}
-.scorebar{display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;margin-left:auto;font-size:13px;color:var(--ink2)}
-.scorebar .sc b{font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;margin-right:3px}
-.sc-gain{font-weight:700;color:var(--ok);opacity:0;transform:translateY(4px);transition:opacity .25s,transform .25s}
-.sc-gain.show{opacity:1;transform:none}
-.scorebar.bump .sc b{animation:scorebump .5s ease}
-@keyframes scorebump{40%{transform:scale(1.25);color:var(--ok)}}
-@media (prefers-reduced-motion: reduce){.scorebar.bump .sc b{animation:none}.sc-gain{transition:none}}
+.scorepop{position:absolute;left:50%;top:14px;z-index:60;display:flex;align-items:baseline;gap:14px;padding:9px 16px;
+  border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink2);font-size:13px;
+  box-shadow:0 8px 28px rgba(0,0,0,.18);pointer-events:none;opacity:0;transform:translate(-50%,-10px);transition:opacity .3s,transform .3s}
+.scorepop.show{opacity:1;transform:translate(-50%,0)}
+.scorepop{white-space:nowrap}
+@media (max-width:520px){.scorepop{gap:9px;padding:7px 12px;font-size:12px}.scorepop .sc b{font-size:14px}}
+.scorepop .sc b{font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums;margin-right:3px}
+.scorepop .sc-gain{font-weight:700;color:var(--ok)}
+.fx{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:5}
+.fx-pts{position:absolute;transform:translate(-50%,-50%);font:700 14px/1 var(--mono);color:var(--ok);white-space:nowrap;
+  text-shadow:0 0 6px var(--bench),0 0 2px var(--bench);animation:fxrise 1.3s ease-out forwards}
+@keyframes fxrise{0%{opacity:0;transform:translate(-50%,-30%) scale(.85)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}100%{opacity:0;transform:translate(-50%,-190%) scale(1)}}
+.fx-flash{position:absolute;border-radius:12px;background:color-mix(in srgb,var(--ok) 22%,transparent);
+  box-shadow:0 0 0 2px var(--ok),0 0 26px color-mix(in srgb,var(--ok) 55%,transparent);animation:fxflash 1.4s ease-out forwards}
+@keyframes fxflash{0%{opacity:0}12%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.scorepop{transition:none}.fx-pts{animation:fxfade 1.3s linear forwards}.fx-flash{animation:fxfade 1.4s linear forwards}}
+@keyframes fxfade{0%,60%{opacity:1}100%{opacity:0}}
 .exportbtn{flex:none;font-weight:600;padding:7px 14px;border-color:var(--ink);background:var(--panel)}
 @media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
 .docks{display:flex;flex-direction:column;gap:14px;min-width:0}
@@ -349,7 +359,6 @@ details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text
 <header class="top">
   <h1 class="sr-only">Syntax Tree Sandbox</h1>
   <div class="legendbar" id="lexInv" aria-label="Word class colors"></div>
-  <div class="scorebar" id="scoreBar" aria-live="polite"><span class="sc"><b id="scorePts">0</b> points</span><span class="sc"><b id="scoreBlocks">0</b> blocks completed</span><span class="sc-gain" id="scoreGain"></span></div>
   <button class="btn exportbtn" type="button" id="exportBtn" title="Download the bench as an SVG image">Export SVG</button>
 </header>
 
@@ -377,7 +386,8 @@ details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text
         <button class="btn small" type="button" id="redoBtn" title="Redo (Ctrl+Shift+Z)">Redo</button>
         <button class="btn small" type="button" id="clearBtn">Clear all</button>
       </div>
-      <div class="bench" id="bench"><div class="canvas" id="canvas"></div></div>
+      <div class="scorepop" id="scoreBar" role="status" aria-live="polite"><span class="sc-gain" id="scoreGain"></span><span class="sc"><b id="scorePts">0</b> points</span><span class="sc"><b id="scoreBlocks">0</b> blocks</span></div>
+      <div class="bench" id="bench"><div class="canvas" id="canvas"></div><div class="fx" id="fx" aria-hidden="true"></div></div>
     </div>
     <div class="readings" id="readings" hidden></div>
   </section>
@@ -924,22 +934,37 @@ function scoreBench(){
     for(const id of Object.keys(S.nodes)){
       if(!phraseDone(id))continue;
       const n=S.nodes[id],block=n.cat==='TP',clause=n.cat==='CP';
-      if(!block&&!clause&&yieldIdx(id).length<2)continue; /* a one-word phrase is just a wrapped word, not a build */
+      /* an ordinary phrase scores only when its rule has two or more required slots, all now filled */
+      if(!block&&!clause){const ev=evalNode(n);if(!ev.rule||ev.rule.els.filter(e=>e.min>0).length<2)continue}
       const k=n.cat+' '+bracket(id);
       if(SCORE.seen[k])continue;
       SCORE.seen[k]=1;const pts=clause?CLAUSE_PTS:block?BLOCK_PTS:PHRASE_PTS;SCORE.points+=pts;if(block)SCORE.blocks++;
-      gains.push({pts,block,clause,text:words(id)});
+      gains.push({id,pts,block,clause,text:words(id)});
     }
     if(gains.length){
       const total=gains.reduce((a,g)=>a+g.pts,0),b=gains.find(g=>g.clause)||gains.find(g=>g.block);
-      const g=$('#scoreGain');g.textContent=`+${total}`+(b?` · ${b.clause?'Clause':'Block'} complete: “${b.text}”`:'');g.classList.add('show');
-      const bar=$('#scoreBar');bar.classList.remove('bump');void bar.offsetWidth;bar.classList.add('bump');
-      clearTimeout(gainT);gainT=setTimeout(()=>g.classList.remove('show'),b?3200:1600);
+      $('#scoreGain').textContent=`+${total}`+(b?` · ${b.clause?'Clause':'Block'} complete`:'');
+      const bar=$('#scoreBar');bar.classList.add('show');
+      clearTimeout(gainT);gainT=setTimeout(()=>bar.classList.remove('show'),b?3000:2000);
+      /* wait for the FLIP animation to settle so the effects land on the boxes' final positions */
+      const flashed=gains.filter(g=>g.block||g.clause).map(g=>g.id);
+      const inside=g=>{let a=S.nodes[g.id]&&S.nodes[g.id].parent;while(a){if(flashed.includes(a))return true;a=S.nodes[a].parent}return false};
+      setTimeout(()=>gains.filter(g=>!((g.block||g.clause)&&inside(g))).forEach(scoreFx),reduceMotion?0:400);
     }
   }
   $('#scorePts').textContent=SCORE.points.toLocaleString();$('#scoreBlocks').textContent=SCORE.blocks.toLocaleString();
 }
 
+/* +5 floats up off a finished phrase; a finished Block or Clause flashes green */
+function scoreFx(g){
+  const el=canvas.querySelector(`[data-id="${g.id}"]`),fx=$('#fx');if(!el||!fx)return;
+  const r=el.getBoundingClientRect(),br=bench.getBoundingClientRect();
+  const x=r.left-br.left+bench.scrollLeft,y=r.top-br.top+bench.scrollTop;
+  const d=document.createElement('div');
+  if(g.block||g.clause){d.className='fx-flash';Object.assign(d.style,{left:(x-6)+'px',top:(y-6)+'px',width:(r.width+12)+'px',height:(r.height+12)+'px'})}
+  else{d.className='fx-pts';d.textContent=`+${g.pts} points`;Object.assign(d.style,{left:(x+r.width/2)+'px',top:(y+12)+'px'})}
+  fx.appendChild(d);d.addEventListener('animationend',()=>d.remove());setTimeout(()=>d.remove(),2500);
+}
 function renderAll(){
   renderChrome();
   const done=renderCanvas();
