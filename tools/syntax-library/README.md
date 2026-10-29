@@ -1,6 +1,6 @@
 # SYNTAX tree library
 
-Saves Syntax Tree Sandbox benches to each player's **own Google Drive**, built on
+Saves Syntax Tree Sandbox benches to a “Syntax Tree Sandbox” folder in each player's **own Google Drive**, built on
 [`@icebolt/compiler-core`](../../../icebolt). This site never receives anyone's trees.
 Scores are not stored: SYNTAX points still last for one visit.
 
@@ -8,7 +8,7 @@ Scores are not stored: SYNTAX points still last for one visit.
 |---|---|
 | `schema.dbml` | Database design: `trees` (saved benches) and `phrases` (every finished phrase, for analysis) |
 | `compile.mjs` | Runs the Icebolt compiler → `src/db/` (typed client, UI manifest, migration SQL) |
-| `src/main.ts` | The library panel: connect, save, open, star, delete, storage settings |
+| `src/main.ts` | The Save button and Storage dropdown: connect, save, open, delete, storage settings |
 | `../../SYNTAX/library.js` | Built bundle the page loads (commit it; GitHub Pages has no build step) |
 | `../../SYNTAX/vendor/` | sql.js 1.15.2 (SQLite compiled to WebAssembly), fetched only after connecting |
 
@@ -29,7 +29,7 @@ npm run build
    **OAuth client ID → Web application** with these Authorized JavaScript origins:
    `https://calvinhancock.com` and `http://localhost:8000`.
 2. Paste the client ID into `SYNTAX/index.html`:
-   `<section class="dock lib" … data-google-client-id="PASTE-HERE.apps.googleusercontent.com">`
+   `<div class="libbar" id="libraryBar" data-google-client-id="PASTE-HERE.apps.googleusercontent.com">`
 
 No client secret, server, or rebuild is needed. While the consent screen is in *Testing*,
 only the test users you list can connect.

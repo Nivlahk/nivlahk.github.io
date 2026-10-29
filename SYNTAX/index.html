@@ -183,43 +183,50 @@ button{font:inherit;color:inherit}
 .inv-lex{border:2px solid var(--c);color:var(--c);background:var(--box);font-weight:700}
 .inv-lex.legend{cursor:default;touch-action:auto}
 .dock-hint{margin:-4px 0 10px;color:var(--ink2);font-size:12.5px;line-height:1.4}
-/* tree library */
-.lib .btn.primary,.lib-dialog .btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.lib-small{color:var(--ink2);font-size:12px;line-height:1.4;margin:8px 0 0}
+/* Save + Storage (tree library) */
+.libbar{display:flex;gap:8px;align-items:center}
+.libbar:empty{display:none}
+.libsave{font-weight:600;padding:7px 16px;border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.libsave:hover{background:var(--ink);opacity:.88}
+.libsave.is-saved{background:var(--panel);color:var(--ink2);border-color:var(--line2);font-weight:500}
+.libmenu{position:relative}
+.libmenu>summary{list-style:none;padding:7px 12px;display:flex;align-items:center;gap:6px;user-select:none}
+.libmenu>summary::-webkit-details-marker{display:none}
+.libmenu>summary::after{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .15s}
+.libmenu[open]>summary::after{transform:translateY(1px) rotate(-135deg)}
+.libmenu>summary.attn::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--bad)}
+.libpop{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:min(360px,calc(100vw - 32px));max-height:min(70vh,560px);overflow:auto;
+  background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:10px;white-space:normal}
+.libpop h3{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);font-weight:500;margin:4px 0 0}
+.lib-lead{margin:0;font-size:13px;line-height:1.45}
+.btn.primary,.lib-dialog .btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.lib-small{color:var(--ink2);font-size:12px;line-height:1.4;margin:0}
 .lib-err{color:var(--bad);font-size:12.5px;margin:6px 0 0}
 .lib-err:empty{display:none}
-.lib-status{font-size:12.5px;margin:0 0 10px;padding:6px 9px;border-radius:8px;background:color-mix(in srgb,var(--ok) 12%,transparent);color:var(--ink)}
+.lib-status{font-size:12.5px;margin:0;padding:6px 9px;border-radius:8px;background:color-mix(in srgb,var(--ok) 12%,transparent);color:var(--ink)}
 .lib-status[data-kind="busy"]{background:color-mix(in srgb,var(--gold) 14%,transparent)}
 .lib-status[data-kind="err"]{background:color-mix(in srgb,var(--bad) 14%,transparent)}
-.lib .icebolt-form{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
-.lib .icebolt-field{display:flex;flex-direction:column;gap:3px}
-.lib .icebolt-field label{font-size:12px;color:var(--ink2)}
-.lib .icebolt-field input,.lib .icebolt-field textarea,.lib-input{font:inherit;font-size:13px;padding:6px 9px;border-radius:8px;border:1px solid var(--line2);background:var(--bench);color:var(--ink);width:100%}
-.lib .icebolt-field textarea{min-height:52px;resize:vertical}
-.lib .icebolt-submit{align-self:flex-start;border:1px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12.5px;font-weight:600}
-.lib [data-lib-update]{margin:0 0 8px}
-.lib-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
-.lib-item{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--box);display:flex;flex-direction:column;gap:2px}
-.lib-item.open{border-color:var(--ink)}
-.lib-title{font-size:13.5px}
-.lib-meta{font-size:11.5px;color:var(--ink2)}
-.lib-sentence{font-family:var(--mono);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lib-notes{font-size:12px;color:var(--ink2)}
-.lib-empty{color:var(--ink2);font-size:12.5px}
-.lib .icebolt-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.lib .icebolt-action{border:1px solid var(--line2);background:transparent;border-radius:8px;padding:3px 9px;font-size:12px;cursor:pointer}
-.lib .icebolt-action--danger{border-color:var(--bad);color:var(--bad)}
-.lib .icebolt-drive-connect{display:flex;flex-direction:column;gap:4px;align-items:flex-start;margin:4px 0}
-.lib .icebolt-drive-connect__button{border:1px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:600}
-.lib .icebolt-drive-connect__button:disabled{opacity:.6;cursor:default}
-.lib-foot{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
-.lib-settings{width:100%}
-.lib-settings input{margin:0 6px 0 0;vertical-align:-2px}
-.lib-settings summary{cursor:pointer;font-size:12.5px;color:var(--ink2)}
-.lib-settings h2{font-size:12px;margin:8px 0 4px;text-transform:none;letter-spacing:0}
+.lib-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.lib-item{display:flex;align-items:center;gap:6px;border-radius:9px}
+.lib-item.open{background:var(--chip)}
+.lib-open{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;background:transparent;border:0;border-radius:9px;padding:6px 8px;cursor:pointer}
+.lib-open:hover{background:var(--chip)}
+.lib-open b{font-size:13px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lib-open span{font-size:11.5px;color:var(--ink2)}
+.lib-item .icebolt-actions{flex:none}
+.lib-item .icebolt-action{width:26px;height:26px;border-radius:7px;border:1px solid transparent;background:transparent;color:var(--ink2);cursor:pointer;font-size:16px;line-height:1}
+.lib-item .icebolt-action:hover{border-color:var(--bad);color:var(--bad)}
+.lib-empty{color:var(--ink2);font-size:12.5px;padding:4px 2px}
+.lib-copy{align-self:flex-start}
+.lib-reconnect button{border:1px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:600}
+.lib-settings{border-top:1px solid var(--line);padding-top:8px}
+.lib-settings>summary{cursor:pointer;font-size:12.5px;color:var(--ink2)}
+.lib-settings h2{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);font-weight:500;margin:10px 0 4px}
 .lib-settings p,.lib-settings small,.lib-settings dl{font-size:12px;color:var(--ink2);line-height:1.4}
 .lib-settings fieldset{border:0;padding:0;margin:8px 0}
 .lib-settings legend{font-size:12.5px;color:var(--ink);padding:0;margin-bottom:4px}
+.lib-settings label{font-size:13px}
+.lib-settings input{margin:0 6px 0 0;vertical-align:-2px}
 .lib-settings small{display:block;margin:0 0 4px 22px}
 .lib-settings dt{color:var(--ink);font-weight:600;margin-top:6px}
 .lib-settings dd{margin:0}
@@ -229,6 +236,7 @@ button{font:inherit;color:inherit}
 .lib-dialog h3{font-family:var(--display);font-size:20px;margin:0 0 8px}
 .lib-dialog p{margin:6px 0;font-size:13px;line-height:1.45}
 .lib-field{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--ink2);margin:6px 0}
+.lib-input{font:inherit;font-size:13px;padding:6px 9px;border-radius:8px;border:1px solid var(--line2);background:var(--bench);color:var(--ink);width:100%}
 .lib-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
 .cardgrid{display:grid;grid-template-columns:1fr;gap:6px}
 @media (max-width:860px){.cardgrid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
@@ -405,6 +413,9 @@ details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text
   <h1 class="sr-only">Syntax Tree Sandbox</h1>
   <div class="legendbar" id="lexInv" aria-label="Word class colors"></div>
   <div class="scorebar" id="scoreBar" aria-live="polite"><span class="sc-gain" id="scoreGain"></span><span class="sc"><b id="scorePts">0</b> points</span><span class="sc"><b id="scoreBlocks">0</b> blocks completed</span></div>
+  <!-- Save + Storage: saved trees go to a "Syntax Tree Sandbox" folder in the player's own Google Drive
+       (tools/syntax-library builds library.js). Hidden unless data-google-client-id is set. -->
+  <div class="libbar" id="libraryBar" data-google-client-id="956116332062-gtkuegrrjb54fucnp66v0lt15he1jf3q.apps.googleusercontent.com"></div>
   <button class="btn exportbtn" type="button" id="exportBtn" title="Download the bench as an SVG image">Export SVG</button>
 </header>
 
@@ -423,12 +434,6 @@ details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text
       <div class="inv" id="phrInv"></div>
     </section>
     <details class="rules"><summary>Phrase-structure rules</summary><div class="rulelist" id="ruleList"></div></details>
-    <!-- Tree library: saves benches to the player's own Google Drive (tools/syntax-library builds library.js).
-         Paste your OAuth Web client ID into data-google-client-id to switch it on. -->
-    <section class="dock lib" data-dock id="libraryDock" data-google-client-id="956116332062-gtkuegrrjb54fucnp66v0lt15he1jf3q.apps.googleusercontent.com">
-      <h2><span>Tree library</span><span data-lib-count></span></h2>
-      <div data-lib-mount></div>
-    </section>
     <div class="status" id="status"></div>
   </aside>
   <section class="work">

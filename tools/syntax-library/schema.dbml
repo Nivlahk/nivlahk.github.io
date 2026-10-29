@@ -14,14 +14,13 @@ Enum tree_state {
 Table trees {
   id uuid [pk, default: `gen_random_uuid()`]
   title varchar(120) [not null, note: '''
-    Name the player gives the saved bench.
-    @ui:form-input { label: 'Title', placeholder: 'e.g. The old man the boats', order: 1 }
-    @ui:action-button { action: 'deleteRow', label: 'Delete', confirm: 'Delete this tree from your library? This cannot be undone.' }
+    Set automatically from the sentence when the bench is saved.
+    @ui:action-button { action: 'deleteRow', label: '×', confirm: 'Delete this saved tree? This cannot be undone.' }
   ''']
-  notes text [note: '''@ui:form-input { label: 'Notes', multiline: true, placeholder: 'What makes this one interesting?', order: 2 }''']
+  notes text [note: 'Unused by the current interface; kept so earlier saves still open']
   sentence text [not null, note: 'Words on the bench, in order']
   state tree_state [not null]
-  starred boolean [not null, default: false, note: '''@ui:action-button { action: 'toggleRow', label: 'Star' }''']
+  starred boolean [not null, default: false, note: 'Unused by the current interface; kept so earlier saves still open']
   bench json [not null, note: 'Full sandbox snapshot (words, nodes, roots, grammar) used to reopen the tree']
   word_count integer [not null, default: 0]
   created_at timestamp [not null, default: `now()`]

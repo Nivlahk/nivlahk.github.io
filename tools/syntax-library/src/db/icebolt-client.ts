@@ -17,11 +17,14 @@ export interface TreesRow {
   /** `uuid, primary key, default uuid v4` */
   id: string;
   /**
-   * Name the player gives the saved bench.
+   * Set automatically from the sentence when the bench is saved.
    * `varchar(120)`
    */
   title: string;
-  /** `text` */
+  /**
+   * Unused by the current interface; kept so earlier saves still open
+   * `text`
+   */
   notes: string | null;
   /**
    * Words on the bench, in order
@@ -30,7 +33,10 @@ export interface TreesRow {
   sentence: string;
   /** `tree_state` */
   state: "complete" | "in_progress";
-  /** `boolean, default 0` */
+  /**
+   * Unused by the current interface; kept so earlier saves still open
+   * `boolean, default 0`
+   */
   starred: boolean;
   /**
    * Full sandbox snapshot (words, nodes, roots, grammar) used to reopen the tree
