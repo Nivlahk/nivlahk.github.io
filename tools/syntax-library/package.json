@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Builds SYNTAX/library.js: the Syntax Tree Sandbox tree library on Icebolt.",
   "scripts": {
-    "compile": "node compile.mjs",
+    "compile": "icebolt compile schema.dbml --out src/db",
     "build": "npm run compile && esbuild src/main.ts --bundle --format=esm --target=es2022 --minify --legal-comments=none --outfile=../../SYNTAX/library.js",
     "typecheck": "npm run compile && tsc --noEmit"
   },

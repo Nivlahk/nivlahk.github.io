@@ -6,7 +6,15 @@
  * the player's own Google Drive (drive.file scope). This site never receives
  * them. Points are not stored: SYNTAX scores last for one visit by design.
  */
-import { createSqlJsDriver, executeAction, IceboltSchemaMismatchError, type SqlJsDatabaseLike } from '@icebolt/compiler-core/runtime';
+import {
+  IceboltMigrationError,
+  IceboltSchemaMismatchError,
+  IceboltSchemaTooNewError,
+  createSqlJsDriver,
+  executeAction,
+  type SchemaOpenResult,
+  type SqlJsDatabaseLike,
+} from '@icebolt/compiler-core/runtime';
 import {
   DATA_CUSTODY_STATEMENT,
   GoogleDriveSyncManager,
@@ -347,7 +355,10 @@ class TreeLibrary {
         this.#passphrase = choice.passphrase;
       }
 
-      const client = openIceboltClient(createSqlJsDriver(new SQL.Database(pulled?.bytes)));
+      // Saves from an earlier version of this page are upgraded in place (one transaction;
+      // nothing changes if a step fails). The pre-upgrade copy is kept in Drive under Backups.
+      let upgraded: Extract<SchemaOpenResult, { status: 'migrated' }> | null = null;
+      const client = openIceboltClient(createSqlJsDriver(new SQL.Database(pulled?.bytes)), { onMigrated: (r) => (upgraded = r) });
       linkAuthToSync(this.#auth, sync);
       bindAutoSync(client, sync, { getAccessToken: this.#auth.getAccessToken, getEncryptionKey: () => this.#passphrase, schemaMeta, appLabel: APP_NAME });
       if (firstRun) writeStorageSettings(client, firstRun);
@@ -358,16 +369,26 @@ class TreeLibrary {
       this.#sync = sync;
       this.#client = client;
       this.#setStatus('Connected to your Google Drive.');
+      const up = upgraded as Extract<SchemaOpenResult, { status: 'migrated' }> | null;
+      if (up) {
+        const encryption = readStorageSettings(client).encryption === 'passphrase' && this.#passphrase ? { mode: 'passphrase' as const, key: this.#passphrase } : { mode: 'none' as const };
+        await sync.backup(token, { bytes: up.backup, encryption, label: `before update v${up.version} ${new Date().toISOString().slice(0, 10)}` });
+        this.#api.toast('Your saved trees were updated for this version of the page. A copy of the old version is in Backups in your Drive.');
+      }
       this.#renderPanel();
       return true;
     } catch (err) {
       this.#auth.signOut();
       const msg =
-        err instanceof IceboltSchemaMismatchError
-          ? 'Your saved trees were made by a different version of this page.'
-          : err instanceof Error
-            ? err.message
-            : String(err);
+        err instanceof IceboltSchemaTooNewError
+          ? 'Your saved trees were updated by a newer version of this page. Reload to get it; nothing was changed.'
+          : err instanceof IceboltMigrationError
+            ? 'Your saved trees could not be updated for this version of the page, so nothing was changed. Please report this.'
+            : err instanceof IceboltSchemaMismatchError
+              ? 'That file in your Drive was not made by this page.'
+              : err instanceof Error
+                ? err.message
+                : String(err);
       this.#api.toast(`Couldn’t open your saved trees: ${msg}`);
       this.#setStatus(msg, 'err');
       this.#renderPanel();

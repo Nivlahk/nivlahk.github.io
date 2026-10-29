@@ -1,0 +1,854 @@
+{
+  "format": 1,
+  "current": {
+    "format": 1,
+    "version": 1,
+    "hash": "7be1dc9aebb64155",
+    "strict": true,
+    "schema": {
+      "tables": [
+        {
+          "name": "trees",
+          "columns": [
+            {
+              "name": "id",
+              "kind": "text",
+              "sqlType": "TEXT",
+              "sourceType": "uuid",
+              "nullable": false,
+              "hasDefault": true,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": null,
+              "ordinal": 0,
+              "defaultSql": "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6))))"
+            },
+            {
+              "name": "title",
+              "kind": "text",
+              "sqlType": "TEXT",
+              "sourceType": "varchar(120)",
+              "nullable": false,
+              "hasDefault": false,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": 120,
+              "enumValues": null,
+              "checks": [],
+              "note": "Set automatically from the sentence when the bench is saved.\n@ui:action-button { action: 'deleteRow', label: '×', confirm: 'Delete this saved tree? This cannot be undone.' }",
+              "ordinal": 1,
+              "defaultSql": null
+            },
+            {
+              "name": "notes",
+              "kind": "text",
+              "sqlType": "TEXT",
+              "sourceType": "text",
+              "nullable": true,
+              "hasDefault": false,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": "Unused by the current interface; kept so earlier saves still open",
+              "ordinal": 2,
+              "defaultSql": null
+            },
+            {
+              "name": "sentence",
+              "kind": "text",
+              "sqlType": "TEXT",
+              "sourceType": "text",
+              "nullable": false,
+              "hasDefault": false,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": "Words on the bench, in order",
+              "ordinal": 3,
+              "defaultSql": null
+            },
+            {
+              "name": "state",
+              "kind": "enum",
+              "sqlType": "TEXT",
+              "sourceType": "tree_state",
+              "nullable": false,
+              "hasDefault": false,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": [
+                "complete",
+                "in_progress"
+              ],
+              "checks": [],
+              "note": null,
+              "ordinal": 4,
+              "defaultSql": null
+            },
+            {
+              "name": "starred",
+              "kind": "boolean",
+              "sqlType": "INTEGER",
+              "sourceType": "boolean",
+              "nullable": false,
+              "hasDefault": true,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": "Unused by the current interface; kept so earlier saves still open",
+              "ordinal": 5,
+              "defaultSql": "0"
+            },
+            {
+              "name": "bench",
+              "kind": "json",
+              "sqlType": "TEXT",
+              "sourceType": "json",
+              "nullable": false,
+              "hasDefault": false,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": "Full sandbox snapshot (words, nodes, roots, grammar) used to reopen the tree",
+              "ordinal": 6,
+              "defaultSql": null
+            },
+            {
+              "name": "word_count",
+              "kind": "integer",
+              "sqlType": "INTEGER",
+              "sourceType": "integer",
+              "nullable": false,
+              "hasDefault": true,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": null,
+              "ordinal": 7,
+              "defaultSql": "0"
+            },
+            {
+              "name": "created_at",
+              "kind": "datetime",
+              "sqlType": "TEXT",
+              "sourceType": "timestamp",
+              "nullable": false,
+              "hasDefault": true,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": null,
+              "ordinal": 8,
+              "defaultSql": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+            },
+            {
+              "name": "updated_at",
+              "kind": "datetime",
+              "sqlType": "TEXT",
+              "sourceType": "timestamp",
+              "nullable": false,
+              "hasDefault": true,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": null,
+              "ordinal": 9,
+              "defaultSql": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+            }
+          ],
+          "primaryKey": [
+            "id"
+          ],
+          "foreignKeys": [],
+          "indexes": [
+            {
+              "name": "ix_trees_created_at",
+              "unique": false,
+              "parts": [
+                {
+                  "kind": "column",
+                  "value": "created_at"
+                }
+              ]
+            },
+            {
+              "name": "ix_trees_starred",
+              "unique": false,
+              "parts": [
+                {
+                  "kind": "column",
+                  "value": "starred"
+                }
+              ]
+            }
+          ],
+          "note": null,
+          "synthetic": false
+        },
+        {
+          "name": "phrases",
+          "columns": [
+            {
+              "name": "id",
+              "kind": "integer",
+              "sqlType": "INTEGER",
+              "sourceType": "integer",
+              "nullable": false,
+              "hasDefault": false,
+              "generated": true,
+              "autoIncrement": true,
+              "primaryKey": true,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": null,
+              "ordinal": 0,
+              "defaultSql": null
+            },
+            {
+              "name": "tree_id",
+              "kind": "text",
+              "sqlType": "TEXT",
+              "sourceType": "uuid",
+              "nullable": false,
+              "hasDefault": false,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": null,
+              "ordinal": 1,
+              "defaultSql": null
+            },
+            {
+              "name": "category",
+              "kind": "text",
+              "sqlType": "TEXT",
+              "sourceType": "varchar(16)",
+              "nullable": false,
+              "hasDefault": false,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": 16,
+              "enumValues": null,
+              "checks": [],
+              "note": "Container label as stored, e.g. NP, VP, TP, CP",
+              "ordinal": 2,
+              "defaultSql": null
+            },
+            {
+              "name": "label",
+              "kind": "text",
+              "sqlType": "TEXT",
+              "sourceType": "varchar(24)",
+              "nullable": false,
+              "hasDefault": false,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": 24,
+              "enumValues": null,
+              "checks": [],
+              "note": "Label shown in the sandbox, e.g. Block for TP",
+              "ordinal": 3,
+              "defaultSql": null
+            },
+            {
+              "name": "words",
+              "kind": "text",
+              "sqlType": "TEXT",
+              "sourceType": "text",
+              "nullable": false,
+              "hasDefault": false,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": null,
+              "ordinal": 4,
+              "defaultSql": null
+            },
+            {
+              "name": "bracketing",
+              "kind": "text",
+              "sqlType": "TEXT",
+              "sourceType": "text",
+              "nullable": false,
+              "hasDefault": false,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": null,
+              "ordinal": 5,
+              "defaultSql": null
+            },
+            {
+              "name": "word_count",
+              "kind": "integer",
+              "sqlType": "INTEGER",
+              "sourceType": "integer",
+              "nullable": false,
+              "hasDefault": false,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": null,
+              "ordinal": 6,
+              "defaultSql": null
+            },
+            {
+              "name": "depth",
+              "kind": "integer",
+              "sqlType": "INTEGER",
+              "sourceType": "integer",
+              "nullable": false,
+              "hasDefault": false,
+              "generated": false,
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "maxLength": null,
+              "enumValues": null,
+              "checks": [],
+              "note": "0 = root of a tree on the bench",
+              "ordinal": 7,
+              "defaultSql": null
+            }
+          ],
+          "primaryKey": [
+            "id"
+          ],
+          "foreignKeys": [
+            {
+              "columns": [
+                "tree_id"
+              ],
+              "refTable": "trees",
+              "refColumns": [
+                "id"
+              ],
+              "onDelete": "CASCADE",
+              "onUpdate": null
+            }
+          ],
+          "indexes": [
+            {
+              "name": "ix_phrases_category",
+              "unique": false,
+              "parts": [
+                {
+                  "kind": "column",
+                  "value": "category"
+                }
+              ]
+            },
+            {
+              "name": "ix_phrases_tree_id_fk",
+              "unique": false,
+              "parts": [
+                {
+                  "kind": "column",
+                  "value": "tree_id"
+                }
+              ]
+            }
+          ],
+          "note": null,
+          "synthetic": false
+        }
+      ],
+      "enums": {
+        "tree_state": [
+          "complete",
+          "in_progress"
+        ]
+      }
+    },
+    "renames": {
+      "tables": {},
+      "columns": {}
+    },
+    "drops": {
+      "tables": [],
+      "columns": {}
+    }
+  },
+  "history": [
+    {
+      "version": 1,
+      "hash": "7be1dc9aebb64155",
+      "strict": true,
+      "schema": {
+        "tables": [
+          {
+            "name": "trees",
+            "columns": [
+              {
+                "name": "id",
+                "kind": "text",
+                "sqlType": "TEXT",
+                "sourceType": "uuid",
+                "nullable": false,
+                "hasDefault": true,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": true,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": null,
+                "ordinal": 0,
+                "defaultSql": "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6))))"
+              },
+              {
+                "name": "title",
+                "kind": "text",
+                "sqlType": "TEXT",
+                "sourceType": "varchar(120)",
+                "nullable": false,
+                "hasDefault": false,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": 120,
+                "enumValues": null,
+                "checks": [],
+                "note": "Set automatically from the sentence when the bench is saved.\n@ui:action-button { action: 'deleteRow', label: '×', confirm: 'Delete this saved tree? This cannot be undone.' }",
+                "ordinal": 1,
+                "defaultSql": null
+              },
+              {
+                "name": "notes",
+                "kind": "text",
+                "sqlType": "TEXT",
+                "sourceType": "text",
+                "nullable": true,
+                "hasDefault": false,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": "Unused by the current interface; kept so earlier saves still open",
+                "ordinal": 2,
+                "defaultSql": null
+              },
+              {
+                "name": "sentence",
+                "kind": "text",
+                "sqlType": "TEXT",
+                "sourceType": "text",
+                "nullable": false,
+                "hasDefault": false,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": "Words on the bench, in order",
+                "ordinal": 3,
+                "defaultSql": null
+              },
+              {
+                "name": "state",
+                "kind": "enum",
+                "sqlType": "TEXT",
+                "sourceType": "tree_state",
+                "nullable": false,
+                "hasDefault": false,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": [
+                  "complete",
+                  "in_progress"
+                ],
+                "checks": [],
+                "note": null,
+                "ordinal": 4,
+                "defaultSql": null
+              },
+              {
+                "name": "starred",
+                "kind": "boolean",
+                "sqlType": "INTEGER",
+                "sourceType": "boolean",
+                "nullable": false,
+                "hasDefault": true,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": "Unused by the current interface; kept so earlier saves still open",
+                "ordinal": 5,
+                "defaultSql": "0"
+              },
+              {
+                "name": "bench",
+                "kind": "json",
+                "sqlType": "TEXT",
+                "sourceType": "json",
+                "nullable": false,
+                "hasDefault": false,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": "Full sandbox snapshot (words, nodes, roots, grammar) used to reopen the tree",
+                "ordinal": 6,
+                "defaultSql": null
+              },
+              {
+                "name": "word_count",
+                "kind": "integer",
+                "sqlType": "INTEGER",
+                "sourceType": "integer",
+                "nullable": false,
+                "hasDefault": true,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": null,
+                "ordinal": 7,
+                "defaultSql": "0"
+              },
+              {
+                "name": "created_at",
+                "kind": "datetime",
+                "sqlType": "TEXT",
+                "sourceType": "timestamp",
+                "nullable": false,
+                "hasDefault": true,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": null,
+                "ordinal": 8,
+                "defaultSql": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+              },
+              {
+                "name": "updated_at",
+                "kind": "datetime",
+                "sqlType": "TEXT",
+                "sourceType": "timestamp",
+                "nullable": false,
+                "hasDefault": true,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": null,
+                "ordinal": 9,
+                "defaultSql": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+              }
+            ],
+            "primaryKey": [
+              "id"
+            ],
+            "foreignKeys": [],
+            "indexes": [
+              {
+                "name": "ix_trees_created_at",
+                "unique": false,
+                "parts": [
+                  {
+                    "kind": "column",
+                    "value": "created_at"
+                  }
+                ]
+              },
+              {
+                "name": "ix_trees_starred",
+                "unique": false,
+                "parts": [
+                  {
+                    "kind": "column",
+                    "value": "starred"
+                  }
+                ]
+              }
+            ],
+            "note": null,
+            "synthetic": false
+          },
+          {
+            "name": "phrases",
+            "columns": [
+              {
+                "name": "id",
+                "kind": "integer",
+                "sqlType": "INTEGER",
+                "sourceType": "integer",
+                "nullable": false,
+                "hasDefault": false,
+                "generated": true,
+                "autoIncrement": true,
+                "primaryKey": true,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": null,
+                "ordinal": 0,
+                "defaultSql": null
+              },
+              {
+                "name": "tree_id",
+                "kind": "text",
+                "sqlType": "TEXT",
+                "sourceType": "uuid",
+                "nullable": false,
+                "hasDefault": false,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": null,
+                "ordinal": 1,
+                "defaultSql": null
+              },
+              {
+                "name": "category",
+                "kind": "text",
+                "sqlType": "TEXT",
+                "sourceType": "varchar(16)",
+                "nullable": false,
+                "hasDefault": false,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": 16,
+                "enumValues": null,
+                "checks": [],
+                "note": "Container label as stored, e.g. NP, VP, TP, CP",
+                "ordinal": 2,
+                "defaultSql": null
+              },
+              {
+                "name": "label",
+                "kind": "text",
+                "sqlType": "TEXT",
+                "sourceType": "varchar(24)",
+                "nullable": false,
+                "hasDefault": false,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": 24,
+                "enumValues": null,
+                "checks": [],
+                "note": "Label shown in the sandbox, e.g. Block for TP",
+                "ordinal": 3,
+                "defaultSql": null
+              },
+              {
+                "name": "words",
+                "kind": "text",
+                "sqlType": "TEXT",
+                "sourceType": "text",
+                "nullable": false,
+                "hasDefault": false,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": null,
+                "ordinal": 4,
+                "defaultSql": null
+              },
+              {
+                "name": "bracketing",
+                "kind": "text",
+                "sqlType": "TEXT",
+                "sourceType": "text",
+                "nullable": false,
+                "hasDefault": false,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": null,
+                "ordinal": 5,
+                "defaultSql": null
+              },
+              {
+                "name": "word_count",
+                "kind": "integer",
+                "sqlType": "INTEGER",
+                "sourceType": "integer",
+                "nullable": false,
+                "hasDefault": false,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": null,
+                "ordinal": 6,
+                "defaultSql": null
+              },
+              {
+                "name": "depth",
+                "kind": "integer",
+                "sqlType": "INTEGER",
+                "sourceType": "integer",
+                "nullable": false,
+                "hasDefault": false,
+                "generated": false,
+                "autoIncrement": false,
+                "primaryKey": false,
+                "unique": false,
+                "maxLength": null,
+                "enumValues": null,
+                "checks": [],
+                "note": "0 = root of a tree on the bench",
+                "ordinal": 7,
+                "defaultSql": null
+              }
+            ],
+            "primaryKey": [
+              "id"
+            ],
+            "foreignKeys": [
+              {
+                "columns": [
+                  "tree_id"
+                ],
+                "refTable": "trees",
+                "refColumns": [
+                  "id"
+                ],
+                "onDelete": "CASCADE",
+                "onUpdate": null
+              }
+            ],
+            "indexes": [
+              {
+                "name": "ix_phrases_category",
+                "unique": false,
+                "parts": [
+                  {
+                    "kind": "column",
+                    "value": "category"
+                  }
+                ]
+              },
+              {
+                "name": "ix_phrases_tree_id_fk",
+                "unique": false,
+                "parts": [
+                  {
+                    "kind": "column",
+                    "value": "tree_id"
+                  }
+                ]
+              }
+            ],
+            "note": null,
+            "synthetic": false
+          }
+        ],
+        "enums": {
+          "tree_state": [
+            "complete",
+            "in_progress"
+          ]
+        }
+      }
+    }
+  ]
+}
