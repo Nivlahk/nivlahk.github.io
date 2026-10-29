@@ -1,0 +1,52 @@
+// SYNTAX tree library — lives in each player's own Google Drive via Icebolt.
+// The developer never receives it. Scores are deliberately NOT stored:
+// SYNTAX points last for one visit by design.
+
+Project syntax_tree_library {
+  Note: 'Saved benches from the Syntax Tree Sandbox, plus every finished phrase in them as a queryable corpus.'
+}
+
+Enum tree_state {
+  complete     // every tree on the bench is finished
+  in_progress  // saved mid-build
+}
+
+Table trees {
+  id uuid [pk, default: `gen_random_uuid()`]
+  title varchar(120) [not null, note: '''
+    Name the player gives the saved bench.
+    @ui:form-input { label: 'Title', placeholder: 'e.g. The old man the boats', order: 1 }
+    @ui:action-button { action: 'deleteRow', label: 'Delete', confirm: 'Delete this tree from your library? This cannot be undone.' }
+  ''']
+  notes text [note: '''@ui:form-input { label: 'Notes', multiline: true, placeholder: 'What makes this one interesting?', order: 2 }''']
+  sentence text [not null, note: 'Words on the bench, in order']
+  state tree_state [not null]
+  starred boolean [not null, default: false, note: '''@ui:action-button { action: 'toggleRow', label: 'Star' }''']
+  bench json [not null, note: 'Full sandbox snapshot (words, nodes, roots, grammar) used to reopen the tree']
+  word_count integer [not null, default: 0]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    created_at
+    starred
+  }
+}
+
+// One row per finished phrase in a saved tree: the corpus for BigQuery.
+Table phrases {
+  id integer [pk, increment]
+  tree_id uuid [not null]
+  category varchar(16) [not null, note: 'Container label as stored, e.g. NP, VP, TP, CP']
+  label varchar(24) [not null, note: 'Label shown in the sandbox, e.g. Block for TP']
+  words text [not null]
+  bracketing text [not null]
+  word_count integer [not null]
+  depth integer [not null, note: '0 = root of a tree on the bench']
+
+  indexes {
+    category
+  }
+}
+
+Ref: phrases.tree_id > trees.id [delete: cascade]

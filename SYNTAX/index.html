@@ -183,6 +183,53 @@ button{font:inherit;color:inherit}
 .inv-lex{border:2px solid var(--c);color:var(--c);background:var(--box);font-weight:700}
 .inv-lex.legend{cursor:default;touch-action:auto}
 .dock-hint{margin:-4px 0 10px;color:var(--ink2);font-size:12.5px;line-height:1.4}
+/* tree library */
+.lib .btn.primary,.lib-dialog .btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.lib-small{color:var(--ink2);font-size:12px;line-height:1.4;margin:8px 0 0}
+.lib-err{color:var(--bad);font-size:12.5px;margin:6px 0 0}
+.lib-err:empty{display:none}
+.lib-status{font-size:12.5px;margin:0 0 10px;padding:6px 9px;border-radius:8px;background:color-mix(in srgb,var(--ok) 12%,transparent);color:var(--ink)}
+.lib-status[data-kind="busy"]{background:color-mix(in srgb,var(--gold) 14%,transparent)}
+.lib-status[data-kind="err"]{background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.lib .icebolt-form{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.lib .icebolt-field{display:flex;flex-direction:column;gap:3px}
+.lib .icebolt-field label{font-size:12px;color:var(--ink2)}
+.lib .icebolt-field input,.lib .icebolt-field textarea,.lib-input{font:inherit;font-size:13px;padding:6px 9px;border-radius:8px;border:1px solid var(--line2);background:var(--bench);color:var(--ink);width:100%}
+.lib .icebolt-field textarea{min-height:52px;resize:vertical}
+.lib .icebolt-submit{align-self:flex-start;border:1px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12.5px;font-weight:600}
+.lib [data-lib-update]{margin:0 0 8px}
+.lib-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.lib-item{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--box);display:flex;flex-direction:column;gap:2px}
+.lib-item.open{border-color:var(--ink)}
+.lib-title{font-size:13.5px}
+.lib-meta{font-size:11.5px;color:var(--ink2)}
+.lib-sentence{font-family:var(--mono);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lib-notes{font-size:12px;color:var(--ink2)}
+.lib-empty{color:var(--ink2);font-size:12.5px}
+.lib .icebolt-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.lib .icebolt-action{border:1px solid var(--line2);background:transparent;border-radius:8px;padding:3px 9px;font-size:12px;cursor:pointer}
+.lib .icebolt-action--danger{border-color:var(--bad);color:var(--bad)}
+.lib .icebolt-drive-connect{display:flex;flex-direction:column;gap:4px;align-items:flex-start;margin:4px 0}
+.lib .icebolt-drive-connect__button{border:1px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:600}
+.lib .icebolt-drive-connect__button:disabled{opacity:.6;cursor:default}
+.lib-foot{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.lib-settings{width:100%}
+.lib-settings input{margin:0 6px 0 0;vertical-align:-2px}
+.lib-settings summary{cursor:pointer;font-size:12.5px;color:var(--ink2)}
+.lib-settings h2{font-size:12px;margin:8px 0 4px;text-transform:none;letter-spacing:0}
+.lib-settings p,.lib-settings small,.lib-settings dl{font-size:12px;color:var(--ink2);line-height:1.4}
+.lib-settings fieldset{border:0;padding:0;margin:8px 0}
+.lib-settings legend{font-size:12.5px;color:var(--ink);padding:0;margin-bottom:4px}
+.lib-settings small{display:block;margin:0 0 4px 22px}
+.lib-settings dt{color:var(--ink);font-weight:600;margin-top:6px}
+.lib-settings dd{margin:0}
+.lib-settings .icebolt-warning{color:var(--warn)}
+.lib-dialog{border:1px solid var(--line2);border-radius:14px;background:var(--panel);color:var(--ink);max-width:420px;padding:18px 20px}
+.lib-dialog::backdrop{background:rgba(0,0,0,.45)}
+.lib-dialog h3{font-family:var(--display);font-size:20px;margin:0 0 8px}
+.lib-dialog p{margin:6px 0;font-size:13px;line-height:1.45}
+.lib-field{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--ink2);margin:6px 0}
+.lib-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
 .cardgrid{display:grid;grid-template-columns:1fr;gap:6px}
 @media (max-width:860px){.cardgrid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
 .pcard{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:9px;background:var(--box);border:1px solid var(--line2);border-radius:10px;padding:7px 10px 7px 8px;
@@ -376,6 +423,12 @@ details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text
       <div class="inv" id="phrInv"></div>
     </section>
     <details class="rules"><summary>Phrase-structure rules</summary><div class="rulelist" id="ruleList"></div></details>
+    <!-- Tree library: saves benches to the player's own Google Drive (tools/syntax-library builds library.js).
+         Paste your OAuth Web client ID into data-google-client-id to switch it on. -->
+    <section class="dock lib" data-dock id="libraryDock" data-google-client-id="">
+      <h2><span>Tree library</span><span data-lib-count></span></h2>
+      <div data-lib-mount></div>
+    </section>
     <div class="status" id="status"></div>
   </aside>
   <section class="work">
@@ -1032,12 +1085,14 @@ const snap=()=>JSON.stringify({words:S.words,nodes:S.nodes,roots:S.roots,g:G});
 function loadSnap(str){const o=JSON.parse(str);S={words:o.words||[],nodes:o.nodes||{},roots:o.roots||[],sel:null,edit:null};
   G=o.g&&o.g.pos&&o.g.rules?o.g:cloneG(DEFAULT_GRAMMAR);applyGrammar();
   uid=Math.max(uid,0,...Object.keys(S.nodes).map(k=>+k.slice(1)||0))}
-let undoStack=[],redoStack=[],lastSnap=null;
+let undoStack=[],redoStack=[],lastSnap=null,announcedSnap=null;
 function commit(){
   if(drag)return;
   const now=snap();
   if(lastSnap!==null&&now!==lastSnap){undoStack.push(lastSnap);if(undoStack.length>150)undoStack.shift();redoStack=[]}
   lastSnap=now;
+  /* the tree library listens for edits (including undo/redo) to offer "Save changes" */
+  if(now!==announcedSnap){announcedSnap=now;dispatchEvent(new Event('syntax:change'))}
   $('#undoBtn').disabled=!undoStack.length;$('#redoBtn').disabled=!redoStack.length;
   $('#clearBtn').disabled=!S.words.length&&!S.roots.length;
 }
@@ -1357,8 +1412,35 @@ function finish(){
   drag.ghost.remove();document.body.classList.remove('dragging');drag=null;renderAll();
 }
 
+/* ---------- tree library hooks (used by library.js) ----------
+   Opening a saved tree replaces the bench as one undoable step and earns no points:
+   its finished structures are marked as already seen, so the score still only counts
+   what was built during this visit. */
+window.SYNTAX_API={
+  snapshot:snap,
+  open(str){
+    if(lastSnap!==null){undoStack.push(lastSnap);if(undoStack.length>150)undoStack.shift();redoStack=[]}
+    loadSnap(str);
+    for(const id of Object.keys(S.nodes))if(phraseDone(id))SCORE.seen[S.nodes[id].cat+' '+bracket(id)]=1;
+    lastSnap=snap();renderAll();
+  },
+  sentence:()=>S.words.filter(w=>!w.gone).map(w=>w.text).join(' '),
+  wordCount:()=>S.words.filter(w=>!w.gone).length,
+  phrases(){
+    const out=[];
+    (function walk(ids,level){ids.forEach(id=>{const n=S.nodes[id];if(!n||n.type!=='node'||isLex(n.cat))return;
+      if(phraseDone(id))out.push({category:n.cat,label:dispCat(n),words:words(id),bracketing:bracket(id),
+        wordCount:subtree(id).filter(c=>S.nodes[c].type==='word').length,depth:level});
+      walk(n.children,level+1)})})(S.roots,0);
+    return out;
+  },
+  isComplete(){const done=new Set(completeRoots());return S.roots.length>0&&S.roots.every(r=>done.has(r))},
+  toast,
+};
+
 try{localStorage.removeItem('syntax-tree-sandbox-v1')}catch(e){} /* clear state saved by earlier versions */
 renderAll();
 </script>
+<script type="module" src="library.js"></script>
 
 </body></html>

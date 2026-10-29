@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "schemaHash": "7be1dc9aebb64155",
+  "tables": {
+    "trees": {
+      "table": "trees",
+      "primaryKey": [
+        "id"
+      ],
+      "form": {
+        "id": "icebolt-form-trees",
+        "table": "trees",
+        "submitLabel": "Add trees",
+        "fields": [
+          {
+            "column": "title",
+            "id": "icebolt-trees-title",
+            "name": "title",
+            "element": "input",
+            "inputType": "text",
+            "label": "Title",
+            "placeholder": "e.g. The old man the boats",
+            "description": null,
+            "required": true,
+            "nullable": false,
+            "kind": "text",
+            "options": null,
+            "attributes": {
+              "maxlength": "120"
+            },
+            "order": 1
+          },
+          {
+            "column": "notes",
+            "id": "icebolt-trees-notes",
+            "name": "notes",
+            "element": "textarea",
+            "inputType": null,
+            "label": "Notes",
+            "placeholder": "What makes this one interesting?",
+            "description": null,
+            "required": false,
+            "nullable": true,
+            "kind": "text",
+            "options": null,
+            "attributes": {},
+            "order": 2
+          }
+        ]
+      },
+      "actions": [
+        {
+          "id": "icebolt-trees-action-0",
+          "table": "trees",
+          "action": "deleteRow",
+          "sourceColumn": "title",
+          "target": null,
+          "label": "Delete",
+          "behavior": {
+            "type": "delete"
+          },
+          "confirm": "Delete this tree from your library? This cannot be undone.",
+          "variant": "danger"
+        },
+        {
+          "id": "icebolt-trees-action-1",
+          "table": "trees",
+          "action": "toggleRow",
+          "sourceColumn": "starred",
+          "target": "starred",
+          "label": "Star",
+          "behavior": {
+            "type": "toggle-boolean"
+          },
+          "confirm": null,
+          "variant": "secondary"
+        }
+      ]
+    },
+    "phrases": {
+      "table": "phrases",
+      "primaryKey": [
+        "id"
+      ],
+      "form": null,
+      "actions": []
+    }
+  }
+}

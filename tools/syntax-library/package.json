@@ -1,0 +1,19 @@
+{
+  "name": "syntax-tree-library",
+  "private": true,
+  "type": "module",
+  "description": "Builds SYNTAX/library.js: the Syntax Tree Sandbox tree library on Icebolt.",
+  "scripts": {
+    "compile": "node compile.mjs",
+    "build": "npm run compile && esbuild src/main.ts --bundle --format=esm --target=es2022 --minify --legal-comments=none --outfile=../../SYNTAX/library.js",
+    "typecheck": "npm run compile && tsc --noEmit"
+  },
+  "dependencies": {
+    "@icebolt/compiler-core": "file:../../../icebolt",
+    "sql.js": "1.15.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0"
+  }
+}
