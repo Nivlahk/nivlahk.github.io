@@ -1754,7 +1754,7 @@ function paneHTML(p, unchanged){
    #/<l1>/<l2>/<sound>/b  the target
    ====================================================================== */
 const DEFAULTS = { l1: ['english-ga'], l2: 'mandarin' };
-const STAGES = ['a','b','c','d'];
+const STAGES = ['a','b','d'];   // 'c' (self-checks) was folded into 'b'
 
 /* Which self-checks the learner has ticked, per sound. Held in memory only —
    this is a claim about their own mouth, so it should not silently persist
@@ -1782,7 +1782,7 @@ function readHash(){
     l2: E.LANGUAGES[p[1]] ? p[1] : DEFAULTS.l2,
     view: p[2] === '!course' ? 'course' : p[2] === '!all' ? 'sounds' : 'start',
     sound: (p[2] && p[2][0] !== '!') ? p[2] : null,
-    stage: STAGES.includes(p[3]) ? p[3] : 'a',
+    stage: p[3] === 'c' ? 'b' : STAGES.includes(p[3]) ? p[3] : 'a',
   };
 }
 function go(st){
@@ -2133,7 +2133,7 @@ function renderWalk(st){
   const nextB = seq[idx + 1] || null;
 
   const onA = st.stage === 'a', onB = st.stage === 'b';
-  const onC = st.stage === 'c', onD = st.stage === 'd';
+  const onD = st.stage === 'd';
   const sym = onA ? b.anchor : b.target;
   const checks = E.checksFor(b);
   // Which panels actually differ between anchor and target? Compare the
@@ -2148,9 +2148,6 @@ function renderWalk(st){
   const shown = new Set();
   panelDims.forEach((dims, i) => { if (differs[i]) dims.forEach(d => shown.add(d)); });
   const unseen = b.kinds.filter(d => !shown.has(d));
-  const needed = checks.filter(c => c.reliable).map(c => c.dim);
-  const done = ticksFor(st);
-  const gateOpen = needed.every(d => done.has(d));
   const P = [];
 
   P.push(`<div class="crumb">
@@ -2160,7 +2157,7 @@ function renderWalk(st){
   </div>
 
   <div class="stagebar">${
-    ['The sound you have','The sound you want','Check yourself','Train your ear']
+    ['The sound you have','The sound you want','Train your ear']
       .map((label, i) => {
         const here = STAGES.indexOf(st.stage);
         return `<div class="${i === here ? 'on' : i < here ? 'done' : ''}">${
@@ -2172,7 +2169,6 @@ function renderWalk(st){
     <p class="role">${
       onA ? 'You already say this' :
       onB ? 'This is the target' :
-      onC ? 'Prove it with your body, not your ear' :
             'Now train the ear'}</p>
     <div class="g">${ipa(sym)}${haveAudio(sym)
       ? `<button class="playbtn" data-play="${esc(sym)}" data-also="${esc(sym)}"
@@ -2194,7 +2190,6 @@ function renderWalk(st){
                         p.heading.toLowerCase()).join(' and ')
                     + ' changes' + (unseen.length ? ', plus something you cannot see.' : '.')
                   : '')
-      : onC ? ' &mdash; say it out loud, then run the tests below. None of them ask you to judge how it sounds.'
             : ' &mdash; with the articulation in your body, the difference is something you now have a name for.'}</p>
   </div>
 
@@ -2211,36 +2206,20 @@ function renderWalk(st){
            it just isn't a separate letter in your language.</p>`}
       <p class="g2">${esc(b.kindGloss)}</p>
     </div>`);
-  }
-
-  if (onC){
-    P.push(`<p class="sub" style="margin-top:26px">One test per thing that changed. These are
-      physical, not acoustic &mdash; you can pass them without being able to hear the contrast yet,
-      which is the whole point of doing this before the listening.</p>`);
-
-    if (!checks.length){
-      P.push(`<p class="sub">Nothing changes for this sound, so there is nothing to check.
-        You already produce it.</p>`);
-    } else {
-      P.push(checks.map(c => `
-        <div class="check${c.reliable ? '' : ' unreliable'}">
-          <div>
-            <div class="t">${esc(c.title)}
-              <span class="tag k-${esc(c.dim)}">${esc(E.DIM_LABEL[c.dim] || c.dim)}</span></div>
-            <p class="how">${esc(c.how)}</p>
-            <p class="pass">${esc(c.pass)}</p>
-          </div>
-          ${c.reliable
-            ? `<button class="tick" data-dim="${esc(c.dim)}"
-                 aria-pressed="${done.has(c.dim)}">${done.has(c.dim) ? '&#10003; Passed' : 'I did this'}</button>`
-            : `<button class="tick" disabled>No test</button>`}
-        </div>`).join(''));
+    if (checks.length){
+      P.push(`<h2 style="font-size:21px;margin-top:40px">How to tell you've got it</h2>
+        <p class="sub">Physical tests, not listening ones &mdash; you can pass them before you can
+        hear the difference, so your ear never trains against a wrong articulation.</p>
+        ${checks.map(c => `
+          <div class="check${c.reliable ? '' : ' unreliable'}" style="grid-template-columns:1fr">
+            <div>
+              <div class="t">${esc(c.title)}
+                <span class="tag k-${esc(c.dim)}">${esc(E.DIM_LABEL[c.dim] || c.dim)}</span></div>
+              <p class="how">${esc(c.how)}</p>
+              <p class="pass">${esc(c.pass)}</p>
+            </div>
+          </div>`).join('')}`);
     }
-
-    P.push(gateOpen
-      ? `<p class="gate">All checks passed. Now your ear has something to look for.</p>`
-      : `<p class="gate">Work through the checks above to unlock the listening stage. This gate
-         exists so you don't train your ear against your own wrong articulation.</p>`);
   }
 
   if (onD){
@@ -2282,11 +2261,8 @@ function renderWalk(st){
   P.push(`<div class="nav">
     ${onA ? `<button class="btn primary" id="next">Now the sound you want &nbsp;${esc(b.target)} &rarr;</button>` : ''}
     ${onB ? `<button class="btn" id="prev">&larr; Back to ${esc(b.anchor)}</button>
-             <button class="btn primary" id="next">Now try saying it &rarr;</button>` : ''}
-    ${onC ? `<button class="btn" id="prev">&larr; Back to the diagrams</button>
-             <button class="btn primary" id="next" ${gateOpen ? '' : 'disabled'}
-               >Train your ear &rarr;</button>` : ''}
-    ${onD ? `<button class="btn" id="prev">&larr; Back to the checks</button>
+             <button class="btn primary" id="next">Train your ear &rarr;</button>` : ''}
+    ${onD ? `<button class="btn" id="prev">&larr; Back to ${esc(b.target)}</button>
              ${nextB
                ? `<button class="btn primary" id="nextSound">Next sound &rarr;</button>`
                : `<button class="btn primary" id="back2">All ${seq.length} sounds done &mdash; finish</button>`}` : ''}
@@ -2322,7 +2298,7 @@ function renderWalk(st){
       sc.verdict = ok
         ? `<b class="ok">Right.</b> That was ${sc.cur}.`
         : `<b class="no">No &mdash; that was ${sc.cur}.</b> Play it again, then go back and
-           redo the check for ${esc(b.kindLabel.toLowerCase())}.`;
+           look again at what changes &mdash; ${esc(b.kindLabel.toLowerCase())}.`;
       sc.cur = null;
       painted = null; route();
     };
@@ -2331,14 +2307,6 @@ function renderWalk(st){
     if (qb2) qb2.onclick = () => answer(b.target);
   }
 
-  document.querySelectorAll('.tick[data-dim]').forEach(el => {
-    el.addEventListener('click', () => {
-      const set = ticksFor(st), dim = el.dataset.dim;
-      if (set.has(dim)) set.delete(dim); else set.add(dim);
-      painted = null;           // force a repaint of the same URL
-      route();
-    });
-  });
 }
 
 function footerHTML(){
