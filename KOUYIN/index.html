@@ -171,6 +171,61 @@
   .hero .artcol .pane .ph{margin-top:2px;}
   @media(max-width:760px){.hero{grid-template-columns:1fr;gap:22px;}}
 
+  /* the comparison: anchor | target, side by side at every width */
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0 0;}
+  .pair .side{min-width:0;padding:10px 14px 12px;border:1px solid var(--line);border-radius:12px;}
+  .pair .side.want{background:rgba(203,163,83,.06);border-color:rgba(203,163,83,.28);}
+  .pair .role{font-family:'Fraunces';font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--faint);margin:0 0 4px;}
+  .pair .want .role{color:var(--verm);}
+  .pair .g{font-family:'Fraunces';font-weight:300;font-size:36px;line-height:1.15;
+    color:var(--gold);display:flex;align-items:center;gap:12px;}
+  .pair .have .g{color:var(--paper);}
+  .pair .g .playbtn{width:34px;height:34px;font-size:12px;}
+  .pair .nm{margin:2px 0 0;color:var(--dim);font-size:14px;line-height:1.35;}
+  .pair .nm b{color:var(--paper);font-weight:400;}
+  .pair .nm .from{display:none;}
+  .hearboth{margin:12px 0 0;}
+  .quiz{margin:26px 0 0;padding:16px 18px;border:1px solid var(--line);border-radius:12px;
+    background:var(--ink2);}
+  .quiz .qh{font-family:'Fraunces';font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--verm);margin:0 0 12px;}
+  .quiz .qrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+  .quiz .btn{font-size:14px;padding:8px 16px;}
+  .quiz .btn[disabled]{opacity:.4;cursor:default;}
+  .quiz #qA,.quiz #qB{font-size:18px;min-width:52px;}
+  .quiz .qwhich{color:var(--dim);font-size:15px;margin-left:6px;}
+  .quiz .score{margin-left:auto;font-family:'Fraunces';font-size:13px;letter-spacing:.14em;color:var(--faint);}
+  .quiz .verdict{margin:10px 0 0;min-height:0;font-size:15px;}
+  .quiz .verdict:empty{display:none;}
+  .hearboth .btn{font-size:14px;padding:8px 16px;}
+  .cmp{margin-top:22px !important;}
+  .hearboth .btn.on{background:rgba(203,163,83,.18);}
+  .cmp{margin:30px 0 0;}
+  .cmp .ph .also{color:var(--faint);letter-spacing:.14em;}
+  .cmp .ph{font-family:'Fraunces';font-size:11px;letter-spacing:.26em;text-transform:uppercase;
+    color:var(--verm);margin:0 0 10px;}
+  .cmprow{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .cmprow .pane{min-width:0;}
+  @media(max-width:560px){
+    .wrap{padding-left:14px;padding-right:14px;}
+    .pair{gap:10px;}
+    .pair .side{padding:8px 10px 10px;}
+    .pair .role{font-size:9px;letter-spacing:.14em;}
+    .pair .g{font-size:30px;gap:8px;}
+    .pair .g .playbtn{width:30px;height:30px;font-size:11px;}
+    .pair .nm{font-size:12px;}
+    .cmprow{gap:10px;}
+    .quiz{padding:14px 14px;}
+    .quiz .qwhich{display:none;}
+    .quiz .qrow{gap:8px;}
+    .cmprow .pane .cap{font-size:14px;margin-top:7px;}
+    .cmprow .pane .cap small{display:none;}
+    .cmprow .missing .path{display:none;}
+    .cmprow .missing .what{font-size:14px;}
+    .stagebar div{font-size:10px;letter-spacing:.14em;}
+  }
+
   /* start screen */
   .startbox{display:flex;flex-wrap:wrap;align-items:center;gap:20px;margin:34px 0 0;
     border-top:1px solid var(--line);padding-top:28px;}
@@ -1669,62 +1724,17 @@ function panelsFor(sym){
   ];
 }
 
-/** The diagram that goes beside the sound: whatever changed, at full size.
-    If nothing visible changes, show the first panel anyway as the reference —
-    the learner should still see where the sound is made. */
-function heroPanels(panels, differs){
-  const changed = panels.filter((_, i) => differs[i]);
-  return changed.length ? changed.map(p => paneHTML(p, false)).join('')
-                        : paneHTML(panels[0], true);
-}
 
-/** Everything that goes under the hero: notes on invisible changes, and
-    thumbnails for panels that are identical on both sides. */
-function renderPanels(panels, differs, anyDiff, unseen, b){
-  // when nothing differs, panels[0] is already up in the hero
-  const same = panels.filter((_, i) => !differs[i] && (anyDiff || i > 0));
-  const out = [];
-
-  if (!anyDiff && !unseen.length){
-    // a zero-step bridge: the learner already produces this exact articulation,
-    // it just isn't a separate sound in their language
-    out.push(`<div class="invisible"><b>Nothing changes.</b> This is the same articulation you
-      already make &mdash; it simply isn't a separate sound in your language, so you have never
-      had to produce it on purpose. Both diagrams are the ones you are already using.</div>`);
-  }
-
-  if (unseen.length){
-    const names = unseen.map(d => (E.DIM_LABEL[d] || d).toLowerCase());
-    const list = names.length > 1
-      ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
-    // Lip posture is genuinely visible — there just isn't a lips panel for
-    // consonants. Don't tell the learner to feel for something they could see.
-    const lipsOnly = unseen.every(d => d === 'labialised' || d === 'round');
-    const why = lipsOnly
-      ? 'and no diagram here shows the lips &mdash; use a mirror for this one'
-      : 'and no picture can show it &mdash; it happens where you cannot see. '
-        + 'Catch that one by feel at the check stage';
-    out.push(anyDiff
-      ? `<div class="invisible">The <b>${esc(list)}</b> also changes, ${why}.</div>`
-      : `<div class="invisible"><b>Neither diagram changes.</b> The only thing that differs is the
-         <b>${esc(list)}</b>, ${why}.</div>`);
-  }
-
-  if (same.length){
-    out.push(same.map(p => `
-      <div class="same">
-        <div class="thumb">${p.thumb || `
-          <img src="${esc(p.file.split('/').map(encodeURIComponent).join('/'))}" alt=""
-               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-          <div class="missing" style="display:none"><div class="icon">&#9633;</div></div>`}
-        </div>
-        <div class="txt"><span class="lbl">${esc(p.heading)} &mdash; unchanged</span>
-          <b>${esc(p.caption)}</b>${anyDiff
-            ? ' &mdash; the same on both sides of this bridge, so it is not what you are changing.'
-            : ''}</div>
-      </div>`).join(''));
-  }
-  return out.join('');
+function frameHTML(p){
+  const enc = p.file.split('/').map(encodeURIComponent).join('/');
+  return `<div class="frame wide">${p.art ? p.art : `
+    <img src="${esc(enc)}" alt="${esc(p.heading + ': ' + p.caption)}"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+    <div class="missing" style="display:none">
+      <div class="icon">&#9633;</div>
+      <div class="what">${esc(p.caption)}</div>
+      <div class="path">${esc(p.file)}</div>
+    </div>`}</div>`;
 }
 
 function paneHTML(p, unchanged){
@@ -1754,7 +1764,7 @@ function paneHTML(p, unchanged){
    #/<l1>/<l2>/<sound>/b  the target
    ====================================================================== */
 const DEFAULTS = { l1: ['english-ga'], l2: 'mandarin' };
-const STAGES = ['a','b','d'];   // 'c' (self-checks) was folded into 'b'
+const STAGES = ['a'];   // one screen per sound; old b/c/d links land here
 
 /* Which self-checks the learner has ticked, per sound. Held in memory only —
    this is a claim about their own mouth, so it should not silently persist
@@ -1782,7 +1792,7 @@ function readHash(){
     l2: E.LANGUAGES[p[1]] ? p[1] : DEFAULTS.l2,
     view: p[2] === '!course' ? 'course' : p[2] === '!all' ? 'sounds' : 'start',
     sound: (p[2] && p[2][0] !== '!') ? p[2] : null,
-    stage: p[3] === 'c' ? 'b' : STAGES.includes(p[3]) ? p[3] : 'a',
+    stage: STAGES.includes(p[3]) ? p[3] : 'a',
   };
 }
 function go(st){
@@ -2132,10 +2142,6 @@ function renderWalk(st){
   if (!b){ go({ l1: st.l1, l2: st.l2 }); return; }
   const nextB = seq[idx + 1] || null;
 
-  const onA = st.stage === 'a', onB = st.stage === 'b';
-  const onD = st.stage === 'd';
-  const sym = onA ? b.anchor : b.target;
-  const checks = E.checksFor(b);
   // Which panels actually differ between anchor and target? Compare the
   // resolved files rather than guessing from the feature names — voicing and
   // aspiration change neither picture, and an articulator change swaps the
@@ -2154,159 +2160,120 @@ function renderWalk(st){
     <button class="btn" id="back">&larr; Change languages</button>
     <span>${esc(r.l1Name)} &rarr; ${esc(r.l2Name)}</span>
     <span class="prog">Sound ${idx + 1} of ${seq.length}</span>
-  </div>
+  </div>`);
 
-  <div class="stagebar">${
-    ['The sound you have','The sound you want','Train your ear']
-      .map((label, i) => {
-        const here = STAGES.indexOf(st.stage);
-        return `<div class="${i === here ? 'on' : i < here ? 'done' : ''}">${
-          (i+1)} &middot; ${label}</div>`;
-      }).join('')}</div>
+  /* the two sounds, always side by side — the comparison IS the lesson */
+  const side = (sym, role, from, cls) => `
+    <div class="side ${cls}">
+      <p class="role">${role}</p>
+      <div class="g">${ipa(sym)}${haveAudio(sym)
+        ? `<button class="playbtn" data-play="${esc(sym)}" data-also="${esc(sym)}"
+              aria-label="Hear ${esc(sym)}">&#9654;</button>` : ''}</div>
+      <p class="nm"><b>${esc(E.NAMES[sym] || '')}</b><span class="from"> &mdash; ${from}</span></p>
+    </div>`;
 
-  ${(onA || onB) ? '<div class="hero">' : ''}
-  <div class="bighead">
-    <p class="role">${
-      onA ? 'You already say this' :
-      onB ? 'This is the target' :
-            'Now train the ear'}</p>
-    <div class="g">${ipa(sym)}${haveAudio(sym)
-      ? `<button class="playbtn" data-play="${esc(sym)}" data-also="${esc(sym)}"
-            style="width:54px;height:54px;font-size:19px"
-            aria-label="Hear ${esc(sym)}">&#9654;</button>` : ''}</div>
-    <p class="nm"><b>${esc(E.NAMES[sym] || '')}</b>${
-      onA
-        ? (b.anchorKind === 'allophone'
-            ? ' &mdash; you produce this already, just never deliberately. Say it and hold it.'
-            : ' &mdash; a sound of ' + esc(r.l1Name) + '. Say it and hold it.')
-              + (anyDiff
-                  ? ' Watch the ' + pA.filter((_,i)=>differs[i]).map(p =>
-                      p.heading.toLowerCase()).join(' and ') + ' diagram &mdash; that is the one that moves.'
-                  : '')
-      : onB ? ' &mdash; a sound of ' + esc(r.l2Name) + '. '
-              + (anyDiff
-                  ? (unseen.length ? 'The ' : 'Only the ')
-                    + pA.filter((_,i)=>differs[i]).map(p =>
-                        p.heading.toLowerCase()).join(' and ')
-                    + ' changes' + (unseen.length ? ', plus something you cannot see.' : '.')
-                  : '')
-            : ' &mdash; with the articulation in your body, the difference is something you now have a name for.'}</p>
-  </div>
+  const pairHTML = `<div class="pair">
+    ${side(b.anchor, 'You already say this',
+        b.anchorKind === 'allophone' ? 'you make it, just never on purpose'
+                                     : 'a sound of ' + esc(r.l1Name), 'have')}
+    ${side(b.target, 'The sound you want',
+        'a sound of ' + esc(r.l2Name), 'want')}
+  </div>` + ((haveAudio(b.anchor) && haveAudio(b.target))
+    ? `<div class="hearboth"><button class="btn" data-play="${esc(b.target)}"
+      data-also="${esc(b.anchor)}">&#9654;&nbsp; Hear both &mdash; ${esc(b.anchor)} then ${esc(b.target)}</button></div>` : '');
 
-  ${(onA || onB) ? `<div class="artcol">${heroPanels(onA ? pA : pB, differs)}</div></div>
-     ${renderPanels(onA ? pA : pB, differs, anyDiff, unseen, b)}` : ''}`);
-
-  if (onB){
-    P.push(`<div class="change">
-      <div class="h">What changed <span class="tag k-${esc(b.primary)}${
-        b.compound ? ' multi' : ''}">${esc(b.kindLabel)}</span></div>
-      ${b.steps.length
-        ? `<ol>${b.steps.map(s => `<li>${esc(s.do)}</li>`).join('')}</ol>`
-        : `<p style="color:var(--dim);margin:0">Nothing. You already produce this sound &mdash;
-           it just isn't a separate letter in your language.</p>`}
-      <p class="g2">${esc(b.kindGloss)}</p>
-    </div>`);
-    if (checks.length){
-      P.push(`<h2 style="font-size:21px;margin-top:40px">How to tell you've got it</h2>
-        <p class="sub">Physical tests, not listening ones &mdash; you can pass them before you can
-        hear the difference, so your ear never trains against a wrong articulation.</p>
-        ${checks.map(c => `
-          <div class="check${c.reliable ? '' : ' unreliable'}" style="grid-template-columns:1fr">
-            <div>
-              <div class="t">${esc(c.title)}
-                <span class="tag k-${esc(c.dim)}">${esc(E.DIM_LABEL[c.dim] || c.dim)}</span></div>
-              <p class="how">${esc(c.how)}</p>
-              <p class="pass">${esc(c.pass)}</p>
-            </div>
-          </div>`).join('')}`);
-    }
+  {
+    // diagrams in rows, anchor on the left and target on the right, so the
+    // eye goes straight across to the thing that moved
+    const rows = differs.map((d, i) => d ? i : -1).filter(i => i >= 0);
+    const show = rows.length ? rows : [0];
+    P.push(show.map(i => `
+      <div class="cmp">
+        <p class="ph">${esc(pA[i].heading)}${rows.length ? ' &mdash; this is what moves' : ' &mdash; looks the same'}${
+          unseen.length ? ` <span class="also">&middot; ${rows.length ? 'also' : 'the change is in'} ${
+            esc(unseen.map(d => (E.DIM_LABEL[d] || d).toLowerCase()).join(' and '))}, which no diagram shows</span>` : ''}</p>
+        <div class="cmprow">${[pA[i], pB[i]].map(p => `
+          <div class="pane">
+            ${frameHTML(p)}
+            <p class="cap">${esc(p.caption)}<small>${esc(p.note)}</small></p>
+          </div>`).join('')}</div>
+      </div>`).join(''));
+    P.push(pairHTML);
   }
 
-  if (onD){
-    P.push(`<p class="sub" style="margin-top:26px">Forced choice between
-      <b>${esc(b.anchor)}</b> and <b>${esc(b.target)}</b>, repeated. You just felt the difference;
-      now find it in the sound. No replays of your own voice &mdash; you can't yet judge that
-      fairly, which is exactly why this comes last.</p>`);
-
-    if (haveAudio(b.anchor) && haveAudio(b.target)){
-      const sc = earScore(st);
-      P.push(`<div class="quizbox">
-        <p class="score">${sc.right} / ${sc.asked} correct</p>
-        <div class="btnrow" style="margin-top:0">
-          <button class="btn primary" id="qPlay">${sc.cur ? 'Play again' : 'Play a sound'}</button>
-          <button class="btn" id="qA" ${sc.cur ? '' : 'disabled'}>${esc(b.anchor)}</button>
-          <button class="btn" id="qB" ${sc.cur ? '' : 'disabled'}>${esc(b.target)}</button>
-        </div>
-        <p class="verdict" id="qVerdict">${sc.verdict || ''}</p>
-      </div>`);
-    } else {
-    P.push(`<div class="stub">
-      <h3>Needs recordings</h3>
-      <p>This stage plays real tokens and asks which one you heard. It needs audio that doesn't
-      exist yet, so here is the shape of it and the files it wants:</p>
-      <div class="choice">
-        <button disabled>${esc(b.anchor)}</button>
-        <button disabled>${esc(b.target)}</button>
+  // blind test: the one thing "Hear both" can't do is hide which is which
+  if (haveAudio(b.anchor) && haveAudio(b.target)){
+    const sc = earScore(st);
+    P.push(`<div class="quiz">
+      <p class="qh">Can you tell them apart?</p>
+      <div class="qrow">
+        <button class="btn" id="qPlay">&#9654;&nbsp; Play one</button>
+        <span class="qwhich">Which was it?</span>
+        <button class="btn" id="qA" disabled>${esc(b.anchor)}</button>
+        <button class="btn" id="qB" disabled>${esc(b.target)}</button>
+        <span class="score" id="qScore">${sc.asked ? sc.right + ' / ' + sc.asked : ''}</span>
       </div>
-      <p class="path" style="margin-top:18px">${
-        [b.anchor, b.target].map(sym =>
-          [1,2,3].map(n => `${AUDIO.dir}${sym}-${n}${AUDIO.ext}`).join('<br>')).join('<br>')}</p>
-      <p style="color:var(--faint);font-size:14px;margin-top:14px">Several tokens per sound, ideally
-      from different speakers &mdash; one voice teaches the voice, not the contrast.
-      Run <code>node fetch-audio.mjs</code> to pull them from Wikimedia Commons.</p>
+      <p class="verdict" id="qVerdict"></p>
     </div>`);
-    }
   }
 
   P.push(`<div class="nav">
-    ${onA ? `<button class="btn primary" id="next">Now the sound you want &nbsp;${esc(b.target)} &rarr;</button>` : ''}
-    ${onB ? `<button class="btn" id="prev">&larr; Back to ${esc(b.anchor)}</button>
-             <button class="btn primary" id="next">Train your ear &rarr;</button>` : ''}
-    ${onD ? `<button class="btn" id="prev">&larr; Back to ${esc(b.target)}</button>
-             ${nextB
-               ? `<button class="btn primary" id="nextSound">Next sound &rarr;</button>`
-               : `<button class="btn primary" id="back2">All ${seq.length} sounds done &mdash; finish</button>`}` : ''}
+    ${nextB
+      ? `<button class="btn primary" id="nextSound">Next sound &rarr;</button>`
+      : `<button class="btn primary" id="back2">All ${seq.length} sounds done &mdash; finish</button>`}
   </div>`);
 
-  P.push(footerHTML());
   app.innerHTML = P.join('');
   window.scrollTo(0, 0);
 
-  const hop = stage => () => go({ l1: st.l1, l2: st.l2, sound: st.sound, stage });
-  const i = STAGES.indexOf(st.stage);
   document.getElementById('back').onclick = () => go({ l1: st.l1, l2: st.l2 });
   const b2 = document.getElementById('back2'); if (b2) b2.onclick = () => go({ l1: st.l1, l2: st.l2 });
   const ns = document.getElementById('nextSound');
   if (ns) ns.onclick = () => go({ l1: st.l1, l2: st.l2, sound: nextB.target, stage: 'a' });
-  const n = document.getElementById('next'); if (n) n.onclick = hop(STAGES[i+1]);
-  const p = document.getElementById('prev'); if (p) p.onclick = hop(STAGES[i-1]);
+
+  // play buttons: one sound, or the pair with a gap
+  document.querySelectorAll('.pair [data-play], .hearboth [data-play]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.preventDefault();
+      const a = el.dataset.also, t = el.dataset.play;
+      el.classList.add('on');
+      if (a === t){ speak(t); setTimeout(() => el.classList.remove('on'), 600); return; }
+      speak(a);
+      setTimeout(() => speak(t), 850);
+      setTimeout(() => el.classList.remove('on'), 1500);
+    });
+  });
 
   const qp = document.getElementById('qPlay');
   if (qp){
     const sc = earScore(st);
+    sc.cur = null;
+    const qa = document.getElementById('qA'), qb2 = document.getElementById('qB');
+    const out = document.getElementById('qVerdict'), score = document.getElementById('qScore');
     qp.onclick = () => {
       if (!sc.cur) sc.cur = Math.random() < 0.5 ? b.anchor : b.target;
       play(sc.cur);
-      sc.verdict = '';
-      painted = null; route();
+      qa.disabled = qb2.disabled = false;
+      qp.innerHTML = '&#9654;&nbsp; Play it again';
+      out.innerHTML = '';
     };
     const answer = pick => {
       if (!sc.cur) return;
       sc.asked++;
       const ok = pick === sc.cur;
       if (ok) sc.right++;
-      sc.verdict = ok
-        ? `<b class="ok">Right.</b> That was ${sc.cur}.`
-        : `<b class="no">No &mdash; that was ${sc.cur}.</b> Play it again, then go back and
-           look again at what changes &mdash; ${esc(b.kindLabel.toLowerCase())}.`;
+      out.innerHTML = ok
+        ? `<b class="ok">Right.</b> That was ${esc(sc.cur)}.`
+        : `<b class="no">No &mdash; that was ${esc(sc.cur)}.</b> Hear both again and listen for the
+           ${esc(b.kindLabel.toLowerCase())}.`;
+      score.textContent = sc.right + ' / ' + sc.asked;
       sc.cur = null;
-      painted = null; route();
+      qa.disabled = qb2.disabled = true;
+      qp.innerHTML = '&#9654;&nbsp; Play another';
     };
-    const qa = document.getElementById('qA'), qb2 = document.getElementById('qB');
-    if (qa) qa.onclick = () => answer(b.anchor);
-    if (qb2) qb2.onclick = () => answer(b.target);
+    qa.onclick = () => answer(b.anchor);
+    qb2.onclick = () => answer(b.target);
   }
-
 }
 
 function footerHTML(){
