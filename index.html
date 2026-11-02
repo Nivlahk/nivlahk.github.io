@@ -358,37 +358,33 @@
     .section-heading span { color: var(--muted); font: .75rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
     .projects { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .projects.soon { margin-top: 1rem; }
 
     .project {
       display: flex;
       flex-direction: column;
-      min-height: 22rem;
-      padding: 1.35rem;
+      padding: 1.1rem;
       border: 1px solid var(--line);
       border-radius: .8rem;
       background: var(--panel);
     }
+    .soon .project { border-style: dashed; background: rgba(36, 18, 11, .55); }
+    .soon .project .stack { margin-bottom: 0; }
+    .soon-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
 
-    .preview { margin: -.35rem -.35rem 1.1rem; border: 1px solid var(--line); border-radius: .6rem; background: #1b0d07; aspect-ratio: 300 / 170; overflow: hidden; }
+    .preview { margin: -.25rem -.25rem .8rem; border: 1px solid var(--line); border-radius: .6rem; background: #1b0d07; aspect-ratio: 300 / 170; overflow: hidden; }
     .preview:empty { display: none; }
     .preview svg { display: block; width: 100%; height: 100%; }
     .preview [role="button"]:focus-visible { outline: none; }
     .preview [role="button"]:focus-visible rect { stroke: var(--ink); stroke-width: 2; }
 
-    .project-number { color: var(--orange); font: 700 .75rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .project h3 { margin: .8rem 0 .6rem; font-size: 1.45rem; letter-spacing: -.035em; }
-    .project p { color: var(--muted); font-size: .95rem; }
-
-    .stack { display: flex; flex-wrap: wrap; gap: .4rem; margin: auto 0 1rem; }
-    .stack span { padding: .25rem .5rem; border: 1px solid var(--line); border-radius: 999px; color: var(--accent); font: .72rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-
-    .outcome { padding: .8rem 0; border-top: 1px solid var(--line); color: var(--ink) !important; font-size: .87rem !important; }
-    .outcome strong { color: var(--orange); }
+    .project-number { color: var(--orange); font: 700 .72rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .project h3 { margin: .45rem 0 .35rem; font-size: 1.25rem; letter-spacing: -.03em; }
+    .project p { margin-bottom: .6rem; color: var(--muted); font-size: .92rem; line-height: 1.45; }
+    .project .stack { margin: auto 0 .7rem; color: var(--accent); font: .72rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
     .project-link { color: var(--accent); font-size: .9rem; text-underline-offset: .22em; }
-    .project-links { display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; margin: 0; }
-    .project-link.quiet { color: var(--muted); }
-    .project-link.quiet:hover, .project-link.quiet:focus-visible { color: var(--accent); }
+    .soon-tag { padding: .2rem .55rem; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font: .72rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .06em; text-transform: uppercase; }
 
     .about-grid { display: grid; grid-template-columns: .85fr 1.15fr; gap: 3rem; }
     .about-grid p { color: var(--muted); font-size: 1.05rem; }
@@ -419,8 +415,7 @@
     @media (max-width: 800px) {
       .hero, .about-grid { grid-template-columns: 1fr; }
       .hero { min-height: auto; padding: 3.5rem 0; gap: 2rem; }
-      .projects { grid-template-columns: 1fr; }
-      .project { min-height: auto; }
+      .projects, .projects.soon { grid-template-columns: 1fr; }
       .resume-row { align-items: flex-start; flex-direction: column; gap: 1rem; }
     }
 
@@ -484,7 +479,7 @@
     <section id="projects" aria-labelledby="projects-title">
       <div class="section-heading">
         <h2 id="projects-title">Selected projects</h2>
-        <span>01 — 03 / live in your browser</span>
+        <span>01 — 03 live in your browser · 04 — 06 coming soon</span>
       </div>
 
       <div class="projects">
@@ -492,36 +487,50 @@
           <div class="preview" data-preview="spoken" role="img" aria-label="Animation: the spoken phrases “define double with put then”, “give put times two ok”, “print double five pair” and “run” turn into three lines of Vertex code, and the console prints 10."></div>
           <span class="project-number">01 / SPOKEN</span>
           <h3>Code you can say out loud</h3>
-          <p>Vertex, an English-like programming language you can write by voice. Dictate a program, watch it become code, and run it in the built-in console, with a voice guide and a reserved-keywords reference one click away.</p>
-          <div class="stack" aria-label="Technology stack">
-            <span>JavaScript</span><span>Web Speech API</span><span>Monaco</span>
-          </div>
-          <p class="outcome"><strong>Try it:</strong> speak a short program and run it, no install needed.</p>
-          <p class="project-links"><a class="project-link" href="./SPOKEN/">Open SPOKEN →</a> <a class="project-link quiet" href="./SPOKEN/about/">How it works</a></p>
+          <p>Dictate a program in Vertex, an English-like language, and run it in the page. No install.</p>
+          <p class="stack">JavaScript · Web Speech API · Monaco</p>
+          <a class="project-link" href="./SPOKEN/">Open SPOKEN →</a>
         </article>
 
         <article class="project">
           <div class="preview" data-preview="nefs" role="group" aria-label="Interactive: Tessera glyphs for p, b, m, n, d, g, k, t, s, z, v and f. Each step changes one phonetic feature, and exactly one stroke of the glyph changes with it. Pick a sound to see its glyph."></div>
           <span class="project-number">02 / NEFS</span>
           <h3>Build your own featural script</h3>
-          <p>Start from Tessera, a featural script for the IPA, and design your own: choose a radical for every feature slot, draw special symbols for individual sounds, and write with the result.</p>
-          <div class="stack" aria-label="Technology stack">
-            <span>JavaScript</span><span>SVG</span><span>Font generation</span>
-          </div>
-          <p class="outcome"><strong>Try it:</strong> export your script as SVG, PNG, or an installable .ttf font.</p>
-          <p class="project-links"><a class="project-link" href="./NEFS/">Open NEFS →</a> <a class="project-link quiet" href="./NEFS/about/">How it works</a></p>
+          <p>Every phonetic feature gets its own stroke. Start from Tessera, redraw any radical, export a .ttf font.</p>
+          <p class="stack">JavaScript · SVG · Font generation</p>
+          <a class="project-link" href="./NEFS/">Open NEFS →</a>
         </article>
 
         <article class="project">
           <div class="preview" data-preview="syntax" role="img" aria-label="Animation: a cursor builds a syntax tree for “the dog chased a cat” by hand. It drags in a Story phrase, fills its open Actor and Command slots, then drops each word onto the slot that needs it until the tree is complete."></div>
           <span class="project-number">03 / SYNTAX</span>
           <h3>Syntax Tree Sandbox</h3>
-          <p>A drag-and-drop syntax tree builder. Drag a phrase onto the bench, then fill its open slots with color-coded words and smaller phrases until the whole tree is solid. Open-ended, with no preset puzzles.</p>
-          <div class="stack" aria-label="Technology stack">
-            <span>JavaScript</span><span>HTML/CSS</span><span>Linguistics</span>
-          </div>
-          <p class="outcome"><strong>Try it:</strong> build two trees for an ambiguous sentence and compare them.</p>
-          <p class="project-links"><a class="project-link" href="./SYNTAX/">Open SYNTAX →</a> <a class="project-link quiet" href="./SYNTAX/about/">How it works</a></p>
+          <p>Drag phrases onto the bench and fill their open slots with words until the tree is complete.</p>
+          <p class="stack">JavaScript · HTML/CSS · Linguistics</p>
+          <a class="project-link" href="./SYNTAX/">Open SYNTAX →</a>
+        </article>
+      </div>
+
+      <div class="projects soon">
+        <article class="project">
+          <div class="soon-head"><span class="project-number">04 / SEER</span><span class="soon-tag">Coming soon</span></div>
+          <h3>A CPU that checks every jump</h3>
+          <p>A custom 64-bit CPU with control-flow integrity in hardware. Runs C on an FPGA through its own LLVM backend.</p>
+          <p class="stack">SystemVerilog · LLVM · FPGA</p>
+        </article>
+
+        <article class="project">
+          <div class="soon-head"><span class="project-number">05 / VERTEX</span><span class="soon-tag">Coming soon</span></div>
+          <h3>Flowcharts that run</h3>
+          <p>A visual language where the flowchart, the code and the machine instructions are one program at different zoom levels.</p>
+          <p class="stack">JavaScript · Compilers · Visual programming</p>
+        </article>
+
+        <article class="project">
+          <div class="soon-head"><span class="project-number">06 / BRIDGE</span><span class="soon-tag">Coming soon</span></div>
+          <h3>New sounds from ones you have</h3>
+          <p>Teaches each new sound in a language you're learning from the closest one you already make, one feature at a time.</p>
+          <p class="stack">JavaScript · Graph search · Phonetics</p>
         </article>
       </div>
     </section>
@@ -560,7 +569,7 @@
     </nav>
   </footer>
 
-  <script src="./assets/project-previews.js" defer></script>
+  <script src="./assets/project-previews.js?v=3" defer></script>
   <script>
     (() => {
       const canvas = document.getElementById('stormCanvas');
