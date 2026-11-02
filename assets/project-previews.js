@@ -415,14 +415,10 @@
       { lang: 'English → Spanish', n: '2 OF 9', a: 'ŋ', b: 'ɲ', A: 'Velar', B: 'Palatal', from: 'velar', to: 'palatal' },
       { lang: 'English → Japanese', n: '11 OF 14', a: 'f', b: 'ɸ', A: 'Labiodental', B: 'Bilabial', from: 'labiodental', to: 'bilabial' }
     ];
-    const art = EX.map(ex => {
-      const src = PLACE_ART.head + `<g data-l="a">${PLACE_ART.places[ex.A]}</g><g data-l="b">${PLACE_ART.places[ex.B]}</g>` + PLACE_ART.tail;
-      const node = document.importNode(new DOMParser().parseFromString(src, 'image/svg+xml').documentElement, true);
-      node.setAttribute('x', 4); node.setAttribute('y', 6); node.setAttribute('width', 200); node.setAttribute('height', 158);
-      node.removeAttribute('role');
-      g.appendChild(node);
-      return { node, a: node.querySelector('[data-l="a"]'), b: node.querySelector('[data-l="b"]') };
-    });
+    // each lit state is a self-contained SVG image; the two images crossfade
+    const pic = place => el('image', { x: 4, y: 6, width: 200, height: 158, preserveAspectRatio: 'xMidYMid meet',
+      href: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(PLACE_ART.head + PLACE_ART.places[place] + PLACE_ART.tail) }, g);
+    const art = EX.map(ex => ({ a: pic(ex.A), b: pic(ex.B) }));
     const lang = el('text', { x: 212, y: 26, 'font-family': SANS, 'font-size': 8.5, fill: C.muted }, g);
     const cnt = el('text', { x: 212, y: 38, 'font-family': MONO, 'font-size': 7, fill: C.dim, 'letter-spacing': '.08em' }, g);
     const pair = el('text', { x: 212, y: 82, 'font-family': SERIF, 'font-size': 30 }, g);
@@ -438,8 +434,8 @@
       g.setAttribute('opacity', Math.min(1, u / .3, (PER - u) / .3));
       const m = kf(u, [[1.5, 0], [2.2, 1]]);
       art.forEach((x, i) => {
-        x.node.style.display = i === k ? '' : 'none';
-        if (i === k) { x.a.setAttribute('opacity', 1 - m); x.b.setAttribute('opacity', m); }
+        x.a.setAttribute('opacity', i === k ? 1 - m : 0);
+        x.b.setAttribute('opacity', i === k ? m : 0);
       });
       lang.textContent = ex.lang; cnt.textContent = 'SOUND ' + ex.n;
       pa.textContent = ex.a; pb.textContent = ex.b;
