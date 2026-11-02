@@ -279,63 +279,77 @@
     }, 1800);
   }
 
-  /* ---------- SEER: every indirect jump goes through the compiler's CN table ---------- */
+  /* ---------- SEER: the drone demo in miniature — a fix is installed mid-flight,
+     a tampered copy is refused, and the drone never stops flying ---------- */
   function seer(host) {
     const svg = svgFor(host), g = el('g', {}, svg);
-    const GOOD = '#4fd27a', BAD = '#ff5a4f';
-    el('rect', { x: 8, y: 8, width: 166, height: 154, rx: 6, fill: C.well, stroke: C.line }, g);
-    const lines = [['main:', 'lab'], ['  li   r1, 1', ''], ['  jmpr r1', 'jmp'], ['add:', 'lab'], ['  add  r0, r1, r2', ''], ['  ret', ''], ['mul:', 'lab'], ['  …', '']];
-    const LY = i => 26 + i * 18;
-    const pcBar = el('rect', { x: 12, y: LY(2) - 11, width: 158, height: 15, rx: 3, fill: C.orange, opacity: 0 }, g);
-    const liTxt = [];
-    lines.forEach(([t, k], i) => {
-      const tt = el('text', { x: 18, y: LY(i), 'font-family': MONO, 'font-size': 10, fill: k === 'lab' ? C.accent : C.ink, style: 'white-space:pre' }, g);
-      tt.textContent = t;
-      liTxt.push(tt);
-    });
-    const reg = el('text', { x: 112, y: LY(1), 'font-family': MONO, 'font-size': 9, 'font-weight': 700 }, g);
+    const V1 = '#f0708e', V2 = '#6fd3ee', GOLD = '#f2b632', RED = '#ff6b5a', PANEL = '#1b2733';
+    const PICK = .22, TAMPER = .31, FIX = .5;
+    // altitude keyframes (tick 0..1 → feet), smoothed with Catmull-Rom
+    const K = [[0, 0], [.06, 430], [.12, 640], [.18, 510], [.22, 485], [.28, 330], [.36, 160], [.44, 225], [.5, 290], [.56, 430], [.63, 495], [.7, 500], [1, 500]];
+    const alt = x => {
+      let i = 1; while (i < K.length - 1 && x > K[i][0]) i++;
+      const p0 = K[Math.max(0, i - 2)], p1 = K[i - 1], p2 = K[i], p3 = K[Math.min(K.length - 1, i + 1)];
+      const u = Math.max(0, Math.min(1, (x - p1[0]) / (p2[0] - p1[0])));
+      const c = (a, b, c2, d) => .5 * (2 * b + (-a + c2) * u + (2 * a - 5 * b + 4 * c2 - d) * u * u + (-a + 3 * b - 3 * c2 + d) * u * u * u);
+      return c(p0[1], p1[1], p2[1], p3[1]);
+    };
+    // drone column
+    el('rect', { x: 6, y: 8, width: 62, height: 154, rx: 6, fill: PANEL }, g);
+    const DY = a => 150 - a / 1000 * 128;
+    el('rect', { x: 6, y: DY(200), width: 62, height: 162 - DY(200), fill: '#2a3540' }, g);
+    el('text', { x: 10, y: 158, 'font-family': SANS, 'font-size': 7, fill: RED }, g).textContent = 'Too low';
+    [0, 500, 1000].forEach(v => { el('line', { x1: 6, x2: 12, y1: DY(v), y2: DY(v), stroke: C.muted, 'stroke-width': .8 }, g); el('text', { x: 14, y: DY(v) + 2.5, 'font-family': SANS, 'font-size': 6.5, fill: C.muted }, g).textContent = v; });
+    el('line', { x1: 34, x2: 68, y1: DY(500), y2: DY(500), stroke: C.muted, 'stroke-width': .8, 'stroke-dasharray': '2 2' }, g);
+    const drone = el('g', {}, g);
+    const propL = el('rect', { x: -15, y: -6, width: 10, height: 2.4, rx: 1.2 }, drone), propR = el('rect', { x: 5, y: -6, width: 10, height: 2.4, rx: 1.2 }, drone);
+    el('rect', { x: -2, y: -4, width: 1.4, height: 3, fill: '#e8edf2' }, drone); el('rect', { x: .6, y: -4, width: 1.4, height: 3, fill: '#e8edf2' }, drone);
+    el('rect', { x: -11, y: -4, width: 22, height: 6, rx: 3, fill: '#e8edf2' }, drone);
+    const pkg = el('g', {}, drone);
+    el('line', { x1: 0, y1: 2, x2: 0, y2: 6, stroke: '#e8edf2', 'stroke-width': .8 }, pkg);
+    el('rect', { x: -4.5, y: 6, width: 9, height: 7, rx: 1.2, fill: '#c9a26b' }, pkg);
 
-    el('text', { x: 186, y: 22, 'font-family': MONO, 'font-size': 8.5, fill: C.muted }, g).textContent = 'CN table';
-    const rows = [['0', 'main'], ['1', 'add'], ['2', 'mul']].map(([n, name], i) => {
-      const y = 30 + i * 20;
-      const bg = el('rect', { x: 182, y, width: 110, height: 17, rx: 4, fill: C.well, stroke: C.line }, g);
-      const a = el('text', { x: 190, y: y + 12, 'font-family': MONO, 'font-size': 9.5, fill: C.muted }, g); a.textContent = '#' + n;
-      const b = el('text', { x: 212, y: y + 12, 'font-family': MONO, 'font-size': 9.5, fill: C.ink }, g); b.textContent = name;
-      return bg;
-    });
-    const arrow = el('path', { d: `M182 ${30 + 20 + 8.5} C 150 ${30 + 20 + 8.5}, 160 ${LY(3) - 4}, 52 ${LY(3) - 4}`, fill: 'none', stroke: GOOD, 'stroke-width': 1.6, 'stroke-dasharray': 200, 'stroke-dashoffset': 200 }, g);
-    const head = el('path', { d: `M52 ${LY(3) - 4} l6 -3.5 v7z`, fill: GOOD, opacity: 0 }, g);
-    const verdict = el('text', { x: 186, y: 112, 'font-family': MONO, 'font-size': 9.5, 'font-weight': 700 }, g);
-    const note = el('text', { x: 186, y: 126, 'font-family': SANS, 'font-size': 9, fill: C.muted }, g);
-    const foot = el('text', { x: 186, y: 152, 'font-family': SANS, 'font-size': 8.5, fill: C.dim }, g);
-    foot.textContent = 'Jumps only land where';
-    const foot2 = el('text', { x: 186, y: 163, 'font-family': SANS, 'font-size': 8.5, fill: C.dim }, g);
-    foot2.textContent = 'the compiler registered.';
+    // altitude chart
+    el('rect', { x: 74, y: 8, width: 220, height: 118, rx: 6, fill: PANEL }, g);
+    const X = x => 82 + x * 204, Y = a => 116 - a / 1000 * 92;
+    el('rect', { x: 82, y: Y(200), width: 204, height: 116 - Y(200), fill: '#2a3540' }, g);
+    el('line', { x1: 82, x2: 286, y1: Y(500), y2: Y(500), stroke: C.muted, 'stroke-width': .8, 'stroke-dasharray': '3 3' }, g);
+    el('text', { x: 80, y: 18, 'font-family': SANS, 'font-size': 7.5, fill: C.muted }, g).textContent = 'Altitude over the flight';
+    const mark = (x, col, dash, label, ly) => {
+      const ln = el('line', { x1: X(x), x2: X(x), y1: 24, y2: 116, stroke: col, 'stroke-width': 1, 'stroke-dasharray': dash, opacity: 0 }, g);
+      const tt = el('text', { x: X(x) + 2, y: ly, 'font-family': MONO, 'font-size': 6.2, 'font-weight': 700, fill: col, opacity: 0 }, g); tt.textContent = label;
+      return { x, ln, tt };
+    };
+    const marks = [mark(PICK, '#c8d3dc', '1.5 2', 'package', 30), mark(TAMPER, RED, '3 2', 'refused ✗', 38), mark(FIX, GOLD, '', 'fix installed ✓', 30)];
+    const c1 = el('path', { fill: 'none', stroke: V1, 'stroke-width': 1.8, 'stroke-linecap': 'round' }, g);
+    const c2 = el('path', { fill: 'none', stroke: V2, 'stroke-width': 1.8, 'stroke-linecap': 'round' }, g);
+    const curve = (from, to) => { let d = ''; for (let x = from; x <= to + 1e-9; x += .005) d += (d ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(alt(x)).toFixed(1); return d; };
 
-    const END = 10;
+    // status row
+    el('text', { x: 76, y: 142, 'font-family': MONO, 'font-size': 7, fill: C.muted, 'letter-spacing': '.08em' }, g).textContent = 'RUNNING';
+    const run = el('text', { x: 116, y: 143, 'font-family': SANS, 'font-size': 11, 'font-weight': 700 }, g);
+    const status = el('text', { x: 76, y: 159, 'font-family': SANS, 'font-size': 8.5 }, g);
+
+    const FLY = 7.2, END = 9.6;
     loop(host, END, t => {
       g.setAttribute('opacity', Math.min(1, t / .3, (END - t) / .4));
-      const bad = t >= 5;                       // second half: r1 has been overwritten
-      const u = bad ? t - 5 : t;
-      pcBar.setAttribute('opacity', u > .4 ? .22 : 0);
-      reg.textContent = u > .8 ? (bad ? 'r1 = 7' : 'r1 = 1') : '';
-      liTxt[1].textContent = bad ? '  li   r1, 7' : '  li   r1, 1';
-      liTxt[1].setAttribute('fill', bad ? BAD : C.ink);
-      reg.setAttribute('fill', bad ? BAD : GOOD);
-      rows.forEach((r, i) => {
-        const look = u > 1.4 && u < 2.2;
-        const hit = !bad && i === 1 && u >= 1.4;
-        r.setAttribute('stroke', hit ? GOOD : bad && look ? BAD : C.line);
-        r.setAttribute('fill', hit ? GOOD + '33' : C.well);
-      });
-      const drawn = !bad ? Math.max(0, Math.min(1, (u - 2) / .6)) : 0;
-      arrow.setAttribute('stroke-dashoffset', 200 * (1 - drawn));
-      head.setAttribute('opacity', drawn >= 1 ? 1 : 0);
-      const show = u > 2.6;
-      verdict.textContent = show ? (bad ? '✗ no entry #7' : '✓ lands on add') : '';
-      verdict.setAttribute('fill', bad ? BAD : GOOD);
-      note.textContent = show ? (bad ? 'jump refused' : 'a registered entry') : '';
-    }, 4.2);
+      const x = Math.min(1, t / FLY), a = alt(x), v2 = x >= FIX;
+      c1.setAttribute('d', curve(0, Math.min(x, FIX)));
+      c2.setAttribute('d', v2 ? curve(FIX, x) : '');
+      marks.forEach(m => { const on = x >= m.x ? 1 : 0; m.ln.setAttribute('opacity', on); m.tt.setAttribute('opacity', on); });
+      drone.setAttribute('transform', `translate(37,${DY(a)})`);
+      pkg.setAttribute('opacity', x >= PICK ? 1 : 0);
+      propL.setAttribute('fill', v2 ? V2 : V1); propR.setAttribute('fill', v2 ? V2 : V1);
+      run.textContent = v2 ? 'Controller v2' : 'Controller v1';
+      run.setAttribute('fill', v2 ? V2 : V1);
+      const [msg, col] =
+        x < PICK ? ['Climbing to the target altitude', C.muted] :
+        x < TAMPER ? ['Heavy package: v1 can’t hold altitude', C.ink] :
+        x < FIX ? ['✗ Tampered fix refused by the hardware', RED] :
+        x < .66 ? ['✓ Genuine fix installed mid-flight', GOLD] :
+                  ['Back on target. Never stopped flying.', V2];
+      status.textContent = msg; status.setAttribute('fill', col);
+    }, 8.5);
   }
 
   /* ---------- VERTEX: the code and its flowchart run side by side, in step ---------- */
