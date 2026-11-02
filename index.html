@@ -374,7 +374,7 @@
 
     .preview { margin: -.25rem -.25rem .8rem; border: 1px solid var(--line); border-radius: .6rem; background: #1b0d07; aspect-ratio: 300 / 170; overflow: hidden; }
     .preview:empty { display: none; }
-    .preview svg { display: block; width: 100%; height: 100%; }
+    .preview > svg { display: block; width: 100%; height: 100%; }
     .preview [role="button"]:focus-visible { outline: none; }
     .preview [role="button"]:focus-visible rect { stroke: var(--ink); stroke-width: 2; }
 
@@ -529,7 +529,7 @@
         </article>
 
         <article class="project">
-          <div class="preview" data-preview="bridge" role="img" aria-label="Animation: a side view of the mouth. For an English speaker learning Arabic, the back of the tongue slides from the soft palate (k) back to the uvula (q); for one learning Hindi, the tongue tip curls back behind the tooth ridge to turn t into retroflex ʈ."></div>
+          <div class="preview" data-preview="bridge" role="img" aria-label="Animation: the app's place-of-articulation diagram. For an English speaker learning Spanish, the lit region moves from velar (ŋ) to palatal (ɲ); for one learning Japanese, it moves from labiodental (f) to bilabial (ɸ)."></div>
           <div class="soon-head"><span class="project-number">06 / BRIDGE</span><span class="soon-tag">Coming soon</span></div>
           <h3>New sounds from ones you have</h3>
           <p>Teaches each new sound in a language you're learning from the closest one you already make, one feature at a time.</p>
@@ -572,7 +572,7 @@
     </nav>
   </footer>
 
-  <script src="./assets/project-previews.js?v=5" defer></script>
+  <script src="./assets/project-previews.js?v=7" defer></script>
   <script>
     (() => {
       const canvas = document.getElementById('stormCanvas');
