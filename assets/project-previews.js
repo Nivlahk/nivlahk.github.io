@@ -108,69 +108,105 @@
     }, 11.5);
   }
 
-  /* ---------- SYNTAX: words drop into nested containers, which become a tree ---------- */
+  /* ---------- SYNTAX: a cursor builds the tree by hand, the way the app works:
+     drop a container, then fill its open (dashed) slots with words and smaller
+     containers until every slot is solid ---------- */
   function syntax(host) {
     const svg = svgFor(host), g = el('g', {}, svg);
-    const HEAD = { Story: ['#e09f00', '#f2b632'], Actor: ['#a0693a', '#dfa06b'], Command: ['#2f78f0', '#7aaeff'] };
-    const WCOL = { D: '#6b7280', N: '#a0693a', V: '#2f78f0' };
-    const words = [['the', 'D', 28], ['dog', 'N', 32], ['chased', 'V', 46], ['a', 'D', 18], ['cat', 'N', 30]];
-    const T1 = 1.1, T2 = 4.8, END = 10.5;      // boxes appear, boxes become a tree, loop
-    const bx = 28, tx = 10;                     // centring offsets for box and tree layouts
-    // name, box [x,y,w,h], tree centre [x,y], parent
-    const nodes = [
-      ['Story', [8, 34, 244, 84], [120, 14], null],
-      ['Actor', [16, 50, 82, 60], [63, 56], 0],
-      ['Command', [104, 50, 140, 60], [178, 56], 0],
-      ['Actor', [166, 64, 70, 40], [216, 98], 2]
-    ];
-    const boxChip = [[24, 84], [58, 84], [112, 84], [174, 84], [198, 84]];
-    const leafX = [44, 82, 140, 198, 234], LEAF_Y = 146, parentOf = [1, 1, 2, 3, 3];
-    let rowX = (300 - (words.reduce((a, w) => a + w[2], 0) + 24)) / 2;
-    const row = words.map(w => { const x = rowX; rowX += w[2] + 6; return x; });
-    const pillW = s => s.length * 5.4 + 14;
+    const LABEL = { Story: '#f2b632', Actor: '#dfa06b', Command: '#7aaeff' };
+    const WCOL = { D: '#7a808c', N: '#a0693a', V: '#2f78f0' };
+    const STEP = .95, T0 = .5, MOVE = .55;
+    const s = i => T0 + i * STEP, d = i => s(i) + MOVE;   // drag i starts / drops
+    const END = d(8) + 3.2;
+    const N = { story: [130, 36], a1: [73, 66], cmd: [188, 66], a2: [226, 94] };
+    const LEAF = { the: 54, dog: 92, chased: 150, a: 208, cat: 244 };
+    const POS_Y = 130, WORD_Y = 146, DOCK = [-34, 96];
+    const pillW = t => t.length * 5.4 + 14;
+    const fade = (t, on, off = Infinity) => Math.max(0, Math.min(1, (t - on) / .2, (off - t) / .2));
 
-    const edges = el('g', { stroke: C.dim, 'stroke-width': 1.2 }, g);
-    const edge = (p, c) => el('line', { x1: p[0], y1: p[1], x2: c[0], y2: c[1] }, edges);
-    nodes.forEach(n => { if (n[3] !== null) { const p = nodes[n[3]][2]; edge([p[0] + tx, p[1] + 15], [n[2][0] + tx, n[2][1]]); } });
-    words.forEach((w, i) => { const p = nodes[parentOf[i]][2]; edge([p[0] + tx, p[1] + 15], [leafX[i] + tx, LEAF_Y]); });
+    // edges: parent, child point, appear, solid-from
+    const top = ([x, y]) => [x, y - 7.5], leafTop = x => [x, POS_Y - 9];
+    const edgeDefs = [
+      [N.story, top(N.a1), d(0), d(1)], [N.story, top(N.cmd), d(0), d(2)],
+      [N.a1, leafTop(LEAF.the), d(3), d(3)], [N.a1, leafTop(LEAF.dog), d(1), d(4)],
+      [N.cmd, leafTop(LEAF.chased), d(2), d(5)], [N.cmd, top(N.a2), d(5), d(6)],
+      [N.a2, leafTop(LEAF.a), d(7), d(7)], [N.a2, leafTop(LEAF.cat), d(6), d(8)]
+    ].map(([p, c, on, solid]) => ({ on, solid, l: el('line', { x1: p[0], y1: p[1] + 7.5, x2: c[0], y2: c[1], stroke: C.muted, 'stroke-width': 1.1 }, g) }));
 
-    const boxes = nodes.map(([name, b, c], i) => {
-      const [stroke, text] = HEAD[name], appear = T1 + i * .2;
-      const r = el('rect', { fill: stroke + '2e', stroke: stroke + 'aa', 'stroke-width': 1.2 }, g);
-      const l = el('text', { 'text-anchor': 'middle', 'font-family': MONO, 'font-size': 9, 'font-weight': 700, fill: text }, g);
-      l.textContent = name;
-      const pw = pillW(name), lw = name.length * 5.4;
-      return { r, l, f: {
-        o: [[appear, 0], [appear + .35, 1]],
-        x: [[T2, b[0] + bx], [T2 + 1, c[0] + tx - pw / 2]], y: [[T2, b[1]], [T2 + 1, c[1]]],
-        w: [[T2, b[2]], [T2 + 1, pw]], h: [[T2, b[3]], [T2 + 1, 15]], rx: [[T2, 6], [T2 + 1, 7.5]],
-        lx: [[T2, b[0] + bx + 6 + lw / 2], [T2 + 1, c[0] + tx]], ly: [[T2, b[1] + 11], [T2 + 1, c[1] + 10.5]]
-      } };
-    });
-    const chips = words.map(([s, cat, w], i) => {
-      const grp = el('g', {}, g);
-      el('rect', { width: w, height: 16, rx: 8, fill: WCOL[cat] }, grp);
-      const t = el('text', { x: w / 2, y: 11.5, 'text-anchor': 'middle', 'font-family': SANS, 'font-size': 10.5, 'font-weight': 700, fill: '#fff' }, grp);
-      t.textContent = s;
-      const drop = T1 + .9 + i * .14;
-      return { grp, f: {
-        x: [[drop, row[i]], [drop + .6, boxChip[i][0] + bx], [T2 + .1, boxChip[i][0] + bx], [T2 + 1.1, leafX[i] + tx - w / 2]],
-        y: [[drop, 8], [drop + .6, boxChip[i][1]], [T2 + .1, boxChip[i][1]], [T2 + 1.1, LEAF_Y]]
-      } };
+    // open slots: label, centre, appear, filled
+    const slotDefs = [
+      ['Actor', N.a1, d(0), d(1)], ['Command', N.cmd, d(0), d(2)], ['N', [LEAF.dog, 140], d(1), d(4)],
+      ['V', [LEAF.chased, 140], d(2), d(5)], ['Actor', N.a2, d(5), d(6)], ['N', [LEAF.cat, 140], d(6), d(8)]
+    ].map(([txt, [x, y], on, off]) => {
+      const grp = el('g', { opacity: 0 }, g), short = txt.length === 1, w = short ? 15 : pillW(txt);
+      el('rect', { x: x - w / 2, y: y - 7.5, width: w, height: 15, rx: 7.5, fill: C.well, stroke: C.muted, 'stroke-width': 1.1, 'stroke-dasharray': '3 2.5' }, grp);
+      const tt = el('text', { x, y: y + 3.2, 'text-anchor': 'middle', 'font-family': MONO, 'font-size': 8.5, 'font-weight': 700, fill: LABEL[txt] || C.muted }, grp);
+      tt.textContent = txt;
+      return { grp, on, off };
     });
 
+    // containers dragged in from the left (the palette): label, target, drag index, complete
+    const nodes = [['Story', N.story, 0, d(8)], ['Actor', N.a1, 1, d(4)], ['Command', N.cmd, 2, d(8)], ['Actor', N.a2, 6, d(8)]]
+      .map(([txt, to, i, done]) => {
+        const grp = el('g', {}, g), w = pillW(txt);
+        const box = el('rect', { x: -w / 2, y: -7.5, width: w, height: 15, rx: 4, fill: C.well, stroke: LABEL[txt], 'stroke-width': 1.1, 'stroke-dasharray': '3 2.5' }, grp);
+        const tt = el('text', { y: 3.2, 'text-anchor': 'middle', 'font-family': MONO, 'font-size': 9, 'font-weight': 700, fill: LABEL[txt] }, grp);
+        tt.textContent = txt;
+        return { grp, box, i, done, from: DOCK, to };
+      });
+
+    // words: start in a row on the bench, are dragged onto a slot, become leaves
+    const wordDefs = [['the', 'D', 28, 3], ['dog', 'N', 32, 4], ['chased', 'V', 46, 5], ['a', 'D', 18, 7], ['cat', 'N', 30, 8]];
+    let rx = (300 - (wordDefs.reduce((a, w) => a + w[2], 0) + 24)) / 2;
+    const words = wordDefs.map(([txt, cat, w, i]) => {
+      const x = LEAF[txt], from = [rx + w / 2, 14]; rx += w + 6;
+      const chip = el('g', {}, g);
+      el('rect', { x: -w / 2, y: -8, width: w, height: 16, rx: 8, fill: WCOL[cat] }, chip);
+      const ct = el('text', { y: 3.6, 'text-anchor': 'middle', 'font-family': SANS, 'font-size': 10.5, 'font-weight': 700, fill: '#fff' }, chip);
+      ct.textContent = txt;
+      const leaf = el('g', { opacity: 0 }, g);
+      const pt = el('text', { x, y: POS_Y, 'text-anchor': 'middle', 'font-family': MONO, 'font-size': 8.5, fill: C.muted }, leaf);
+      pt.textContent = cat;
+      const wt = el('text', { x, y: WORD_Y, 'text-anchor': 'middle', 'font-family': SANS, 'font-size': 11.5, fill: C.ink }, leaf);
+      wt.textContent = txt;
+      const uw = txt.length * 6.4 + 4;
+      el('rect', { x: x - uw / 2, y: WORD_Y + 4, width: uw, height: 2.5, rx: 1.2, fill: WCOL[cat] }, leaf);
+      return { chip, leaf, i, from, to: [x, 140] };
+    });
+
+    const done = el('text', { x: 150, y: 17, 'text-anchor': 'middle', 'font-family': MONO, 'font-size': 9.5, 'font-weight': 700, fill: '#4fd27a', opacity: 0 }, g);
+    done.textContent = '✓ Story complete';
+
+    // cursor follows whatever is being dragged
+    const drags = [...nodes, ...words].sort((a, b) => a.i - b.i);
+    const cx = [[0, 160]], cy = [[0, 110]];
+    drags.forEach(o => { cx.push([s(o.i), o.from[0]], [d(o.i), o.to[0]]); cy.push([s(o.i), o.from[1]], [d(o.i), o.to[1]]); });
+    cx.push([d(8) + .9, 280]); cy.push([d(8) + .9, 160]);
+    const cursor = el('path', { d: 'M0 0V14l3.6-3.3 2.6 5.6 2.3-1-2.5-5.5H11Z', fill: C.ink, stroke: C.well, 'stroke-width': 1.1, 'stroke-linejoin': 'round' }, g);
+
+    const at = (t, o) => [kf(t, [[s(o.i), o.from[0]], [d(o.i), o.to[0]]]), kf(t, [[s(o.i), o.from[1]], [d(o.i), o.to[1]]])];
     loop(host, END, t => {
       g.setAttribute('opacity', Math.min(1, t / .3, (END - t) / .5));
-      edges.setAttribute('opacity', kf(t, [[T2 + .6, 0], [T2 + 1.2, 1]]));
-      for (const { r, l, f } of boxes) {
-        const o = kf(t, f.o);
-        r.setAttribute('opacity', o); l.setAttribute('opacity', o);
-        r.setAttribute('x', kf(t, f.x)); r.setAttribute('y', kf(t, f.y));
-        r.setAttribute('width', kf(t, f.w)); r.setAttribute('height', kf(t, f.h)); r.setAttribute('rx', kf(t, f.rx));
-        l.setAttribute('x', kf(t, f.lx)); l.setAttribute('y', kf(t, f.ly));
+      for (const e of edgeDefs) {
+        e.l.setAttribute('opacity', fade(t, e.on));
+        e.l.setAttribute('stroke-dasharray', t < e.solid ? '3 3' : 'none');
+        e.l.setAttribute('stroke', t < e.solid ? C.dim : C.muted);
       }
-      for (const { grp, f } of chips) grp.setAttribute('transform', `translate(${kf(t, f.x)},${kf(t, f.y)})`);
-    }, 9);
+      for (const sl of slotDefs) sl.grp.setAttribute('opacity', t < sl.off ? fade(t, sl.on) : 0);
+      for (const n of nodes) {
+        const [x, y] = at(t, n);
+        n.grp.setAttribute('transform', `translate(${x},${y})`);
+        n.box.setAttribute('opacity', t < n.done ? 1 : Math.max(0, 1 - (t - n.done) / .4));
+      }
+      for (const w of words) {
+        const [x, y] = at(t, w), dropped = t >= d(w.i);
+        w.chip.setAttribute('transform', `translate(${x},${y})`);
+        w.chip.setAttribute('opacity', dropped ? Math.max(0, 1 - (t - d(w.i)) / .2) : 1);
+        w.leaf.setAttribute('opacity', fade(t, d(w.i)));
+      }
+      done.setAttribute('opacity', fade(t, d(8) + .35));
+      cursor.setAttribute('transform', `translate(${kf(t, cx) + 1},${kf(t, cy) + 2})`);
+    }, d(8) + 2);
   }
 
   /* ---------- NEFS: real Tessera glyphs; one feature changes, one stroke changes ---------- */
