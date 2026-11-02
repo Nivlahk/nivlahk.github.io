@@ -338,108 +338,135 @@
     }, 4.2);
   }
 
-  /* ---------- VERTEX: one program, three lenses ---------- */
+  /* ---------- VERTEX: the code and its flowchart run side by side, in step ---------- */
   function vertex(host) {
     const svg = svgFor(host), g = el('g', {}, svg);
-    const TABS = ['Flowchart', 'Code', 'Machine'], TW = 78;
-    const tabBar = el('rect', { y: 8, width: TW, height: 18, rx: 9, fill: C.orange }, g);
-    const tabTxt = TABS.map((n, i) => {
-      const tt = el('text', { x: 33 + i * (TW + 6) + TW / 2, y: 20.5, 'text-anchor': 'middle', 'font-family': MONO, 'font-size': 9, 'font-weight': 700 }, g);
-      tt.textContent = n; return tt;
+    const HL = '#ff6b3538', GOOD = '#4fd27a', BAD = '#ff8a7a';
+    // code panel
+    el('rect', { x: 8, y: 8, width: 132, height: 104, rx: 6, fill: C.well, stroke: C.line }, g);
+    const band = el('rect', { x: 12, width: 124, height: 16, rx: 3, fill: HL, opacity: 0 }, g);
+    const CODE = [[['make', 'kw'], [' n ', ''], ['5', 'num']], [['if', 'kw'], [' n ', ''], ['more', 'kw'], [' 3', 'num']], [['  print', 'kw'], [' "big"', 'str']], [['print', 'kw'], [' n', '']]];
+    const LY = i => 30 + i * 19;
+    const codeLines = CODE.map((parts, i) => {
+      const tt = el('text', { x: 20, y: LY(i), 'font-family': MONO, 'font-size': 10.5, style: 'white-space:pre' }, g);
+      return parts.map(([s, k]) => { const sp = el('tspan', { fill: k === 'kw' ? C.accent : k === 'str' || k === 'num' ? '#8fd3ff' : C.ink }, tt); sp.textContent = s; return sp; });
     });
-    const HL = '#ff6b3533';
-    // lens 1: flowchart
+    const vars = el('text', { x: 20, y: 104, 'font-family': MONO, 'font-size': 9, fill: C.muted }, g);
+    // output panel
+    el('rect', { x: 8, y: 118, width: 132, height: 44, rx: 6, fill: C.well, stroke: C.line }, g);
+    const outs = [0, 1].map(i => el('text', { x: 18, y: 135 + i * 16, 'font-family': MONO, 'font-size': 10, fill: C.ink }, g));
+    // flowchart
     const fc = el('g', {}, g);
-    const box = (x, y, w, txt, hl) => {
-      el('rect', { x: x - w / 2, y: y - 9, width: w, height: 18, rx: 4, fill: hl ? HL : C.well, stroke: hl ? C.orange : C.line }, fc);
+    const node = (x, y, w, txt) => {
+      const r = el('rect', { x: x - w / 2, y: y - 9, width: w, height: 18, rx: 4, fill: C.well, stroke: C.line }, fc);
       const tt = el('text', { x, y: y + 3.5, 'text-anchor': 'middle', 'font-family': MONO, 'font-size': 9, fill: C.ink }, fc); tt.textContent = txt;
+      return { r, tt };
     };
-    const line = (d, lab, lx, ly) => {
-      el('path', { d, fill: 'none', stroke: C.muted, 'stroke-width': 1.1, 'marker-end': 'url(#vx-arr)' }, fc);
-      if (lab) { const tt = el('text', { x: lx, y: ly, 'font-family': MONO, 'font-size': 8, fill: C.muted }, fc); tt.textContent = lab; }
-    };
-    const defs = el('defs', {}, svg), mk = el('marker', { id: 'vx-arr', viewBox: '0 0 6 6', refX: 5, refY: 3, markerWidth: 6, markerHeight: 6, orient: 'auto' }, defs);
-    el('path', { d: 'M0 0L6 3L0 6z', fill: C.muted }, mk);
-    box(112, 46, 74, 'make n 5');
-    el('path', { d: 'M112 70 L160 86 L112 102 L64 86 Z', fill: HL, stroke: C.orange }, fc);
-    const q = el('text', { x: 112, y: 89.5, 'text-anchor': 'middle', 'font-family': MONO, 'font-size': 9, fill: C.ink }, fc); q.textContent = 'n more 3?';
-    box(230, 86, 84, 'print "big"');
-    box(112, 140, 64, 'print n');
-    line('M112 55 V68'); line('M160 86 H186', 'yes', 164, 81); line('M112 102 V129', 'no', 117, 118);
-    line('M230 95 V140 H146');
-    // lens 2: Vertex code
-    const code = el('g', {}, g);
-    const CL = [[['make', 'kw'], [' n 5', '']], [['if', 'kw'], [' n ', ''], ['more', 'kw'], [' 3', '']], [['    print', 'kw'], [' "big"', 'str']], [['print', 'kw'], [' n', '']]];
-    el('rect', { x: 20, y: 62, width: 260, height: 19, rx: 4, fill: HL }, code);
-    CL.forEach((parts, i) => {
-      const tt = el('text', { x: 30, y: 54 + i * 22, 'font-family': MONO, 'font-size': 12, style: 'white-space:pre' }, code);
-      parts.forEach(([s, k]) => { const sp = el('tspan', { fill: k === 'kw' ? C.accent : k === 'str' ? '#8fd3ff' : C.ink }, tt); sp.textContent = s; });
-    });
-    // lens 3: machine
-    const mach = el('g', {}, g);
-    const ML = ['li    r1, 5', 'li    r2, 3', 'slt   r3, r2, r1', 'beq   r3, zr, done', 'ecall print, "big"', 'done:', 'ecall print, r1'];
-    el('rect', { x: 20, y: 69.5, width: 260, height: 32, rx: 4, fill: HL }, mach);
-    ML.forEach((l, i) => {
-      const tt = el('text', { x: 30, y: 49 + i * 16, 'font-family': MONO, 'font-size': 10, fill: l.endsWith(':') ? C.accent : C.ink, style: 'white-space:pre' }, mach);
-      tt.textContent = l;
-    });
-    const lenses = [fc, code, mach], PER = 3.2, END = PER * 3;
+    const edge = d => { const p = el('path', { d, fill: 'none', stroke: C.dim, 'stroke-width': 1.2 }, fc); return p; };
+    const E = { md: edge('M206 31 V45'), yes: edge('M206 73 V93'), bn: edge('M206 111 V131'), no: edge('M240 59 H280 V140 H234') };
+    const tagYes = el('text', { x: 211, y: 86, 'font-family': MONO, 'font-size': 8, fill: C.muted }, fc); tagYes.textContent = 'yes';
+    const tagNo = el('text', { x: 255, y: 54, 'font-family': MONO, 'font-size': 8, fill: C.muted }, fc); tagNo.textContent = 'no';
+    const N = { make: node(206, 22, 66, 'make n 5'), big: node(206, 102, 76, 'print "big"'), pn: node(206, 140, 56, 'print n') };
+    const dia = el('path', { d: 'M206 45 L240 59 L206 73 L172 59 Z', fill: C.well, stroke: C.line }, fc);
+    const diaT = el('text', { x: 206, y: 62, 'text-anchor': 'middle', 'font-family': MONO, 'font-size': 8.5, fill: C.ink }, fc); diaT.textContent = 'n more 3?';
+    N.dia = { r: dia, tt: diaT };
+    const verdict = el('text', { x: 134, y: LY(1), 'text-anchor': 'end', 'font-family': MONO, 'font-size': 9, 'font-weight': 700 }, g);
+    const token = el('circle', { r: 3.6, fill: C.orange, opacity: 0 }, fc);
+
+    // two runs: n = 5 takes the yes branch, n = 2 takes the no branch
+    const runs = [
+      { n: 5, steps: [['make', 0, null], ['dia', 1, 'md'], ['big', 2, 'yes', 'big'], ['pn', 3, 'bn', '5']] },
+      { n: 2, steps: [['make', 0, null], ['dia', 1, 'md'], ['pn', 3, 'no', '2']] }
+    ];
+    const STEP = 1.05, RUN = 4.9, END = RUN * 2, TRAVEL = .45;
     loop(host, END, t => {
-      const k = Math.floor(t / PER), u = t - k * PER;
-      const x = kf(u, [[0, 33 + ((k + 2) % 3) * (TW + 6)], [.45, 33 + k * (TW + 6)]]);
-      tabBar.setAttribute('x', k === 0 && u < .45 ? 33 : x);
-      tabTxt.forEach((tt, i) => tt.setAttribute('fill', i === k ? C.well : C.muted));
-      lenses.forEach((l, i) => {
-        const o = i === k ? Math.min(1, u / .35, (PER - u) / .35) : 0;
-        l.setAttribute('opacity', o);
-        l.setAttribute('transform', `translate(0,${(1 - o) * 6})`);
-      });
-    }, PER * 1.5);
+      g.setAttribute('opacity', Math.min(1, t / .3, (END - t) / .4));
+      const ri = t < RUN ? 0 : 1, run = runs[ri], u = t - ri * RUN;
+      codeLines[0][2].textContent = String(run.n);
+      N.make.tt.textContent = `make n ${run.n}`;
+      const k = Math.min(run.steps.length - 1, Math.floor((u - .4) / STEP));
+      const active = u < .4 ? null : run.steps[k];
+      for (const key in N) { const on = active && active[0] === key; N[key].r.setAttribute('stroke', on ? C.orange : C.line); N[key].r.setAttribute('fill', on ? HL : C.well); }
+      for (const key in E) { const used = run.steps.some((st, i) => i <= k && st[2] === key) && u >= .4; E[key].setAttribute('stroke', used ? C.accent : C.dim); }
+      band.setAttribute('opacity', active ? 1 : 0);
+      if (active) band.setAttribute('y', LY(active[1]) - 11.5);
+      vars.textContent = active ? `n = ${run.n}` : '';
+      const atDia = run.steps.findIndex(st => st[0] === 'dia');
+      if (u >= .4 + atDia * STEP + .35) { const yes = run.n > 3; verdict.textContent = yes ? '→ yes' : '→ no'; verdict.setAttribute('fill', yes ? GOOD : BAD); }
+      else verdict.textContent = '';
+      const printed = run.steps.filter((st, i) => st[3] && u >= .4 + i * STEP + .2).map(st => st[3]);
+      outs.forEach((o, i) => { o.textContent = printed[i] !== undefined ? '› ' + printed[i] : (i === 0 ? '›' : ''); o.setAttribute('fill', printed[i] !== undefined ? C.ink : C.dim); });
+      // token rides the edge into the active step
+      const st0 = .4 + k * STEP, path = active && active[2] && E[active[2]];
+      if (path && u < st0 + TRAVEL) {
+        const L = path.getTotalLength(), pt = path.getPointAtLength(L * ease(Math.max(0, (u - st0) / TRAVEL)));
+        token.setAttribute('cx', pt.x); token.setAttribute('cy', pt.y); token.setAttribute('opacity', 1);
+      } else token.setAttribute('opacity', 0);
+    }, 3.9);
   }
 
-  /* ---------- BRIDGE: each new sound is routed from one the learner already makes ---------- */
+  /* ---------- BRIDGE: a consonant you already make, and where the tongue moves to make the new one ---------- */
   function bridge(host) {
     const svg = svgFor(host), g = el('g', {}, svg);
-    const GOLD = '#cba353', SERIF = 'Georgia, "Times New Roman", serif';
-    const STEPS = [
-      ['i', 'close front unrounded', 'y', 'close front rounded', 'Lip shape', 'spread → rounded', 1],
-      ['o', 'close-mid back rounded', 'ɤ', 'close-mid back unrounded', 'Lip shape', 'rounded → spread', 2],
-      ['æ', 'near-open front', 'a', 'open front', 'Tongue height', 'near-open → open', 4],
-      ['ʃ', 'postalveolar fricative', 'ɕ', 'alveolopalatal fricative', 'Place', 'postalveolar → alveolopalatal', 6]
-    ];
-    const hdr = el('text', { x: 12, y: 20, 'font-family': SANS, 'font-size': 9.5, fill: C.muted }, g);
-    hdr.textContent = 'English → Mandarin';
-    const cnt = el('text', { x: 288, y: 20, 'text-anchor': 'end', 'font-family': MONO, 'font-size': 8.5, fill: C.muted }, g);
-    const card = (x, label, col) => {
-      el('rect', { x, y: 30, width: 116, height: 82, rx: 7, fill: C.well, stroke: col }, g);
-      const l = el('text', { x: x + 9, y: 44, 'font-family': MONO, 'font-size': 7.5, fill: col === C.line ? C.muted : GOLD, 'letter-spacing': '.08em' }, g); l.textContent = label;
-      const big = el('text', { x: x + 9, y: 84, 'font-family': SERIF, 'font-size': 34, fill: col === C.line ? C.ink : GOLD }, g);
-      const desc = el('text', { x: x + 9, y: 102, 'font-family': SANS, 'font-size': 7.6, fill: C.muted }, g);
-      return { big, desc };
+    const GOLD = '#cba353', SERIF = 'Georgia, "Times New Roman", serif', TONGUE = '#c9705f';
+    // tongue outlines share one shape so they can morph: M, four quadratic segments, then the root
+    // upper contour: a start point then quadratic segments (each pair below shares a segment count so it can morph)
+    const top = p => { let d = `M${p[0]} ${p[1]}`; for (let i = 2; i < p.length; i += 4) d += ` Q${p[i]} ${p[i + 1]} ${p[i + 2]} ${p[i + 3]}`; return d; };
+    const shape = p => top(p) + ` L130 138 Q104 144 78 128 Q62 118 ${p[0]} ${p[1] + 2} Z`;
+    const T = {
+      k: [50, 104, 54, 96, 66, 94, 90, 90, 102, 72, 110, 60, 120, 64, 130, 70, 131, 104],
+      q: [50, 104, 56, 98, 70, 98, 96, 96, 110, 86, 124, 72, 131, 82, 136, 90, 133, 104],
+      t: [52, 102, 50, 84, 58, 73, 60, 71, 63, 72, 66, 74, 68, 80, 86, 96, 108, 90, 124, 86, 130, 104],
+      ʈ: [52, 104, 56, 82, 66, 66, 72, 60, 80, 66, 78, 74, 72, 78, 86, 92, 108, 92, 124, 88, 130, 104]
     };
-    const from = card(12, 'YOU ALREADY SAY', C.line), to = card(172, 'THE NEW SOUND', GOLD);
-    el('path', { d: 'M134 71 H164', stroke: C.orange, 'stroke-width': 1.6 }, g);
-    el('path', { d: 'M164 71 l-6 -4 v8z', fill: C.orange }, g);
-    const what = el('text', { x: 12, y: 132, 'font-family': MONO, 'font-size': 8, fill: C.orange, 'letter-spacing': '.08em' }, g);
-    const how = el('text', { x: 12, y: 147, 'font-family': SANS, 'font-size': 11, fill: C.ink }, g);
-    const dots = Array.from({ length: 14 }, (_, i) => el('circle', { cx: 196 + i * 7, cy: 158, r: 2.2 }, g));
-    const one = el('text', { x: 288, y: 132, 'text-anchor': 'end', 'font-family': SANS, 'font-size': 8.5, fill: C.muted }, g);
-    one.textContent = 'one feature changes';
-    const PER = 2.6, END = PER * STEPS.length;
-    let shown = -1;
+    const EX = [
+      { lang: 'English → Arabic', n: '4 OF 10', a: 'k', b: 'q', from: 'velar', to: 'uvular', how: 'Tongue back slides from', how2: 'the soft palate to the uvula.', A: [113, 62], B: [130, 80] },
+      { lang: 'English → Hindi', n: '9 OF 17', a: 't', b: 'ʈ', from: 'alveolar', to: 'retroflex', how: 'The tip curls up and back,', how2: 'behind the tooth ridge.', A: [58, 72], B: [72, 61] }
+    ];
+    // vocal tract, facing left
+    el('rect', { x: 8, y: 8, width: 160, height: 154, rx: 6, fill: C.well, stroke: C.line }, g);
+    const vt = el('g', { fill: 'none', stroke: C.muted, 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, g);
+    el('path', { d: 'M42 30 Q34 46 30 60 Q26 70 34 74 Q38 76 40 80' }, vt);                       // nose and upper lip
+    el('path', { d: 'M40 100 Q32 104 34 114 Q38 128 52 134 Q72 142 88 146' }, vt);              // lower lip and chin
+    el('path', { d: 'M46 76 L46 84 M46 100 L46 94' }, vt);                                         // teeth
+    el('path', { d: 'M46 76 Q52 70 58 70 Q62 66 70 62 Q90 54 108 58' }, vt);                     // tooth ridge and hard palate
+    el('path', { d: 'M108 58 Q122 62 128 72 Q131 80 130 84', stroke: C.ink }, vt);              // soft palate and uvula
+    el('path', { d: 'M150 54 Q148 90 150 152' }, vt);                                              // back of the throat
+    el('path', { d: 'M58 42 Q100 34 150 40', 'stroke-dasharray': '3 3', 'stroke-width': 1 }, vt); // nasal cavity
+    const tongue = el('path', { fill: TONGUE, opacity: .9 }, g);
+    const ghost = el('path', { fill: 'none', stroke: C.ink, 'stroke-width': 1, 'stroke-dasharray': '2 2.5', opacity: .45 }, g);
+    const contact = el('circle', { r: 4, fill: 'none', stroke: GOLD, 'stroke-width': 1.6 }, g);
+    const placeLbl = el('text', { 'font-family': MONO, 'font-size': 7.5, fill: GOLD, 'text-anchor': 'middle' }, g);
+
+    const lang = el('text', { x: 178, y: 21, 'font-family': SANS, 'font-size': 9, fill: C.muted }, g);
+    const cnt = el('text', { x: 178, y: 33, 'font-family': MONO, 'font-size': 7.5, fill: C.dim, 'letter-spacing': '.08em' }, g);
+    const pair = el('text', { x: 178, y: 72, 'font-family': SERIF, 'font-size': 32 }, g);
+    const pa = el('tspan', { fill: C.ink }, pair), arrow = el('tspan', { fill: C.orange, 'font-size': 20, dx: 4 }, pair), pb = el('tspan', { fill: GOLD, dx: 4 }, pair);
+    arrow.textContent = '→';
+    el('text', { x: 178, y: 92, 'font-family': MONO, 'font-size': 7.5, fill: C.orange, 'letter-spacing': '.08em' }, g).textContent = 'PLACE MOVES';
+    const fromTo = el('text', { x: 178, y: 106, 'font-family': SANS, 'font-size': 10.5, fill: C.ink }, g);
+    const how = el('text', { x: 178, y: 128, 'font-family': SANS, 'font-size': 8.5, fill: C.muted }, g);
+    const how2 = el('text', { x: 178, y: 140, 'font-family': SANS, 'font-size': 8.5, fill: C.muted }, g);
+
+    const PER = 5.2, END = PER * EX.length;
     loop(host, END, t => {
-      const k = Math.floor(t / PER), u = t - k * PER;
+      const k = Math.min(EX.length - 1, Math.floor(t / PER)), u = t - k * PER, ex = EX[k];
       g.setAttribute('opacity', Math.min(1, u / .3, (PER - u) / .3));
-      if (k === shown) return;
-      shown = k;
-      const [a, ad, b, bd, w, h, n] = STEPS[k];
-      from.big.textContent = a; from.desc.textContent = ad;
-      to.big.textContent = b; to.desc.textContent = bd;
-      what.textContent = w.toUpperCase() + ' — THIS IS WHAT MOVES';
-      how.textContent = h;
-      cnt.textContent = `SOUND ${n} OF 14`;
-      dots.forEach((d, i) => d.setAttribute('fill', i < n ? GOLD : C.line));
-    }, PER * .5);
+      const m = kf(u, [[1.3, 0], [2.6, 1]]);
+      const A = T[ex.a], B = T[ex.b];
+      tongue.setAttribute('d', shape(A.map((v, i) => v + (B[i] - v) * m)));
+      ghost.setAttribute('d', top(A));
+      ghost.setAttribute('opacity', m > .05 ? .45 : 0);
+      const cx = ex.A[0] + (ex.B[0] - ex.A[0]) * m, cy = ex.A[1] + (ex.B[1] - ex.A[1]) * m;
+      contact.setAttribute('cx', cx); contact.setAttribute('cy', cy);
+      placeLbl.setAttribute('x', Math.min(144, Math.max(30, cx))); placeLbl.setAttribute('y', Math.min(cy - 10, 53));
+      placeLbl.textContent = m < .5 ? ex.from : ex.to;
+      lang.textContent = ex.lang; cnt.textContent = 'SOUND ' + ex.n;
+      pa.textContent = ex.a; pb.textContent = ex.b;
+      pa.setAttribute('fill', m < .5 ? C.ink : C.muted); pb.setAttribute('fill', m >= .5 ? GOLD : C.dim);
+      fromTo.textContent = `${ex.from} → ${ex.to}`;
+      how.textContent = ex.how; how2.textContent = ex.how2;
+    }, 4);
   }
 
   const kinds = { spoken, syntax, nefs, seer, vertex, bridge };
