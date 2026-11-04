@@ -162,14 +162,15 @@
       <tbody>
       <tr><td>Control Flow</td><td><code>if</code>, <code>else</code>, <code>while</code>, <code>stop</code></td><td>Conditional branching and execution bounds</td></tr>
       <tr><td>Instruction Pointer</td><td><code>jump</code>, <code>next</code></td><td>Restarts the top of an <code>each</code>/<code>while</code> loop (jump) or exits it (next)</td></tr>
-      <tr><td>Variables &amp; Storage</td><td><code>make</code>, <code>del</code>, <code>take</code>, <code>open</code>, <code>save</code>, <code>download</code></td><td>Declares, deletes, reads input into, or exports local data. <code>take x</code> reads input; inside a class, <code>take.method()</code> calls the parent's method. <code>open</code> is an alias of <code>take</code></td></tr>
+      <tr><td>Variables &amp; Storage</td><td><code>make</code>, <code>del</code>, <code>take</code>, <code>open</code>, <code>save</code>, <code>download</code></td><td>Declares, deletes, reads input into, or exports local data. <code>take x</code> reads input; inside a class, <code>take.method()</code> calls the parent's method. <code>open</code> is an alias of <code>take</code>. <code>make b a</code> copies a number or text, but a list, dictionary or object is shared: change <code>b</code> and you've changed <code>a</code></td></tr>
       <tr><td>Names &amp; Types</td><td><code>a</code> / <code>an</code>, <code>as</code>, <code>with</code></td><td><code>make rex a Dog with "Rex", "Husky"</code> creates an object named <code>rex</code> (<code>a</code>/<code>an</code> only counts before a class name; <code>make a Dog</code> with no name calls the variable <code>dog</code>). <code>x as v</code> gives a value a second name. When the word after <code>as</code> is a type, it converts instead: <code>take x as number</code>, <code>make n text as int</code>, <code>total as string</code> (types: string, number, int, float, bool, list, dict). <code>with</code> lists parameters: <code>define add with a, b</code>, <code>class Dog with breed</code>. <code>with</code> is only for these declaration lines. Calls use parentheses: <code>add(2, 3)</code>, <code>name.replace("a", "b")</code>, and a call with no arguments needs none: <code>answer</code>, <code>rex.speak</code>, <code>name.upper</code></td></tr>
       <tr><td>Functions &amp; OOP</td><td><code>define</code>, <code>give</code>, <code>class</code></td><td>Functions, returns and classes. Declarations use <code>with</code> (<code>define add with a, b</code>); calls use parentheses (<code>add(2, 3)</code>), so the two look different on the page. Parameters come after <code>with</code>, and a class's header params become its fields: <code>class Dog with breed extends Animal</code> (<code>extends</code> names the parent). There is no <code>init</code>: any line in a class body that is not a <code>define</code> is setup code that runs when an object is made (the parent's first), e.g. <code>make self.shout label.upper()</code></td></tr>
       <tr><td>Output &amp; Speech</td><td><code>print</code>, <code>say</code></td><td>Console printing and browser SpeechSynthesis output</td></tr>
       <tr><td>Comments</td><td><code>note</code></td><td>Comment: everything after note to the end of the line is ignored</td></tr>
       <tr><td>Visual Anchors</td><td><code>pin</code></td><td>Zero-cost visual canvas anchor node</td></tr>
+      <tr><td>Math &amp; Text</td><td><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>//</code>, <code>%</code>, <code>^</code></td><td>Arithmetic. <code>//</code> divides and rounds down (<code>7 // 2</code> is 3, <code>-7 // 2</code> is -4), <code>%</code> is the remainder, <code>^</code> is power. <code>+</code> also joins text, and turns the other side into text: <code>"Total: " + 5</code>, <code>"ok: " + yes</code></td></tr>
       <tr><td>Data &amp; Logic</td><td><code>each</code>, <code>in</code>, <code>yes</code>, <code>no</code>, <code>none</code>, <code>is</code>, <code>same</code>, <code>mostly</code>, <code>not</code>, <code>and</code>, <code>or</code></td><td>Iteration (<code>each 3</code>, <code>each n in items</code>), boolean literals, equality, <code>list mostly yes</code> (true when more than half the list matches; a tie is no), and logical operators</td></tr>
-      <tr><td>Screen &amp; Events</td><td><code>#name</code>, <code>bind</code>, <code>on</code>, <code>every</code></td><td>Every <code>#name</code> in a program is an element on the Screen (above the console), made when the program starts. A name ending in <code>-btn</code> is a button, <code>-input</code> a text box, <code>-canvas</code> a drawing area; otherwise it's decided by use (clicked: button, read with <code>take</code>: text box, drawn on: canvas, else a label). <code>bind #app.text counter</code> keeps <code>#app</code> showing <code>counter</code> as it changes. <code>make #title.text "Hi"</code> sets it once. <code>take "#user-input"</code> reads what's typed in a box. <code>on click "#submit-btn"</code> runs the indented lines on each click (also <code>on type</code>, <code>on change</code>, <code>on enter</code>, <code>on hover</code>, and <code>on key</code> for the keyboard, which gives you <code>key</code>). <code>every 1 second</code> repeats its lines (<code>ms</code>, <code>seconds</code>, <code>minutes</code>). A program with <code>on</code> or <code>every</code> keeps running until you press Stop. Properties: <code>text</code>, <code>color</code>, <code>background</code>, <code>size</code>, <code>visible</code>, <code>width</code>, <code>height</code>. Canvas: <code>#pad-canvas.circle(x, y, r, "red")</code>, <code>.rect(x, y, w, h, color)</code>, <code>.line(x1, y1, x2, y2, color)</code>, <code>.write(x, y, "text", color)</code>, <code>.clear</code>. A trailing <code>then</code> on a block's first line and an <code>ok</code> line after a block are allowed, but the indentation is what counts</td></tr>
+      <tr><td>Screen &amp; Events</td><td><code>#name</code>, <code>bind</code>, <code>on</code>, <code>every</code></td><td>Every <code>#name</code> in a program is an element on the Screen (above the console), made when the program starts. A name ending in <code>-btn</code> is a button, <code>-input</code> a text box, <code>-canvas</code> a drawing area; otherwise it's decided by use (clicked or given a <code>label</code>: button, given a <code>value</code> or typed into with <code>on type</code>/<code>on enter</code>: text box, drawn on: canvas, else a label). <code>bind #app.text counter</code> keeps <code>#app</code> showing <code>counter</code> as it changes. <code>make #title.text "Hi"</code> sets it once. <code>#user-input.text</code> reads what's typed in a box. <code>on click "#submit-btn"</code> runs the indented lines on each click (also <code>on type</code>, <code>on change</code>, <code>on enter</code>, <code>on hover</code>, and <code>on key</code> for the keyboard, which gives you <code>key</code>). <code>every 1 second</code> repeats its lines (<code>ms</code>, <code>seconds</code>, <code>minutes</code>). A program with <code>on</code> or <code>every</code> keeps running until you press Stop. Properties: <code>text</code>, <code>color</code>, <code>background</code>, <code>size</code>, <code>visible</code>, <code>width</code>, <code>height</code>. Canvas: <code>#pad-canvas.circle(x, y, r, "red")</code>, <code>.rect(x, y, w, h, color)</code>, <code>.line(x1, y1, x2, y2, color)</code>, <code>.write(x, y, "text", color)</code>, <code>.clear</code>. A trailing <code>then</code> on a block's first line and an <code>ok</code> line after a block are allowed, but the indentation is what counts</td></tr>
       <tr><td>Packages</td><td><code>use</code></td><td>Brings in code from elsewhere. <code>use python numpy as np</code> loads a Python package (the standard library, packages like numpy and pandas, or pure-Python packages from PyPI; the first Python import takes a few seconds). <code>use js lodash as lo</code> loads a JavaScript package from npm. <code>use "https://example.com/tools.vx"</code> runs a Mutter file and gives you its functions (add <code>as tools</code> to keep them under <code>tools.</code>). With no <code>as</code>, the name is the package's: <code>use js date-fns</code> gives <code>date_fns</code>. Package functions use the normal call syntax: <code>np.mean([1, 2, 3])</code>, <code>df["age"].max()</code>. If the install name differs from the import name, use the install name: <code>use python python-slugify as slugify</code>. Only use packages you trust: they run with the same access as this page</td></tr>
       <tr><td>Error Handling</td><td><code>try</code>, <code>catch</code></td><td>Exception blocks and exception variable binding</td></tr>
       <tr><td>Timing &amp; Automation</td><td><code>wait</code>, <code>every</code>, <code>from</code></td><td>Execution delays and event triggers</td></tr>
@@ -177,25 +178,25 @@
       </tbody>
     </table></div>
     <h2>Text methods</h2>
-    <p>Put a dot after any text and name what you want done. They chain left to right: <code>name.trim().title().replace(" ", "_")</code>. A text method never changes the original; it gives back new text.</p>
+    <p>Put a dot after any text and name what you want done. They chain left to right: <code>name.trim.title.replace(" ", "_")</code>. A text method never changes the original; it gives back new text. A method with nothing to pass needs no parentheses: <code>name.upper</code>, <code>name.length</code>.</p>
     <div class="tbl"><table>
       <thead><tr><th>Method</th><th>Does</th><th>Example</th></tr></thead>
       <tbody>
-        <tr><td><code>upper() / lower()</code></td><td>Changes the case</td><td><code>"hi".upper()  →  "HI"</code></td></tr>
-        <tr><td><code>title() / capitalize()</code></td><td>Capitalizes every word / just the first letter</td><td><code>"ada lovelace".title()  →  "Ada Lovelace"</code></td></tr>
-        <tr><td><code>trim()</code></td><td>Removes spaces from both ends</td><td><code>"  hi ".trim()  →  "hi"</code></td></tr>
+        <tr><td><code>upper / lower</code></td><td>Changes the case</td><td><code>"hi".upper  →  "HI"</code></td></tr>
+        <tr><td><code>title / capitalize</code></td><td>Capitalizes every word / just the first letter</td><td><code>"ada lovelace".title  →  "Ada Lovelace"</code></td></tr>
+        <tr><td><code>trim</code></td><td>Removes spaces from both ends</td><td><code>"  hi ".trim  →  "hi"</code></td></tr>
         <tr><td><code>split(sep)</code></td><td>Cuts text into a list</td><td><code>"a,b".split(",")  →  ["a", "b"]</code></td></tr>
-        <tr><td><code>words() / lines()</code></td><td>Splits on spaces / on line breaks</td><td><code>"to be or".words()  →  ["to", "be", "or"]</code></td></tr>
+        <tr><td><code>words / lines</code></td><td>Splits on spaces / on line breaks</td><td><code>"to be or".words  →  ["to", "be", "or"]</code></td></tr>
         <tr><td><code>replace(old, new)</code></td><td>Replaces every match</td><td><code>"banana".replace("a", "o")  →  "bonono"</code></td></tr>
         <tr><td><code>contains(x) / starts(x) / ends(x)</code></td><td>Yes or no questions about the text</td><td><code>"hello".starts("he")  →  yes</code></td></tr>
         <tr><td><code>count(x)</code></td><td>How many times x appears</td><td><code>"banana".count("a")  →  3</code></td></tr>
         <tr><td><code>index(x)</code></td><td>Position of x (counting from 0), or none</td><td><code>"hello".index("l")  →  2</code></td></tr>
-        <tr><td><code>length()</code></td><td>Number of characters</td><td><code>"hello".length()  →  5</code></td></tr>
-        <tr><td><code>reverse()</code></td><td>Backwards</td><td><code>"abc".reverse()  →  "cba"</code></td></tr>
+        <tr><td><code>length</code></td><td>Number of characters</td><td><code>"hello".length  →  5</code></td></tr>
+        <tr><td><code>reverse</code></td><td>Backwards</td><td><code>"abc".reverse  →  "cba"</code></td></tr>
         <tr><td><code>repeat(n)</code></td><td>Repeats the text n times</td><td><code>"ab".repeat(3)  →  "ababab"</code></td></tr>
         <tr><td><code>pad(width, fill) / padend(width, fill)</code></td><td>Pads on the left / right (fill defaults to a space)</td><td><code>"7".pad(3, "0")  →  "007"</code></td></tr>
-        <tr><td><code>chars()</code></td><td>One item per character</td><td><code>"hi".chars()  →  ["h", "i"]</code></td></tr>
-        <tr><td><code>isEmpty()</code></td><td>Yes if there is nothing in it</td><td><code>"".isEmpty()  →  yes</code></td></tr>
+        <tr><td><code>chars</code></td><td>One item per character</td><td><code>"hi".chars  →  ["h", "i"]</code></td></tr>
+        <tr><td><code>isEmpty</code></td><td>Yes if there is nothing in it</td><td><code>"".isEmpty  →  yes</code></td></tr>
       </tbody>
     </table></div>
     <h2>List methods</h2>
@@ -204,14 +205,39 @@
       <thead><tr><th>Method</th><th>Does</th><th>Example</th></tr></thead>
       <tbody>
         <tr><td><code>join(sep)</code></td><td>Glues items into text</td><td><code>["a", "b"].join("-")  →  "a-b"</code></td></tr>
-        <tr><td><code>sort() / sort("desc")</code></td><td>Sorted copy (numbers by value, text alphabetically)</td><td><code>[3, 1, 2].sort()  →  [1, 2, 3]</code></td></tr>
-        <tr><td><code>reverse()</code></td><td>Backwards copy</td><td><code>[1, 2, 3].reverse()  →  [3, 2, 1]</code></td></tr>
-        <tr><td><code>unique()</code></td><td>Removes repeats</td><td><code>[1, 2, 2].unique()  →  [1, 2]</code></td></tr>
-        <tr><td><code>first() / last()</code></td><td>The first / last item (none if empty)</td><td><code>[4, 5, 6].last()  →  6</code></td></tr>
+        <tr><td><code>sort / sort("desc")</code></td><td>Sorted copy (numbers by value, text alphabetically)</td><td><code>[3, 1, 2].sort  →  [1, 2, 3]</code></td></tr>
+        <tr><td><code>reverse</code></td><td>Backwards copy</td><td><code>[1, 2, 3].reverse  →  [3, 2, 1]</code></td></tr>
+        <tr><td><code>unique</code></td><td>Removes repeats</td><td><code>[1, 2, 2].unique  →  [1, 2]</code></td></tr>
+        <tr><td><code>first / last</code></td><td>The first / last item (none if empty)</td><td><code>[4, 5, 6].last  →  6</code></td></tr>
         <tr><td><code>count(x)</code></td><td>How many items equal x</td><td><code>[1, 2, 2].count(2)  →  2</code></td></tr>
-        <tr><td><code>sum()</code></td><td>Adds up the numbers</td><td><code>[1, 2, 3].sum()  →  6</code></td></tr>
-        <tr><td><code>length() / isEmpty()</code></td><td>How many items / is it empty</td><td><code>[1, 2].length()  →  2</code></td></tr>
+        <tr><td><code>sum</code></td><td>Adds up the numbers</td><td><code>[1, 2, 3].sum  →  6</code></td></tr>
+        <tr><td><code>length / isEmpty</code></td><td>How many items / is it empty</td><td><code>[1, 2].length  →  2</code></td></tr>
         <tr><td><code>push(x)</code></td><td>Adds x to the end</td><td><code>[1, 2].push(9)  →  [1, 2, 9]</code></td></tr>
+      </tbody>
+    </table></div>
+    <h2>Dictionary methods</h2>
+    <p>A dictionary answers to these, and to <code>d.key</code> or <code>d["key"]</code> for its values. If it has a key with the same name as a method, the key wins: <code>{"keys": 1}.keys</code> is 1.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Method</th><th>Does</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>keys / values</code></td><td>A list of the keys / the values</td><td><code>{"a": 1, "b": 2}.keys  →  ["a", "b"]</code></td></tr>
+        <tr><td><code>length / isEmpty</code></td><td>How many keys / is it empty</td><td><code>{"a": 1}.length  →  1</code></td></tr>
+        <tr><td><code>has(key)</code></td><td>Yes if the key is there</td><td><code>person.has("age")  →  yes</code></td></tr>
+      </tbody>
+    </table></div>
+    <h2>Built-in functions</h2>
+    <p>The only functions you can call without defining them. Everything else is a method (<code>s.upper</code>) or a conversion with <code>as</code> (<code>x as int</code>).</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Function</th><th>Does</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>random / random(n) / random(a, b)</code></td><td>A decimal from 0 to 1 / 0 to n / a to b</td><td><code>random(20, 380)  →  147.3...</code></td></tr>
+        <tr><td><code>randint(a, b)</code></td><td>A whole number from a to b, both included</td><td><code>randint(1, 6)  →  4</code></td></tr>
+        <tr><td><code>pick(list)</code></td><td>One item at random</td><td><code>pick(["red", "blue"])  →  "blue"</code></td></tr>
+        <tr><td><code>min / max</code></td><td>Smallest / largest of a list or of several numbers</td><td><code>max(3, 9, 4)  →  9</code></td></tr>
+        <tr><td><code>abs / round / floor / ceil / sqrt</code></td><td>Number tools</td><td><code>round(2.6)  →  3</code></td></tr>
+        <tr><td><code>pi / sin / cos / tan / atan2</code></td><td>For angles and drawing (radians)</td><td><code>cos(pi)  →  -1</code></td></tr>
+        <tr><td><code>range(n) / range(a, b)</code></td><td>Whole numbers from 0 (or a) up to, not including, n (or b)</td><td><code>range(2, 5)  →  [2, 3, 4]</code></td></tr>
+        <tr><td><code>now / time / type(x)</code></td><td>Today's date / the time / what kind of value x is</td><td><code>type(3)  →  "int"</code></td></tr>
       </tbody>
     </table></div>
   </div>
@@ -704,6 +730,16 @@ function ivxConvert(interp, conv, value, node) {
   }
   return out;
 }
+
+// ── dict methods (a key with the same name wins: {"keys": 1}.keys is 1) ─────
+const DICT_METHODS = {
+  keys: (d) => [...d.keys()].filter(k => !String(k).startsWith('__')),
+  values: (d) => [...d.entries()].filter(([k]) => !String(k).startsWith('__')).map(([, v]) => v),
+  length: (d) => [...d.keys()].filter(k => !String(k).startsWith('__')).length,
+  isEmpty: (d) => DICT_METHODS.length(d) === 0,
+  has: (d, args) => d.has(args[0]),
+};
+const isPlainDict = (v) => v instanceof Map && !v.has('__class__');
 
 // ── methods that only exist as name.method() on text / lists ─────────────────
 const TEXT_METHODS = {
@@ -1656,6 +1692,11 @@ class Parser {
       const tok = this.peek();
       const op = tok.value;
       const prec = PREC[op];
+      if (tok.type === T.OP && op === '&') {
+        this.error("Join text with + now:  \"a\" + b", tok);
+        this.advance();
+        break;
+      }
       if (prec === undefined || prec <= minPrec) break;
       if (!BINARY_OPS.has(op)) break;
       if (tok.type !== T.OP && tok.type !== T.KEYWORD) break;
@@ -1769,9 +1810,10 @@ class Parser {
     if (tok.type === T.KEYWORD && tok.value === 'take') {
       const n = this.peek(1);
       if (n.type === T.SELECTOR || (n.type === T.STRING && /^#[A-Za-z_][\w-]*$/.test(n.value))) {
-        this.advance();
-        const name = this._elementName();
-        return this.parsePostfix(Node('ElementValue', { name, line: tok.line, col: tok.col }));
+        const nm = n.type === T.SELECTOR ? n.value : n.value.slice(1);
+        this.error(`Read what's typed in a box with its text:  #${nm}.text`, tok);
+        this.advance(); this.advance();
+        return null;
       }
     }
     if (tok.type === T.NUMBER) {
@@ -2493,6 +2535,23 @@ class IVXSuperProxy {
   }
 }
 
+// The standard library: the only built-in function names a program can call directly.
+// name in Mutter -> internal built-in. Everything else is a method (s.upper, items.sort, d.keys) or 'as'.
+const STANDARD_LIBRARY = {
+  abs: 'abs', round: 'round', floor: 'floor', ceil: 'ceil', min: 'min', max: 'max', sqrt: 'sqrt',
+  pi: 'pi', sin: 'sin', cos: 'cos', tan: 'tan', atan2: 'atan2',
+  random: 'random', randint: 'randint', pick: 'choose',
+  range: 'range', now: 'now', time: 'time', type: 'type',
+};
+// Old global names -> what to write instead (shown when someone calls one)
+const OLD_BUILTIN_HINTS = {
+  int: 'x as int', flt: 'x as number', str: 'x as string', bin: 'x as bool', list: 'x as list', dict: 'x as dict',
+  length: 'x.length', size: 'x.length', upper: 's.upper', lower: 's.lower', trim: 's.trim', split: 's.split(",")',
+  join: 'items.join(", ")', contains: 's.contains("x")', replace: 's.replace("a", "b")', starts: 's.starts("x")',
+  ends: 's.ends("x")', index: 's.index("x")', slice: 's[1:3]', chars: 's.chars', push: 'items.push(x)', pop: 'items.pop',
+  keys: 'd.keys', values: 'd.values', has: 'd.has("key")', sum: 'items.sum', sort: 'items.sort', reverse: 'items.reverse',
+  timestamp: 'now', len: 'x.length',
+};
 const BUILTIN_DEFS = {
   int: {
     params: ['x'],
@@ -2572,11 +2631,11 @@ const BUILTIN_DEFS = {
   },
   min: {
     params: ['a', 'b'],
-    call: (args) => Math.min(args[0], args[1]),
+    call: (args) => { const xs = args.length === 1 && Array.isArray(args[0]) ? args[0] : args; return xs.length ? Math.min(...xs) : NONE; },
   },
   max: {
     params: ['a', 'b'],
-    call: (args) => Math.max(args[0], args[1]),
+    call: (args) => { const xs = args.length === 1 && Array.isArray(args[0]) ? args[0] : args; return xs.length ? Math.max(...xs) : NONE; },
   },
   sqrt: {
     params: ['x'],
@@ -2586,7 +2645,19 @@ const BUILTIN_DEFS = {
   e: { params: [], call: () => Math.E },
   tau: { params: [], call: () => Math.PI * 2 },
   inf: { params: [], call: () => Infinity },
-  random: { params: [], call: () => Math.random() },
+  // random() is 0 to 1; random(n) is 0 to n; random(a, b) is a to b (decimals). randint gives whole numbers.
+  random: { params: [], call: (args) => {
+    if (args.length >= 2) return Number(args[0]) + Math.random() * (Number(args[1]) - Number(args[0]));
+    if (args.length === 1) return Math.random() * Number(args[0]);
+    return Math.random();
+  } },
+  // pick(list): one item at random
+  choose: { params: ['items'], call: (args, node) => {
+    const xs = args[0];
+    if (typeof xs === 'string') return xs.length ? xs[Math.floor(Math.random() * xs.length)] : NONE;
+    if (!Array.isArray(xs)) throw new RuntimeError('pick needs a list, like pick(colors)', node?.line);
+    return xs.length ? xs[Math.floor(Math.random() * xs.length)] : NONE;
+  } },
   randint: { params: ['a', 'b'], call: (args) => Math.floor(Math.random() * (args[1] - args[0] + 1)) + args[0] },
   log: {
     params: ['x', 'base'],
@@ -2685,13 +2756,13 @@ const BUILTIN_DEFS = {
     call: (args) => {
       const v = args[0];
       if (v === NONE || v === null) return 'none';
-      if (v === true || v === false) return 'boolean';
+      if (v === true || v === false) return 'bool';
       if (v instanceof IVXFunction) return 'function';
       if (v instanceof IVXClass) return 'class';
       if (v instanceof Map) return v.get('__class__') ? String(v.get('__class__')).toLowerCase() : 'dict';
       if (Array.isArray(v)) return 'list';
       if (typeof v === 'string') return 'string';
-      if (Number.isInteger(v)) return 'integer';
+      if (Number.isInteger(v)) return 'int';
       if (typeof v === 'number') return 'float';
       return 'unknown';
     },
@@ -2707,6 +2778,12 @@ const BUILTIN_DEFS = {
   range: {
     params: ['n'],
     call: (args, node) => {
+      if (args.length >= 2) {
+        const a = Math.trunc(Number(args[0])), b = Math.trunc(Number(args[1]));
+        if (!isFinite(a) || !isFinite(b)) throw new RuntimeError('range() needs whole numbers', node?.line);
+        if (b - a > 100000) throw new RuntimeError('range() limit is 100,000 — try a smaller number', node?.line);
+        return b <= a ? [] : Array.from({ length: b - a }, (_, i) => a + i);
+      }
       const n = Math.trunc(Number(args[0]));
       if (!isFinite(n)) throw new RuntimeError('range() needs a whole number, not this', node?.line);
       if (n < 0) return [];
@@ -3707,7 +3784,7 @@ async function resolveParam(param, incoming, env, interp) {
       case '-': value = value - right; break;
       case '*': value = value * right; break;
       case '/': value = right !== 0 ? value / right : NONE; break;
-      case '//': value = right !== 0 ? Math.trunc(value / right) : NONE; break;
+      case '//': value = right !== 0 ? Math.floor(value / right) : NONE; break;
       case '%': value = value % right; break;
       case '^': value = Math.pow(value, right); break;
     }
@@ -4537,9 +4614,10 @@ class Interpreter {
 
   // ── Built-in functions ────────────────────────────────────────────────────
   _registerBuiltins() {
+    // Only the standard library is a global name; the rest of BUILTIN_DEFS backs methods (s.upper) and 'as'.
     const G = this.globals;
-    for (const [name, spec] of Object.entries(BUILTIN_DEFS)) {
-      G.set(name, new IVXFunction(name, spec.params, null, null));
+    for (const [name, internal] of Object.entries(STANDARD_LIBRARY)) {
+      G.set(name, new IVXFunction(internal, BUILTIN_DEFS[internal].params, null, null));
     }
   }
 
@@ -4613,6 +4691,7 @@ class Interpreter {
       if (Object.prototype.hasOwnProperty.call(BUILTIN_DEFS, node.field)) return this._callBuiltin(node.field, [target], node);
       return NONE;
     }
+    if (isPlainDict(target) && !target.has(node.field) && DICT_METHODS[node.field]) return DICT_METHODS[node.field](target, []);
     const m = this._memberOf(target, node.field);
     if (m instanceof IVXFunction) return this._applyCallee(m, [], node);   // rex.speak runs it
     if (FOREIGN.isPy(m)) {
@@ -4654,6 +4733,9 @@ class Interpreter {
   async _evalIdentifierExpr(node, env) {
     const val = env.get(node.name);
     if (val instanceof IVXFunction) return this._applyCallee(val, [], node);   // a bare function name runs it
+    if (val === undefined && OLD_BUILTIN_HINTS[node.name] && !['index', 'size', 'len'].includes(node.name)) {
+      throw new RuntimeError(`'${node.name}' isn't defined. If you meant the built-in, write: ${OLD_BUILTIN_HINTS[node.name]}`, node.line, node.col);
+    }
     if (val === undefined) {
       throw new RuntimeError(((suggestWord(node.name) || '').replace("isn't a Vertex word.", "isn't defined yet.") || `'${node.name}' isn't defined yet. Did you mean to make it first?`), node.line, node.col);
     }
@@ -4677,6 +4759,11 @@ class Interpreter {
         if (own) return own(obj, margs, node);
         if (Object.prototype.hasOwnProperty.call(BUILTIN_DEFS, field)) return this._callBuiltin(field, [obj, ...margs], node);
         throw new RuntimeError(`${typeof obj === 'string' ? 'Text' : 'A list'} has no '.${field}()' method. See the Guide for the list of text methods.`, node.line);
+      }
+      if (isPlainDict(obj) && !obj.has(node.callee.field) && DICT_METHODS[node.callee.field]) {
+        const dargs = [];
+        for (const arg of node.args) dargs.push(await this.evalExpr(arg, env));
+        return DICT_METHODS[node.callee.field](obj, dargs);
       }
       callee = this._memberOf(obj, node.callee.field);
       if ((FOREIGN.isPy(obj) || FOREIGN.isJsForeign(obj)) && (callee === NONE || callee === undefined)) {
@@ -5090,7 +5177,7 @@ class Interpreter {
             case '-': return a - b;
             case '*': return a * b;
             case '/': return b === 0 ? NONE : a / b;
-            case '//': return b === 0 ? NONE : Math.trunc(a / b);
+            case '//': return b === 0 ? NONE : Math.floor(a / b);
             case '%': return a % b;
             case '^': return Math.pow(a, b);
             default: return NONE;
@@ -5116,14 +5203,17 @@ class Interpreter {
     }
 
     switch (node.op) {
-      case '+': return left + right;
-      case '&': return String(left) + String(right);
+      case '+':
+        if (typeof left === 'string' || typeof right === 'string') {
+          return (typeof left === 'string' ? left : ivxRepr(left)) + (typeof right === 'string' ? right : ivxRepr(right));
+        }
+        return left + right;
       case '-': return left - right;
       case '*': return left * right;
       case '/': if (right === 0) throw new RuntimeError("You can't divide by zero. Check the value on the right side of the / (or %).", node.line);
         return left / right;
       case '//': if (right === 0) throw new RuntimeError("You can't divide by zero. Check the value on the right side of the / (or %).", node.line);
-        return Math.trunc(left / right);
+        return Math.floor(left / right);
       case '%': return left % right;
       case '^': return Math.pow(left, right);
       case '=': return ivxEqual(left, right);
@@ -5155,6 +5245,9 @@ class Interpreter {
   // ── Function calls ─────────────────────────────────────────────────────────
   async evalCall(node, env) {
     const callee = env.get(node.name);
+    if (callee === undefined && OLD_BUILTIN_HINTS[node.name]) {
+      throw new RuntimeError(`'${node.name}(...)' isn't a function in Mutter. Write: ${OLD_BUILTIN_HINTS[node.name]}`, node.line);
+    }
 
     // Evaluate arguments
     const args = [];
@@ -5177,7 +5270,7 @@ class Interpreter {
     // Built-in: body is null, delegate to _callBuiltin
     if (callee.body === null) {
       try {
-        const res = await this._callBuiltin(node.name, args, node);
+        const res = await this._callBuiltin(callee.name, args, node);
         return res ?? NONE;
       } catch (e) {
         this.globals.set('err', e.message ?? String(e));
@@ -6189,7 +6282,8 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
       '  take <name>               -- read user input into a variable',
       '  define <name> with <params>  -- define a function; give <value> returns from it',
       '  class <Name> with <params>   -- define a class (params become fields); class <Name> with <params> extends <Parent> inherits; take.<method>() calls the parent; call functions as name(args), or just name with no args',
-      '  #name is an element on the Screen (-btn button, -input text box, -canvas drawing area, else a label); bind #app.text counter keeps it showing a value; make #app.text "hi" sets it; take "#box" reads a text box',
+      '  #name is an element on the Screen (-btn button, -input text box, -canvas drawing area, else a label); bind #app.text counter keeps it showing a value; make #app.text "hi" sets it; #box.text reads a text box',
+      '  + adds numbers or joins text; // divides rounding down; built-in functions are only: random, randint, pick, min, max, abs, round, floor, ceil, sqrt, pi, sin, cos, tan, atan2, range, now, time, type -- everything else is a method (s.upper, s.length, items.sort, d.keys) or as (x as int)',
       '  on click "#submit-btn"  (or on type / change / enter / hover / key) then indented lines run per event; every 1 second repeats indented lines; such programs run until Stop',
       '  use python <package> [as <name>] / use js <package> [as <name>] / use "<https url to a .vx file>"  -- import a Python, npm or Mutter package, then call it normally: np.mean([1, 2])',
       '  make <name> a <Class> with <args>  -- create an object; <list> mostly yes -- true when most items are yes',
