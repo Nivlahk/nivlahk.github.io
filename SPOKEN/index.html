@@ -230,7 +230,7 @@
         <tr><td><code>back</code></td><td>Deletes the last word</td></tr>
         <tr><td><code>comma</code></td><td><code>,</code> -- between arguments: <code>tag pad dot circle 10 comma 20 comma 5 pair</code> types <code>#pad.circle(10, 20, 5)</code></td></tr>
         <tr><td><code>tag app</code></td><td><code>#app</code> -- a Screen element. <code>tag app dot text</code> types <code>#app.text</code>, and <code>on click tag submit then</code> types <code>on click #submit</code> and starts the block. One-word names are easiest to say</td></tr>
-        <tr><td><code>it</code></td><td>Types the last variable, function or class name you mentioned</td></tr>
+        <tr><td><code>it</code></td><td>Types the last name you mentioned, including its dotted part: after <code>p dot x</code>, <code>it</code> types <code>p.x</code>, so <code>make p dot x plus it</code> types <code>make p.x + p.x</code></td></tr>
         <tr><td><code>run</code></td><td>Presses the Run button</td></tr>
         <tr><td><code>line five</code></td><td>Moves the cursor to line 5 (a spoken number or a digit both work)</td></tr>
       </tbody>
@@ -244,7 +244,7 @@
         <tr><td><code>curl</code></td><td><code>{</code></td></tr>
         <tr><td><code>pair</code></td><td>Closes the innermost open bracket: <code>)</code>, <code>]</code> or <code>}</code> to match what is open (plain <code>)</code> if none is)</td></tr>
         <tr><td>a function name (made with <code>define</code>)</td><td><code>name(</code> -- say <code>pair</code> to close it</td></tr>
-        <tr><td><code>dot name</code></td><td><code>.name(</code> -- a method call; close it with <code>pair</code></td></tr>
+        <tr><td><code>dot name</code></td><td><code>.name</code> -- a field or a method with no arguments (<code>p dot x</code>, <code>name dot upper</code>). For methods that take arguments (<code>replace</code>, <code>split</code>, <code>push</code>, <code>join</code>, canvas drawing, your own methods defined <code>with</code> parameters) it types <code>.name(</code>; close it with <code>pair</code></td></tr>
         <tr><td>the name right after <code>define</code></td><td>Typed as a plain name -- say <code>with</code> and the parameter names after it. Later calls to it get <code>name(</code></td></tr>
       </tbody>
     </table></div>
@@ -296,7 +296,8 @@
         <tr><td><code>define double with put then</code></td><td><code>define double with put</code> and a new line indented one level</td></tr>
         <tr><td><code>give put times two ok</code></td><td><code>give put * 2</code> and a new line back out one level</td></tr>
         <tr><td><code>print double five pair</code></td><td><code>print double(5)</code></td></tr>
-        <tr><td><code>name dot upper pair</code></td><td><code>name.upper()</code> -- <code>dot</code> glues the method to the word before it</td></tr>
+        <tr><td><code>name dot upper</code></td><td><code>name.upper</code> -- <code>dot</code> glues to the word before it; a method with no arguments needs no parentheses</td></tr>
+        <tr><td><code>items dot push 3 pair</code></td><td><code>items.push(3)</code></td></tr>
         <tr><td><code>take dot speak pair</code></td><td><code>take.speak()</code>, the parent call</td></tr>
         <tr><td><code>index zero pair</code></td><td><code>[0]</code></td></tr>
         <tr><td><code>make x quote hello world quote so</code></td><td><code>make x "hello world"</code> and a new line</td></tr>
@@ -5867,10 +5868,14 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
     // being taken as the method name.
     const DOT_NOT_METHOD = new Set(['back', 'pair', 'par', 'quote', 'then', 'so', 'ok', 'run']);
     // properties of a Screen element (after 'tag name dot ...'), typed without '('
+    // methods that always take arguments, so 'dot <name>' opens a '(' for them; any other
+    // 'dot <name>' is a field or a no-argument method ('p dot x' -> 'p.x', 'name dot upper' -> 'name.upper')
+    const METHODS_WITH_ARGS = new Set(['split', 'replace', 'contains', 'starts', 'ends', 'count', 'index', 'repeat', 'pad', 'padend',
+      'join', 'push', 'append', 'insert', 'remove', 'get', 'slice', 'find', 'has', 'add', 'circle', 'rect', 'line', 'write']);
     const ELEMENT_PROPS = new Set(['text', 'value', 'color', 'background', 'size', 'visible', 'width', 'height', 'label', 'placeholder']);
     function functionNamesIn(text) {
       const names = [];
-      const re = /"""[\s\S]*?(?:"""|$)|'''[\s\S]*?(?:'''|$)|"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?|\bnote\b[^\n]*|\bfun[ \t]+([A-Za-z_]\w*)/g;
+      const re = /"""[\s\S]*?(?:"""|$)|'''[\s\S]*?(?:'''|$)|"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?|\bnote\b[^\n]*|\bdefine[ \t]+([A-Za-z_]\w*)[ \t]+with\b/g;
       let m;
       while ((m = re.exec(text))) if (m[1]) names.push(m[1]);
       return names;
@@ -5911,7 +5916,7 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
       const tokens = [];
       let st = initialState;
       const emit = (text, changes) => {
-        st = Object.assign({}, st, { atLineStart: false, hasOutput: true, afterFun: false, autoParen: false }, changes);
+        st = Object.assign({}, st, { atLineStart: false, hasOutput: true, afterFun: false, autoParen: false, lastWasRef: false, pendingFun: null }, changes);
         tokens.push({ text, after: st });
       };
       const sp = () => (st.hasOutput && !st.atLineStart ? ' ' : '');
@@ -5921,7 +5926,8 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
       // becomes what 'it' refers to.
       const emitName = (name) => {
         if (st.afterFun) {
-          emit(sp() + name, { it: name, funs: st.funs.includes(name) ? st.funs : st.funs.concat(name) });   // define <name> with ... -- no paren
+          // define <name> -- it becomes an auto-'(' name only if 'with' follows (no-argument functions are called bare)
+          emit(sp() + name, { it: name, lastWasRef: true, pendingFun: name });
         } else if (st.funs.includes(name)) {
           emit(sp() + name + '(', {
             it: name,
@@ -5931,7 +5937,7 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
             autoParen: true,
           });
         } else {
-          emit(sp() + name, { it: name });
+          emit(sp() + name, { it: name, lastWasRef: true });
         }
       };
       let excessBacks = 0;
@@ -5962,7 +5968,7 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
         if (bare === 'tag' && idx + 1 < words.length) {
           const nm = words[idx + 1].replace(/[.,!?;:]+$/, '');
           if (IDENT_RE.test(nm)) {
-            emit(sp() + '#' + nm.toLowerCase(), { elementRef: true });
+            emit(sp() + '#' + nm.toLowerCase(), { elementRef: true, it: '#' + nm.toLowerCase(), lastWasRef: true });
             idx++;
             continue;
           }
@@ -6022,13 +6028,19 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
         } else if (bare === 'dot' && st.elementRef && idx + 1 < words.length
                    && ELEMENT_PROPS.has(words[idx + 1].toLowerCase().replace(/[.,!?;:]+$/, ''))) {
           // 'tag app dot text' -> '#app.text': element properties take no parentheses
-          emit('.' + words[idx + 1].toLowerCase().replace(/[.,!?;:]+$/, ''), { elementRef: false });
+          const prop = words[idx + 1].toLowerCase().replace(/[.,!?;:]+$/, '');
+          emit('.' + prop, { elementRef: false, it: st.lastWasRef && st.it ? st.it + '.' + prop : prop, lastWasRef: true });
           idx++;
         } else if (bare === 'dot' && idx + 1 < words.length && IDENT_RE.test(words[idx + 1].replace(/[.,!?;:]+$/, ''))
                    && !DOT_NOT_METHOD.has(words[idx + 1].toLowerCase().replace(/[.,!?;:]+$/, ''))) {
           // 'dot <name>' -> '.name(' glued to what came before; ')' owed to 'pair'.
           const method = words[idx + 1].replace(/[.,!?;:]+$/, '');
-          emit('.' + method + '(', { stack: st.stack.concat(')'), atLineStart: true, autoParen: true });
+          if (METHODS_WITH_ARGS.has(method.toLowerCase()) || st.funs.includes(method)) {
+            emit('.' + method + '(', { stack: st.stack.concat(')'), atLineStart: true, autoParen: true });
+          } else {
+            // a field or a no-argument method: no '('. 'it' now means the whole thing (p.x)
+            emit('.' + method, { it: st.lastWasRef && st.it ? st.it + '.' + method : method, lastWasRef: true });
+          }
           idx++;
         } else if (bare === 'par' || bare === 'curl' || bare === 'index') {
           const opener = bare === 'par' ? '(' : bare === 'curl' ? '{' : '[';
@@ -6075,6 +6087,7 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
           // their case.
           const typed = KEYWORDS.has(bare) ? w.toLowerCase() : w;
           if (isNameWord(typed)) emitName(typed);
+          else if (bare === 'with' && st.pendingFun) emit(sp() + typed, st.funs.includes(st.pendingFun) ? {} : { funs: st.funs.concat(st.pendingFun) });
           else emit(sp() + typed, bare === 'define' ? { afterFun: true } : {});
         }
       }
