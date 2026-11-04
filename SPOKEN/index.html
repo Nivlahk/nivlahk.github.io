@@ -3,96 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-<title>SPOKEN: Voice-Driven Code Dictation in the Browser | Calvin W. Hancock</title>
-  <!-- SEO + social -->
-  <meta name="description" content="SPOKEN lets you write and run code by voice. Dictate programs in Vertex, an English-like programming language, with a voice guide, keyword reference, and console. No install.">
-  <link rel="canonical" href="https://calvinhancock.com/SPOKEN/">
-  <meta name="author" content="Calvin W. Hancock">
-  <meta name="robots" content="index, follow, max-image-preview:large">
-  <meta name="theme-color" content="#160b06">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Calvin W. Hancock">
-  <meta property="og:title" content="SPOKEN: Voice-Driven Code Dictation in the Browser | Calvin W. Hancock">
-  <meta property="og:description" content="SPOKEN lets you write and run code by voice. Dictate programs in Vertex, an English-like programming language, with a voice guide, keyword reference, and console. No install.">
-  <meta property="og:url" content="https://calvinhancock.com/SPOKEN/">
-  <meta property="og:image" content="https://calvinhancock.com/assets/og-spoken.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="SPOKEN: Voice-Driven Code Dictation in the Browser | Calvin W. Hancock">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="SPOKEN: Voice-Driven Code Dictation in the Browser | Calvin W. Hancock">
-  <meta name="twitter:description" content="SPOKEN lets you write and run code by voice. Dictate programs in Vertex, an English-like programming language, with a voice guide, keyword reference, and console. No install.">
-  <meta name="twitter:image" content="https://calvinhancock.com/assets/og-spoken.png">
-  <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": [
-        "WebApplication"
-      ],
-      "@id": "https://calvinhancock.com/SPOKEN/#app",
-      "name": "SPOKEN",
-      "alternateName": "Vertex voice editor",
-      "url": "https://calvinhancock.com/SPOKEN/",
-      "description": "SPOKEN lets you write and run code by voice. Dictate programs in Vertex, an English-like programming language, with a voice guide, keyword reference, and console. No install.",
-      "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "Any (web browser)",
-      "browserRequirements": "Requires JavaScript. Voice input needs a browser with the Web Speech API, such as Chrome, Edge, or Safari.",
-      "isAccessibleForFree": true,
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "featureList": [
-        "Voice dictation of source code",
-        "English-like Vertex syntax",
-        "Spoken punctuation and indentation commands",
-        "Reserved-keyword reference",
-        "In-browser console for running programs"
-      ],
-      "keywords": "voice coding, voice-driven code dictation, natural-language programming, English-like programming language, Vertex",
-      "image": "https://calvinhancock.com/assets/og-spoken.png",
-      "inLanguage": "en",
-      "author": {
-        "@id": "https://calvinhancock.com/#person"
-      },
-      "creator": {
-        "@id": "https://calvinhancock.com/#person"
-      }
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Calvin W. Hancock",
-          "item": "https://calvinhancock.com/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "SPOKEN",
-          "item": "https://calvinhancock.com/SPOKEN/"
-        }
-      ]
-    },
-    {
-      "@type": "Person",
-      "@id": "https://calvinhancock.com/#person",
-      "name": "Calvin W. Hancock",
-      "url": "https://calvinhancock.com/",
-      "sameAs": [
-        "https://github.com/Nivlahk",
-        "https://linkedin.com/in/calvin-hancock-a1a711342"
-      ]
-    }
-  ]
-}
-  </script>
+<title>Vertex</title>
 <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css">
 <style>
   :root {
@@ -229,7 +140,6 @@
 </style>
 </head>
 <body>
-<noscript><p style="max-width:40rem;margin:2rem auto;padding:0 1rem;font:16px/1.5 system-ui,sans-serif">SPOKEN is a browser tool for writing code by voice. You dictate a program in Vertex, an English-like programming language, and SPOKEN turns speech into source code you can run in its built-in console. It includes a voice guide for saying punctuation and indentation, and a reference of Vertex's reserved keywords. JavaScript is required. <a href="/SPOKEN/about/">Read how it works</a>. Made by <a href="https://calvinhancock.com/">Calvin W. Hancock</a>.</p></noscript>
 <header>
   <h1>Vertex</h1>
   <div class="spacer"></div>
@@ -246,12 +156,13 @@
       <tr><td>Control Flow</td><td><code>if</code>, <code>else</code>, <code>while</code>, <code>stop</code></td><td>Conditional branching and execution bounds</td></tr>
       <tr><td>Instruction Pointer</td><td><code>jump</code>, <code>next</code></td><td>Restarts the top of an <code>each</code>/<code>while</code> loop (jump) or exits it (next)</td></tr>
       <tr><td>Variables &amp; Storage</td><td><code>make</code>, <code>del</code>, <code>take</code>, <code>open</code>, <code>save</code>, <code>download</code></td><td>Declares, deletes, reads input into, or exports local data. <code>take x</code> reads input; inside a class, <code>take.method()</code> calls the parent's method. <code>open</code> is an alias of <code>take</code></td></tr>
-      <tr><td>Names &amp; Types</td><td><code>a</code> / <code>an</code>, <code>as</code>, <code>with</code></td><td><code>make a Dog as rex with "Rex", "Husky"</code> creates an object (<code>a</code>/<code>an</code> only counts right after <code>make</code>, before a class name; with no <code>as</code> the variable is the class name in lowercase). <code>x as v</code> gives a value a second name. When the word after <code>as</code> is a type, it converts instead: <code>take x as number</code>, <code>make n text as int</code>, <code>total as string</code> (types: string, number, int, float, bool, list, dict). <code>with</code> lists parameters: <code>define add with a, b</code>, <code>class Dog with breed</code>, <code>init with name</code></td></tr>
-      <tr><td>Functions &amp; OOP</td><td><code>define</code>, <code>give</code>, <code>class</code></td><td>Functions, returns and classes. Parameters come after <code>with</code>, and a class's header params become its fields: <code>class Dog (Animal) with breed</code> (inheritance is the part in parentheses). There is no <code>init</code>: any line in a class body that is not a <code>define</code> is setup code that runs when an object is made (the parent's first), e.g. <code>make self.shout label.upper()</code></td></tr>
+      <tr><td>Names &amp; Types</td><td><code>a</code> / <code>an</code>, <code>as</code>, <code>with</code></td><td><code>make rex a Dog with "Rex", "Husky"</code> creates an object named <code>rex</code> (<code>a</code>/<code>an</code> only counts before a class name; <code>make a Dog</code> with no name calls the variable <code>dog</code>). <code>x as v</code> gives a value a second name. When the word after <code>as</code> is a type, it converts instead: <code>take x as number</code>, <code>make n text as int</code>, <code>total as string</code> (types: string, number, int, float, bool, list, dict). <code>with</code> lists parameters: <code>define add with a, b</code>, <code>class Dog with breed</code>. <code>with</code> is only for these declaration lines. Calls use parentheses: <code>add(2, 3)</code>, <code>name.replace("a", "b")</code>, and a call with no arguments needs none: <code>answer</code>, <code>rex.speak</code>, <code>name.upper</code></td></tr>
+      <tr><td>Functions &amp; OOP</td><td><code>define</code>, <code>give</code>, <code>class</code></td><td>Functions, returns and classes. Declarations use <code>with</code> (<code>define add with a, b</code>); calls use parentheses (<code>add(2, 3)</code>), so the two look different on the page. Parameters come after <code>with</code>, and a class's header params become its fields: <code>class Dog with breed extends Animal</code> (<code>extends</code> names the parent). There is no <code>init</code>: any line in a class body that is not a <code>define</code> is setup code that runs when an object is made (the parent's first), e.g. <code>make self.shout label.upper()</code></td></tr>
       <tr><td>Output &amp; Speech</td><td><code>print</code>, <code>say</code></td><td>Console printing and browser SpeechSynthesis output</td></tr>
       <tr><td>Comments</td><td><code>note</code></td><td>Comment: everything after note to the end of the line is ignored</td></tr>
       <tr><td>Visual Anchors</td><td><code>pin</code></td><td>Zero-cost visual canvas anchor node</td></tr>
       <tr><td>Data &amp; Logic</td><td><code>each</code>, <code>in</code>, <code>yes</code>, <code>no</code>, <code>none</code>, <code>is</code>, <code>same</code>, <code>mostly</code>, <code>not</code>, <code>and</code>, <code>or</code></td><td>Iteration (<code>each 3</code>, <code>each n in items</code>), boolean literals, equality, <code>list mostly yes</code> (true when more than half the list matches; a tie is no), and logical operators</td></tr>
+      <tr><td>Packages</td><td><code>use</code></td><td>Brings in code from elsewhere. <code>use python numpy as np</code> loads a Python package (the standard library, packages like numpy and pandas, or pure-Python packages from PyPI; the first Python import takes a few seconds). <code>use js lodash as lo</code> loads a JavaScript package from npm. <code>use "https://example.com/tools.vx"</code> runs a Mutter file and gives you its functions (add <code>as tools</code> to keep them under <code>tools.</code>). With no <code>as</code>, the name is the package's: <code>use js date-fns</code> gives <code>date_fns</code>. Package functions use the normal call syntax: <code>np.mean([1, 2, 3])</code>, <code>df["age"].max()</code>. If the install name differs from the import name, use the install name: <code>use python python-slugify as slugify</code>. Only use packages you trust: they run with the same access as this page</td></tr>
       <tr><td>Error Handling</td><td><code>try</code>, <code>catch</code></td><td>Exception blocks and exception variable binding</td></tr>
       <tr><td>Timing &amp; Automation</td><td><code>wait</code>, <code>every</code>, <code>from</code></td><td>Execution delays and event triggers</td></tr>
       <tr><td>Loop Variables</td><td><code>i</code>, <code>ii</code>, <code>j</code>, <code>jj</code>, <code>k</code>, <code>kk</code></td><td>Automatic names inside <code>each</code>. In the outer loop <code>i</code> is the item (or the count) and <code>ii</code> is its position (or, over a dictionary, <code>i</code> is the key and <code>ii</code> the value). A loop inside it uses <code>j</code>/<code>jj</code>, and one inside that uses <code>k</code>/<code>kk</code></td></tr>
@@ -434,7 +345,7 @@ const KEYWORDS = new Set([
   // Logic / literals
   'not', 'and', 'or', 'same', 'is', 'yes', 'no', 'none',
   // Iteration
-  'in', 'each', 'mostly', 'with', 'as',
+  'in', 'each', 'mostly', 'with', 'as', 'extends',
   // Other / Handling
   'wait', 'note', 'try', 'catch', 'every',
   // Network / AI
@@ -708,7 +619,7 @@ const BINARY_OPS = new Set(Object.keys(PREC).filter(k => k !== 'not'));
 
 // ── friendly error helpers ─────────────────────────────────────────────
 const OLD_WORDS = {
-  init: "'init' isn't needed any more -- put constructor params in the class header (class Dog with name) and setup lines straight in the class body", loop: "'loop' is now 'each'", super: "'super' is now 'take' -- write take.method() inside a class", fun: "'fun' is now 'define'", err: "'err' is now 'catch'",
+  init: "'init' isn't needed any more -- put constructor params in the class header (class Dog with name extends Animal) and setup lines straight in the class body", loop: "'loop' is now 'each'", super: "'super' is now 'take' -- write take.method() inside a class", fun: "'fun' is now 'define'", err: "'err' is now 'catch'",
   end: "'end' isn't needed any more -- a block ends when the indentation steps back",
   dot: "'dot' isn't part of Vertex any more", fork: "'fork' isn't part of Vertex any more",
   prev: "'prev' isn't part of Vertex any more", by: "'by' isn't part of Vertex any more",
@@ -748,6 +659,14 @@ const TYPE_WORDS = { string: 'str', text: 'str', str: 'str', number: 'flt', floa
 const TYPE_LIST_HINT = 'string, number, int, float, bool, list or dict';
 const isTypeTok = (t) => !!t && (t.type === T.IDENTIFIER || t.type === T.KEYWORD) && Object.prototype.hasOwnProperty.call(TYPE_WORDS, String(t.value).toLowerCase());
 function ivxConvert(interp, conv, value, node) {
+  if (FOREIGN.isPy(value)) {
+    value = FOREIGN.deep(value);
+    if (FOREIGN.isPy(value)) {
+      if (conv === 'str') return FOREIGN.repr(value);
+      const fn = { int: 'int', flt: 'float', bin: 'bool', list: 'list', dict: 'dict' }[conv];
+      if (fn) { try { return FOREIGN.deep(FOREIGN.fromPy(FOREIGN.py.globals.get(fn)(value))); } catch (e) { throw new RuntimeError(FOREIGN.errText(e), node?.line); } }
+    }
+  } else if (FOREIGN.isJsForeign(value) && conv === 'str') return FOREIGN.repr(value);
   if (conv === 'bin' && typeof value === 'string') return !/^(no|false|0|n|none|)$/i.test(value.trim());
   const out = interp._callBuiltin(conv, [value], node);
   if ((conv === 'int' || conv === 'flt') && Number.isNaN(out)) {
@@ -919,16 +838,20 @@ class Parser {
     {
       const t1 = this.peek(), t2 = this.peek(1);
       const knownCls = this._classNames || new Set();
-      if (t1.type === T.IDENTIFIER && (t1.value === 'a' || t1.value === 'an') && t2.type === T.IDENTIFIER && (knownCls.has(t2.value) || /^[A-Z]/.test(t2.value))) {
+      const t3 = this.peek(2);
+      const isCls = (x) => x && x.type === T.IDENTIFIER && (knownCls.has(x.value) || /^[A-Z]/.test(x.value));
+      const isA = (x) => x && x.type === T.IDENTIFIER && (x.value === 'a' || x.value === 'an');
+      const named = t1.type === T.IDENTIFIER && isA(t2) && isCls(t3);
+      if ((isA(t1) && isCls(t2)) || named) {
+        let varName = null;
+        if (named) { varName = this.advance().value; }
         this.advance();
         const clsTok = this.advance();
-        let varName = clsTok.value.charAt(0).toLowerCase() + clsTok.value.slice(1);
         if (this.checkKw('as')) {
-          this.advance();
-          const nt = this.peek();
-          if (nt.type !== T.IDENTIFIER) { this.error("Expected a name after 'as'", nt); return null; }
-          varName = this.advance().value;
+          this.error(`Name the object first. Write: make ${this.peek(1).value || 'name'} a ${clsTok.value} with ...`, this.peek());
+          return null;
         }
+        if (varName === null) varName = clsTok.value.charAt(0).toLowerCase() + clsTok.value.slice(1);
         const args = [];
         if (this.checkKw('with')) { this.advance(); do { args.push(this.parseExpr()); } while (this.eat(T.COMMA)); }
         this.eatNewline();
@@ -1142,8 +1065,39 @@ class Parser {
       this.eatNewline();
       return Node('UseCred', { name, line: tok.line, col: tok.col });
     }
+    const atEnd = () => this.check(T.NEWLINE) || this.check(T.EOF) || this.check(T.DEDENT);
+    if (atEnd()) {
+      this.error("Say what to use. Write: use python numpy   or   use js lodash   or   use \"https://.../file.vx\"", this.peek());
+      return null;
+    }
+    const LANGS = { python: 'python', py: 'python', js: 'js', javascript: 'js', npm: 'js', pypi: 'python' };
+    let lang = null;
+    const first = this.peek();
+    if ((first.type === T.IDENTIFIER || first.type === T.KEYWORD) && LANGS[String(first.value).toLowerCase()] && !(this.peek(1).type === T.NEWLINE || this.peek(1).type === T.EOF)) {
+      lang = LANGS[String(this.advance().value).toLowerCase()];
+    }
+    let spec = '';
+    let isString = false;
+    if (this.check(T.STRING)) { spec = this.advance().value; isString = true; }
+    else {
+      // package names can hold - . / @ (date-fns, os.path, @turf/turf): glue the raw tokens back together
+      while (!atEnd() && !this.checkKw('as')) spec += String(this.advance().value ?? '');
+    }
+    let alias = null;
+    if (this.checkKw('as')) {
+      this.advance();
+      const at = this.peek();
+      if (at.type !== T.IDENTIFIER) { this.error("Expected a name after 'as'", at); return null; }
+      alias = this.advance().value;
+    }
+    if (!spec) { this.error("Say which package to use, e.g. use python numpy", this.peek()); return null; }
+    const isUrl = /^https?:\/\//i.test(spec);
+    if (!lang && !isUrl) {
+      this.error(`Say which language '${spec}' comes from. Write: use python ${spec}   or   use js ${spec}`, first);
+      return null;
+    }
     this.eatNewline();
-    return null;
+    return Node('Library', { lang, spec, alias, isUrl, line: tok.line, col: tok.col });
   }
 
   _parseSavePayload(target, line, col) {
@@ -1326,7 +1280,10 @@ class Parser {
 
     let params = [];
     if (this.checkKw('with')) { this.advance(); params = this._parseParamsAfterLparen(false); }
-    else if (this.eat(T.LPAREN)) params = this._parseParamsAfterLparen(true);
+    else if (this.check(T.LPAREN)) {
+      this.error(`Parameters use 'with' now. Write: define ${name} with <names>   (or just: define ${name}   when it takes none)`, this.peek());
+      return null;
+    }
 
     this.eatNewline();
     const body = this.check(T.INDENT) ? this.parseBlock() : [];
@@ -1403,30 +1360,30 @@ class Parser {
     const name = this.advance().value;
     const known = (this._classNames = this._classNames || new Set());
 
-    // Header: class Animal (name, age)          -> constructor params
-    //         class Dog (Animal)                -> inheritance
-    //         class Dog (Animal) (breed)        -> both
-    // A lone identifier in the parens is a parent class if it names a class defined
-    // earlier (or is Capitalized, so a typo still gets "isn't defined"); anything else is params.
+    // Header: class Dog with breed extends Animal   (either order; both parts optional)
     let superclass = null;
     let headerParams = null;
-    while (this.check(T.LPAREN)) {
-      this.advance();
-      const a1 = this.peek(), a2 = this.peek(1);
-      const lone = a1.type === T.IDENTIFIER && a2.type === T.RPAREN;
-      const looksParent = lone && superclass === null && (known.has(a1.value) || /^[A-Z]/.test(a1.value));
-      if (looksParent) {
-        superclass = { name: this.advance().value, line: a1.line, col: a1.col };
-        this.expect(T.RPAREN, undefined, "Expected ')' after class header");
-      } else {
-        if (headerParams !== null) this.error("Class header already has constructor params", a1);
-        headerParams = this._parseParamsAfterLparen();
-      }
+    if (this.check(T.LPAREN)) {
+      this.error(`Class headers don't use parentheses. Write: class ${name} with <fields> extends <Parent>`, this.peek());
+      return null;
     }
-    if (this.checkKw('with')) {
-      const wt = this.advance();
-      if (headerParams !== null) this.error("Class header already has constructor params", wt);
-      headerParams = this._parseParamsAfterLparen(false);
+    while (true) {
+      if (this.checkKw('with')) {
+        const wt = this.advance();
+        if (headerParams !== null) this.error("Class header already has a 'with' list", wt);
+        headerParams = this._parseParamsAfterLparen(false);
+        continue;
+      }
+      if (this.checkKw('extends')) {
+        const et = this.advance();
+        const pt = this.peek();
+        if (pt.type !== T.IDENTIFIER) { this.error("Expected a class name after 'extends'", pt); return null; }
+        if (superclass !== null) this.error("A class can only extend one parent", et);
+        this.advance();
+        superclass = { name: pt.value, line: pt.line, col: pt.col };
+        continue;
+      }
+      break;
     }
     known.add(name);
 
@@ -1634,7 +1591,7 @@ class Parser {
       if (this.checkOp('.')) {
         const dot = this.advance();
         const fieldTok = this.peek();
-        if (fieldTok.type !== T.IDENTIFIER) {
+        if (fieldTok.type !== T.IDENTIFIER && fieldTok.type !== T.KEYWORD) {
           this.error("Expected field name after '.'", fieldTok);
           break;
         }
@@ -1928,6 +1885,237 @@ function typecheck(sourceOrParsed) { return new TypeChecker().check(sourceOrPars
 
 // ── interpreter.js (ported from vertex.html; keywords per docvex) ──────────
 const NONE = null;
+
+// ── Packages from other languages ────────────────────────────────────────────
+//   use python numpy as np        Python, via Pyodide (loaded the first time it's needed)
+//   use js lodash as _             JavaScript, an npm package served as a browser module
+//   use "https://site/tools.vx"    Mutter source (hash-pinned on first use)
+// Foreign code runs on the page itself, not in a sandbox: only import packages you trust.
+const FOREIGN = {
+  PYODIDE_URL: 'https://cdn.jsdelivr.net/pyodide/v0.29.5/full/',
+  JS_CDN: 'https://esm.sh/',
+  py: null,
+  pyLoading: null,
+  out: null,          // where Python's print() goes (set per run)
+
+  isPy(v) { return !!(v && FOREIGN.py && v instanceof FOREIGN.py.ffi.PyProxy); },
+  isClassFn(f) {
+    try { return typeof f === 'function' && /^class[\s{]/.test(Function.prototype.toString.call(f)); } catch (e) { return false; }
+  },
+  // A foreign JS object/function (anything that isn't a Mutter value)
+  isJsForeign(v) {
+    if (!v || (typeof v !== 'object' && typeof v !== 'function')) return false;
+    if (v instanceof Map || Array.isArray(v) || FOREIGN.isPy(v)) return false;
+    if (typeof IVXFunction !== 'undefined' && (v instanceof IVXFunction || v instanceof IVXClass || v instanceof IVXSuperProxy)) return false;
+    return true;
+  },
+  _refuseFn(v) {
+    if (typeof IVXFunction !== 'undefined' && (v instanceof IVXFunction || v instanceof IVXClass)) {
+      throw new RuntimeError("Passing your own functions or classes into a package isn't supported yet. Pass values (numbers, text, lists, dicts) instead.");
+    }
+  },
+  // Mutter value -> what a JS library expects (dicts become plain objects)
+  toJS(v) {
+    FOREIGN._refuseFn(v);
+    if (v instanceof Map) {
+      const o = {};
+      for (const [k, x] of v) if (!String(k).startsWith('__')) o[k] = FOREIGN.toJS(x);
+      return o;
+    }
+    if (Array.isArray(v)) return v.map(FOREIGN.toJS);
+    return v;
+  },
+  // Mutter value -> Python (lists become list, dicts become dict)
+  toPy(v) {
+    FOREIGN._refuseFn(v);
+    if (v instanceof Map || Array.isArray(v)) {
+      const clean = (x) => {
+        FOREIGN._refuseFn(x);
+        if (x instanceof Map) { const m = new Map(); for (const [k, y] of x) if (!String(k).startsWith('__')) m.set(k, clean(y)); return m; }
+        if (Array.isArray(x)) return x.map(clean);
+        return x;
+      };
+      return FOREIGN.py.toPy(clean(v));
+    }
+    return v;
+  },
+  // JS library result -> Mutter value (plain objects become dicts)
+  fromJS(v) {
+    if (v === undefined || v === null) return NONE;
+    if (typeof v === 'bigint') return Number(v);
+    if (Array.isArray(v)) return v.map(FOREIGN.fromJS);
+    if (ArrayBuffer.isView(v) && !(v instanceof DataView)) return Array.from(v);
+    if (typeof v === 'object' && !(v instanceof Map)) {
+      const proto = Object.getPrototypeOf(v);
+      if ((proto === Object.prototype || proto === null) && v[Symbol.toStringTag] !== 'Module') {
+        const m = new Map();
+        for (const k of Object.keys(v)) m.set(k, FOREIGN.fromJS(v[k]));
+        return m;
+      }
+    }
+    return v;
+  },
+  _npScalar(v) {
+    try { return typeof v.item === 'function' && v.ndim === 0 && v.dtype !== undefined; } catch (e) { return false; }
+  },
+  // Python result -> Mutter value. Numbers/text/yes/no/none already arrive converted;
+  // numpy scalars are unwrapped; everything else stays a live Python object so you can
+  // keep calling its methods (df.head(), arr.mean()).
+  fromPy(v) {
+    if (v === undefined || v === null) return NONE;
+    if (FOREIGN.isPy(v) && FOREIGN._npScalar(v)) return v.item();
+    return v;
+  },
+  // Turn Python data (list, tuple, set, dict, numpy array) into Mutter lists/dicts.
+  // Objects that aren't plain data (a DataFrame, a model) stay as they are.
+  deep(v) {
+    if (Array.isArray(v)) return v.some(x => FOREIGN.isPy(x) || Array.isArray(x)) ? v.map(FOREIGN.deep) : v;
+    if (!FOREIGN.isPy(v)) return v;
+    let t = '';
+    try { t = v.type; } catch (e) {}
+    if (FOREIGN._npScalar(v)) return v.item();
+    if (t === 'list' || t === 'tuple' || t === 'set' || t === 'frozenset' || t === 'range') return Array.from(v, FOREIGN.deep);
+    if (t === 'dict') {
+      const m = new Map();
+      for (const k of v.keys()) m.set(FOREIGN.deep(k), FOREIGN.deep(v.get(k)));
+      return m;
+    }
+    if (/(^|\.)ndarray$/.test(t)) return FOREIGN.deep(v.tolist());
+    return v;
+  },
+  pyBool(v) { return !!FOREIGN.py.globals.get('bool')(v); },
+  PY_OPS: { '+': 'add', '-': 'sub', '*': 'mul', '/': 'truediv', '//': 'floordiv', '%': 'mod', '^': 'pow',
+            'is': 'eq', '=': 'eq', '==': 'eq', '!=': 'ne', '<': 'lt', '>': 'gt', '<=': 'le', '>=': 'ge' },
+  pyBinOp(op, a, b) {
+    const name = FOREIGN.PY_OPS[op];
+    if (!name) return undefined;
+    const operator = FOREIGN.py.pyimport('operator');
+    return FOREIGN.fromPy(operator[name](FOREIGN.toPy(a), FOREIGN.toPy(b)));
+  },
+  repr(v) {
+    if (FOREIGN.isPy(v)) { try { return String(v); } catch (e) { return '<python object>'; } }
+    if (typeof v === 'function') return FOREIGN.isClassFn(v) ? `<class ${v.name || '?'}>` : `<function ${v.name || '?'}>`;
+    if (v && typeof v === 'object') {
+      if (v[Symbol.toStringTag] === 'Module') return '<module>';
+      if (v instanceof Date) return v.toISOString();
+      if (typeof v.toString === 'function' && v.toString !== Object.prototype.toString) { try { return String(v); } catch (e) {} }
+      try { return JSON.stringify(v); } catch (e) {}
+    }
+    return '<object>';
+  },
+  errText(e) {
+    const msg = (e && e.message) ? String(e.message) : String(e);
+    if (e && (e.constructor && e.constructor.name === 'PythonError' || /Traceback \(most recent call last\)/.test(msg))) {
+      const lines = msg.trim().split('\n').filter(l => l.trim());
+      return 'Python said: ' + lines[lines.length - 1].trim();
+    }
+    return msg;
+  },
+
+  async loadPython(status) {
+    if (FOREIGN.py) return FOREIGN.py;
+    if (!FOREIGN.pyLoading) {
+      FOREIGN.pyLoading = (async () => {
+        if (typeof window === 'undefined' || typeof document === 'undefined') throw new Error('Python packages need the browser');
+        status && status('Loading Python (the first time takes a few seconds)...');
+        if (typeof loadPyodide !== 'function') {
+          await new Promise((resolve, reject) => {
+            const tag = document.createElement('script');
+            tag.src = FOREIGN.PYODIDE_URL + 'pyodide.js';
+            tag.onload = resolve;
+            tag.onerror = () => reject(new Error("couldn't download Python (check your internet connection)"));
+            document.head.appendChild(tag);
+          });
+        }
+        const py = await loadPyodide({ indexURL: FOREIGN.PYODIDE_URL });
+        py.setStdout({ batched: (line) => { if (FOREIGN.out) FOREIGN.out(line); } });
+        py.setStderr({ batched: (line) => { if (FOREIGN.out) FOREIGN.out(line); } });
+        FOREIGN.py = py;
+        return py;
+      })();
+      FOREIGN.pyLoading.catch(() => { FOREIGN.pyLoading = null; });
+    }
+    return FOREIGN.pyLoading;
+  },
+
+  async importPython(spec, status) {
+    const py = await FOREIGN.loadPython(status);
+    const quiet = { messageCallback: () => {}, errorCallback: () => {} };
+    const isPipName = /[-]/.test(spec);          // python-slugify, scikit-learn: an install name, not an import name
+    if (!isPipName) {
+      // Packages Pyodide ships (numpy, pandas, scipy, matplotlib, ...) plus the standard library
+      try { await py.loadPackagesFromImports('import ' + spec.split('.')[0], quiet); } catch (e) {}
+      try {
+        return py.pyimport(spec);
+      } catch (e) {
+        if (!/ModuleNotFoundError/.test(String(e && e.message))) throw e;
+      }
+    }
+    const pipName = isPipName ? spec : spec.split('.')[0];
+    let loaded = false;
+    if (isPipName) { try { loaded = (await py.loadPackage(pipName, quiet)).length > 0; } catch (e) {} }
+    if (!loaded) {
+      // Not built in: install it from PyPI (works for pure-Python packages)
+      status && status(`Installing ${pipName} from PyPI...`);
+      await py.loadPackage('micropip', quiet);
+      try {
+        await py.pyimport('micropip').install(pipName);
+      } catch (e) {
+        throw new Error(`there's no Python package called '${pipName}' that can run in the browser (${FOREIGN.errText(e).replace(/^Python said: /, '')})`);
+      }
+    }
+    if (!isPipName) return py.pyimport(spec);
+    // find what the installed package is imported as
+    py.runPython(`
+def _mutter_import_names(dist):
+    import importlib.metadata as md
+    d = md.distribution(dist)
+    names = (d.read_text('top_level.txt') or '').split()
+    if not names and d.files:
+        names = sorted({str(f).split('/')[0].removesuffix('.py') for f in d.files
+                        if not str(f).split('/')[0].endswith(('.dist-info', '.data')) and not str(f).startswith('..')})
+    return [n for n in names if not n.startswith('_')]
+`);
+    const names = py.globals.get('_mutter_import_names')(pipName).toJs();
+    if (!names.length) throw new Error(`installed '${pipName}' but couldn't tell what to import`);
+    return py.pyimport(names[0]);
+  },
+
+  async importPythonSource(url, name, status) {
+    const py = await FOREIGN.loadPython(status);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const src = await res.text();
+    try { await py.loadPackagesFromImports(src, { messageCallback: () => {}, errorCallback: () => {} }); } catch (e) {}
+    const types = py.pyimport('types');
+    const mod = types.ModuleType(name);
+    py.runPython(src, { globals: mod.__dict__ });
+    return mod;
+  },
+
+  async importJS(spec) {
+    const url = /^https?:\/\//i.test(spec) ? spec : FOREIGN.JS_CDN + spec;
+    let ns;
+    // The editor's AMD loader defines a global define(). Older "UMD" packages (lodash, ...) see it and
+    // register themselves with it instead of exporting, which leaves an empty module. Hide it while importing.
+    const amdDefine = (typeof window !== 'undefined' && typeof window.define === 'function') ? window.define : null;
+    const amdFlag = amdDefine ? amdDefine.amd : undefined;
+    try {
+      if (amdDefine) amdDefine.amd = undefined;
+      ns = await import(url);
+    } catch (e) {
+      const m = String(e && e.message || e);
+      if (/Failed to fetch|NetworkError|error loading dynamically imported module|Importing a module script failed/i.test(m)) {
+        throw new Error(`couldn't download it -- check the package name (npm names are lowercase, like date-fns) and your internet connection`);
+      }
+      throw e;
+    } finally {
+      if (amdDefine) amdDefine.amd = amdFlag;
+    }
+    // A package with a default export (lodash, dayjs) is used as that thing; otherwise the module itself
+    return (ns.default !== undefined && ns.default !== null) ? ns.default : ns;
+  },
+};
 
 // ── Control flow signals ──────────────────────────────────────────────────────
 // Used to unwind the call stack for 'out' (return) and loop control
@@ -3400,6 +3588,7 @@ class Interpreter {
     this.onWait = options.onWait ?? (n => new Promise(r => setTimeout(r, n * 100)));
     // onStep(srcLine) — called before each statement executes with the 1-based source line
     this.onStep = options.onStep ?? null;
+    this.onStatus = options.onStatus ?? null;
 
     this.maxIterations = options.maxIterations ?? 100_000;
 
@@ -3514,13 +3703,14 @@ class Interpreter {
 
       case 'Print':
       case 'Text': {
-        const value = await this.evalExpr(node.expr, env);
+        let value = FOREIGN.deep(await this.evalExpr(node.expr, env));
+        if (FOREIGN.isPy(value)) value = FOREIGN.repr(value);
         await this.onOutput(value);
         break;
       }
 
       case 'Speak': {
-        const value = await this.evalExpr(node.expr, env);
+        const value = FOREIGN.deep(await this.evalExpr(node.expr, env));
         const text = typeof value === 'string' ? value : ivxRepr(value);
         if (typeof window !== 'undefined' && window.speechSynthesis) {
           const utt = new SpeechSynthesisUtterance(text);
@@ -3694,6 +3884,12 @@ class Interpreter {
             throw new RuntimeError(`'${node.target}' isn't defined yet — use make to create it first`, node.line);
           }
         }
+        iterable = FOREIGN.deep(iterable);
+        if (FOREIGN.isPy(iterable)) {
+          try { iterable = Array.from(iterable, FOREIGN.fromPy); } catch (e) { throw new RuntimeError("That Python object can't be stepped through with each", node.line); }
+        } else if (FOREIGN.isJsForeign(iterable) && typeof iterable[Symbol.iterator] === 'function') {
+          iterable = Array.from(iterable, FOREIGN.fromJS);
+        }
         const entries = toIterable(iterable, node);
         let iters = 0;
         for (const [primary, secondary] of entries) {
@@ -3780,36 +3976,7 @@ class Interpreter {
         if (!url.startsWith('http')) url = 'https://' + url;
 
         try {
-          const res = await fetch(url);
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const src = await res.text();
-
-          // Generate SHA-256 Fingerprint
-          const encoder = new TextEncoder();
-          const data = encoder.encode(src);
-          const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-          const hashArray = Array.from(new Uint8Array(hashBuffer));
-          const currentHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-          // TOFU Verification (Trust-On-First-Use)
-          const storageKey = `kh_hash_${url}`;
-          const storedHash = localStorage.getItem(storageKey);
-
-          if (!storedHash) {
-            // First time loading - Pin the hash
-            localStorage.setItem(storageKey, currentHash);
-            console.log(`%c[KH SECURITY] Pinned new module: ${url.substring(0, 30)}...`, 'color: #3498db; font-weight: bold;');
-            console.log(`%c[KH SECURITY] Fingerprint: ${currentHash.substring(0, 16)}...`, 'color: #95a5a6;');
-          } else if (storedHash !== currentHash) {
-            // Tampering detected!
-            console.error(`%c[KH SECURITY ALERT] TAMPERING DETECTED for ${url}`, 'background: #e74c3c; color: white; padding: 5px; font-weight: bold;');
-            console.error(`Stored Hash:  ${storedHash}`);
-            console.error(`Current Hash: ${currentHash}`);
-            throw new RuntimeError(`Security Block: The code at ${url} has changed since its first use! To allow this change, clear your cache or use a versioned URL.`, node.line);
-          } else {
-            console.log(`%c[KH SECURITY] Verified: ${url.substring(0, 30)}... (Integrity Match)`, 'color: #2ecc71; font-weight: bold;');
-          }
-
+          const src = await this._fetchPinned(url, node);
           const modEnv = this.globals.child();
           const parsed = parse(src);
           await this.execBlock(parsed.ast.body, modEnv);
@@ -3824,6 +3991,63 @@ class Interpreter {
           }
         } catch (e) {
           throw new RuntimeError(`Import failed from ${node.url}: ${e.message}`, node.line);
+        }
+        break;
+      }
+
+      case 'Library': {
+        const status = (msg) => { try { this.onStatus && this.onStatus(msg); } catch (e) {} };
+        FOREIGN.out = (line) => this.onOutput(line);
+        const spec = node.spec;
+        const lower = spec.toLowerCase().split(/[?#]/)[0];
+        let kind = node.lang;
+        if (!kind) kind = /\.(m?js)$/.test(lower) ? 'js' : /\.py$/.test(lower) ? 'python' : 'mutter';
+        // name to bind: what follows 'as', else the package's last part (date-fns -> date_fns, os.path -> path)
+        let name = node.alias;
+        if (!name) {
+          let base = spec.replace(/[?#].*$/, '').replace(/\/+$/, '');
+          base = base.split('/').pop();
+          if (kind !== 'python' || node.isUrl) base = base.replace(/\.(m?js|py|vx|mutter|kh|txt)$/i, '');
+          base = base.replace(/@.*$/, '').replace(/[=<>~].*$/, '');
+          if (kind === 'python' && !node.isUrl) base = base.split('.').pop();
+          name = base.replace(/[^A-Za-z0-9_]/g, '_');
+          if (/^[0-9]/.test(name)) name = '_' + name;
+          if (KEYWORDS.has(name)) {
+            throw new RuntimeError(`'${name}' is a Mutter word, so it can't be the package's name here. Write: use ${node.lang ? node.lang + ' ' : ''}${spec} as ${name}_lib`, node.line);
+          }
+        }
+        if (kind === 'mutter') {
+          let url = spec;
+          if (url.startsWith('http:')) throw new RuntimeError("Use an https:// address -- plain http isn't allowed for code.", node.line);
+          try {
+            const src = await this._fetchPinned(url, node);
+            const modEnv = this.globals.child();
+            const parsed = parse(src);
+            if (parsed.errors && parsed.errors.length) throw new Error(`line ${parsed.errors[0].line} of that file: ${parsed.errors[0].message}`);
+            await this.execBlock(parsed.ast.body, modEnv);
+            if (node.alias) {
+              const ns = new Map();
+              for (const [k, v] of modEnv.vars) ns.set(k, v);
+              env.set(name, ns);
+            } else {
+              for (const [k, v] of modEnv.vars) env.set(k, v);
+            }
+          } catch (e) {
+            if (e instanceof RuntimeError && /changed since/.test(e.message)) throw e;
+            throw new RuntimeError(`Couldn't use ${spec}: ${e.message}`, node.line);
+          }
+          break;
+        }
+        try {
+          let mod;
+          if (kind === 'python') {
+            mod = node.isUrl ? await FOREIGN.importPythonSource(spec, name, status) : await FOREIGN.importPython(spec, status);
+          } else {
+            mod = await FOREIGN.importJS(spec);
+          }
+          env.set(name, mod);
+        } catch (e) {
+          throw new RuntimeError(`Couldn't use ${kind === 'python' ? 'the Python' : 'the JavaScript'} package '${spec}': ${FOREIGN.errText(e)}`, node.line);
         }
         break;
       }
@@ -4016,9 +4240,50 @@ class Interpreter {
     return map;
   }
 
+  async _fetchPinned(url, node) {
+    if (url.startsWith('http:')) throw new RuntimeError("Use an https:// address -- plain http isn't allowed for code.", node.line);
+    if (!url.startsWith('http')) url = 'https://' + url;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const src = await res.text();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(src));
+    const currentHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    const storageKey = `kh_hash_${url}`;
+    let storedHash = null;
+    try { storedHash = localStorage.getItem(storageKey); } catch (e) {}
+    if (!storedHash) {
+      try { localStorage.setItem(storageKey, currentHash); } catch (e) {}
+    } else if (storedHash !== currentHash) {
+      throw new RuntimeError(`Security block: the code at ${url} has changed since you first used it. If you trust the new version, use a versioned address or clear this site's saved data.`, node.line);
+    }
+    return src;
+  }
+
   async _evalMemberAccessExpr(node, env) {
-    const target = await this.evalExpr(node.object, env);
-    return this._memberOf(target, node.field);
+    let target = await this.evalExpr(node.object, env);
+    if (FOREIGN.isPy(target)) {
+      const d = FOREIGN.deep(target);
+      if ((Array.isArray(d) && LIST_METHODS[node.field]) || (typeof d === 'string' && TEXT_METHODS[node.field]) || ((Array.isArray(d) || typeof d === 'string') && !(node.field in target))) target = d;
+    }
+    if (typeof target === 'string' || Array.isArray(target)) {
+      // bare text / list method with no arguments: name.upper, items.sort, items.length
+      const own = typeof target === 'string' ? TEXT_METHODS[node.field] : LIST_METHODS[node.field];
+      if (own) return own(target, [], node);
+      if (Object.prototype.hasOwnProperty.call(BUILTIN_DEFS, node.field)) return this._callBuiltin(node.field, [target], node);
+      return NONE;
+    }
+    const m = this._memberOf(target, node.field);
+    if (m instanceof IVXFunction) return this._applyCallee(m, [], node);   // rex.speak runs it
+    if (FOREIGN.isPy(m)) {
+      let t = '';
+      try { t = m.type; } catch (e) {}
+      if (t === 'method' || t === 'builtin_function_or_method' || t === 'function' || t === 'method-wrapper') return this._applyCallee(m, [], node);
+      return m;
+    }
+    if (typeof m === 'function' && FOREIGN.isJsForeign(target) && !FOREIGN.isClassFn(m)) {
+      return this._applyCallee(m.bind(target), [], node);   // a package's function with no arguments runs too
+    }
+    return m;
   }
 
   _memberOf(target, field) {
@@ -4028,8 +4293,13 @@ class Interpreter {
     if (target instanceof Map) {
       return this._resolveInstanceMember(target, field, target);
     }
-    if (target && typeof target === 'object') {
-      return field in target ? target[field] : NONE;
+    if (FOREIGN.isPy(target)) {
+      let v;
+      try { v = target[field]; } catch (e) { throw new RuntimeError(FOREIGN.errText(e)); }
+      return FOREIGN.fromPy(v);
+    }
+    if (target && (typeof target === 'object' || typeof target === 'function')) {
+      return field in target ? FOREIGN.fromJS(target[field]) : NONE;
     }
     return NONE;
   }
@@ -4042,6 +4312,7 @@ class Interpreter {
 
   async _evalIdentifierExpr(node, env) {
     const val = env.get(node.name);
+    if (val instanceof IVXFunction) return this._applyCallee(val, [], node);   // a bare function name runs it
     if (val === undefined) {
       throw new RuntimeError(((suggestWord(node.name) || '').replace("isn't a Vertex word.", "isn't defined yet.") || `'${node.name}' isn't defined yet. Did you mean to make it first?`), node.line, node.col);
     }
@@ -4051,7 +4322,11 @@ class Interpreter {
   async _evalInvokeExpr(node, env) {
     let callee;
     if (node.callee.type === 'MemberAccess') {
-      const obj = await this.evalExpr(node.callee.object, env);
+      let obj = await this.evalExpr(node.callee.object, env);
+      if (FOREIGN.isPy(obj)) {
+        const f = node.callee.field, d = FOREIGN.deep(obj);
+        if ((Array.isArray(d) && LIST_METHODS[f]) || (typeof d === 'string' && TEXT_METHODS[f]) || ((Array.isArray(d) || typeof d === 'string') && !(f in obj))) obj = d;
+      }
       if (typeof obj === 'string' || Array.isArray(obj)) {
         // method-style call on text or a list: name.upper(), items.join(", ")
         const margs = [];
@@ -4063,6 +4338,12 @@ class Interpreter {
         throw new RuntimeError(`${typeof obj === 'string' ? 'Text' : 'A list'} has no '.${field}()' method. See the Guide for the list of text methods.`, node.line);
       }
       callee = this._memberOf(obj, node.callee.field);
+      if ((FOREIGN.isPy(obj) || FOREIGN.isJsForeign(obj)) && (callee === NONE || callee === undefined)) {
+        throw new RuntimeError(`This package object has nothing called '${node.callee.field}'. Check the spelling (package names are case-sensitive).`, node.line);
+      }
+      if (typeof callee === 'function' && !FOREIGN.isPy(callee) && FOREIGN.isJsForeign(obj) && !FOREIGN.isClassFn(callee)) {
+        callee = callee.bind(obj);
+      }
     } else {
       callee = await this.evalExpr(node.callee, env);
     }
@@ -4072,6 +4353,10 @@ class Interpreter {
 
 
 
+    return this._applyCallee(callee, args, node);
+  }
+
+  async _applyCallee(callee, args, node) {
     if (callee instanceof IVXFunction) {
       if (callee.body === null) {
         try {
@@ -4111,13 +4396,29 @@ class Interpreter {
       }
     }
 
-    // Native async functions stored in Maps (e.g. sheets handle methods)
+    // Functions from packages (Python via Pyodide, or JavaScript)
     if (typeof callee === 'function') {
       try {
-        return await callee(...args) ?? NONE;
+        if (FOREIGN.isPy(callee)) {
+          let r = callee(...args.map(FOREIGN.toPy));
+          if (r && typeof r.then === 'function') r = await r;
+          return FOREIGN.fromPy(r);
+        }
+        const jsArgs = args.map(FOREIGN.toJS);
+        let r;
+        if (FOREIGN.isClassFn(callee)) r = new callee(...jsArgs);
+        else {
+          try { r = callee(...jsArgs); }
+          catch (e) {
+            if (e instanceof TypeError && /without 'new'|cannot be invoked|is not a constructor|requires 'new'/i.test(e.message)) r = new callee(...jsArgs);
+            else throw e;
+          }
+        }
+        if (r && typeof r.then === 'function') r = await r;
+        return FOREIGN.fromJS(r);
       } catch (e) {
-        if (e instanceof RuntimeError) throw e;
-        throw new RuntimeError(e.message ?? String(e), node.line);
+        if (e instanceof RuntimeError) throw new RuntimeError(e.message, e.line || node.line);
+        throw new RuntimeError(FOREIGN.errText(e), node.line);
       }
     }
 
@@ -4243,7 +4544,16 @@ class Interpreter {
   }
 
   async _evalIndexAccessExpr(node, env) {
-    const target = await this.evalExpr(node.target, env);
+    let target = await this.evalExpr(node.target, env);
+    if (FOREIGN.isPy(target)) {
+      const d = FOREIGN.deep(target);
+      if (!FOREIGN.isPy(d)) target = d;
+      else if (node.rowSpec && !node.rowSpec.isSlice && !node.rowSpec.omitted && !node.hasComma) {
+        const key = await this.evalExpr(node.rowSpec.expr, env);
+        try { return FOREIGN.fromPy(target.get(FOREIGN.toPy(key))); }
+        catch (e) { throw new RuntimeError(FOREIGN.errText(e), node.line); }
+      }
+    }
     const isArrayTarget = Array.isArray(target);
 
     const isSheet = target instanceof Map && target.get('__type__') === 'sheets';
@@ -4413,8 +4723,18 @@ class Interpreter {
       return (Number.isInteger(l) && Number.isInteger(r)) ? ~(l | r) : !(isTruthy(l) || isTruthy(r));
     }
 
-    const left = await this.evalExpr(node.left, env);
-    const right = await this.evalExpr(node.right, env);
+    let left = await this.evalExpr(node.left, env);
+    let right = await this.evalExpr(node.right, env);
+    if (FOREIGN.isPy(left) || FOREIGN.isPy(right)) {
+      const dl = FOREIGN.deep(left), dr = FOREIGN.deep(right);
+      if (FOREIGN.isPy(dl) || FOREIGN.isPy(dr)) {
+        try {
+          const r = FOREIGN.pyBinOp(node.op, left, right);
+          if (r !== undefined) return r;
+        } catch (e) { throw new RuntimeError(FOREIGN.errText(e), node.line); }
+      }
+      left = dl; right = dr;
+    }
 
     // Element-wise broadcasting: list op scalar, scalar op list, or list op list
     const ARITH = new Set(['+', '-', '*', '/', '//', '%', '^']);
@@ -4499,6 +4819,7 @@ class Interpreter {
     const args = [];
     for (const arg of node.args) args.push(await this.evalExpr(arg, env));
 
+    if (typeof callee === 'function') return this._applyCallee(callee, args, node);
     if (!(callee instanceof IVXFunction) && !(callee instanceof IVXClass)) {
       throw new RuntimeError(`'${node.name}' isn't a function or a class, so it can't be called with ( ).`, node.line);
     }
@@ -4545,12 +4866,18 @@ class Interpreter {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function isTruthy(v) {
   if (v === NONE) return false;
+  if (FOREIGN.isPy(v)) { try { return FOREIGN.pyBool(v); } catch (e) { return true; } }
   if (v === false) return false;
   return true;
 }
 
 function ivxEqual(a, b) {
   if (a === NONE && b === NONE) return true;
+  if (FOREIGN.isPy(a) || FOREIGN.isPy(b)) {
+    const da = FOREIGN.deep(a), db = FOREIGN.deep(b);
+    if (FOREIGN.isPy(da) || FOREIGN.isPy(db)) { try { return FOREIGN.pyBool(FOREIGN.pyBinOp('is', a, b)); } catch (e) { return a === b; } }
+    return ivxEqual(da, db);
+  }
   if (a instanceof Map && b instanceof Map) {
     if (a.size !== b.size) return false;
     for (const [k, v] of a) { if (!ivxEqual(b.get(k), v)) return false; }
@@ -4612,7 +4939,7 @@ function ivxRepr(value) {
     return '{' + entries.map(([k, v]) => `${ivxRepr(k)}: ${ivxRepr(v)}`).join(', ') + '}';
   }
   if (Array.isArray(value)) return '[' + value.map(ivxRepr).join(', ') + ']';
-  if (value && typeof value === 'object') return '<object>';
+  if (FOREIGN.isPy(value) || FOREIGN.isJsForeign(value)) return FOREIGN.repr(value);
   return String(value);
 }
 
@@ -4836,6 +5163,7 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
         onOutput: (v) => addMessage(ivxRepr(v), 'out'),
         onError: (e) => addMessage(formatError(e), 'err'),
         onInput: (name) => addTakePrompt(name),
+        onStatus: (msg) => addMessage(msg, 'info'),
       });
       try {
         await interp.run(editor.getValue());
@@ -5473,8 +5801,9 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
       '  say <expr>                -- speak text aloud',
       '  take <name>               -- read user input into a variable',
       '  define <name> with <params>  -- define a function; give <value> returns from it',
-      '  class <Name> with <params>   -- define a class (params become fields); class <Name> (<Parent>) with <params> inherits; take.<method>() calls the parent',
-      '  make a <Class> as <name> with <args>  -- create an object; <list> mostly yes -- true when most items are yes',
+      '  class <Name> with <params>   -- define a class (params become fields); class <Name> with <params> extends <Parent> inherits; take.<method>() calls the parent; call functions as name(args), or just name with no args',
+      '  use python <package> [as <name>] / use js <package> [as <name>] / use "<https url to a .vx file>"  -- import a Python, npm or Mutter package, then call it normally: np.mean([1, 2])',
+      '  make <name> a <Class> with <args>  -- create an object; <list> mostly yes -- true when most items are yes',
       'Comparisons: = != < > <= >= is (is means the same thing as =). Logic: and or not same.',
       'Strings use double quotes. Lists use [1, 2, 3]. Comments start with note and run to the end of the line.',
       'Example:',
