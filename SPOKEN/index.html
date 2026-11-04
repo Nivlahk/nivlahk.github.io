@@ -93,6 +93,13 @@
     .msg { max-width: 100%; }
   }
 
+  #screen { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; margin: 0 14px; border-bottom: 1px solid rgba(127,127,127,0.3); max-height: 55%; overflow: auto; }
+  #screen[hidden] { display: none; }
+  #screen .mu-el { font: inherit; font-size: 16px; max-width: 100%; }
+  #screen .mu-label { min-height: 1.2em; white-space: pre-wrap; }
+  #screen .mu-button { min-height: 40px; padding: 8px 16px; border-radius: 8px; border: 1px solid currentColor; background: transparent; color: inherit; cursor: pointer; }
+  #screen .mu-textbox { min-height: 40px; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(127,127,127,0.6); background: transparent; color: inherit; width: 260px; }
+  #screen .mu-canvas { background: #fff; border-radius: 6px; border: 1px solid rgba(127,127,127,0.5); }
   #console { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 6px; }
   .msg { display: flex; align-items: flex-end; gap: 8px; max-width: 88%; }
   .msg .bubble {
@@ -162,6 +169,7 @@
       <tr><td>Comments</td><td><code>note</code></td><td>Comment: everything after note to the end of the line is ignored</td></tr>
       <tr><td>Visual Anchors</td><td><code>pin</code></td><td>Zero-cost visual canvas anchor node</td></tr>
       <tr><td>Data &amp; Logic</td><td><code>each</code>, <code>in</code>, <code>yes</code>, <code>no</code>, <code>none</code>, <code>is</code>, <code>same</code>, <code>mostly</code>, <code>not</code>, <code>and</code>, <code>or</code></td><td>Iteration (<code>each 3</code>, <code>each n in items</code>), boolean literals, equality, <code>list mostly yes</code> (true when more than half the list matches; a tie is no), and logical operators</td></tr>
+      <tr><td>Screen &amp; Events</td><td><code>#name</code>, <code>bind</code>, <code>on</code>, <code>every</code></td><td>Every <code>#name</code> in a program is an element on the Screen (above the console), made when the program starts. A name ending in <code>-btn</code> is a button, <code>-input</code> a text box, <code>-canvas</code> a drawing area; otherwise it's decided by use (clicked: button, read with <code>take</code>: text box, drawn on: canvas, else a label). <code>bind #app.text counter</code> keeps <code>#app</code> showing <code>counter</code> as it changes. <code>make #title.text "Hi"</code> sets it once. <code>take "#user-input"</code> reads what's typed in a box. <code>on click "#submit-btn"</code> runs the indented lines on each click (also <code>on type</code>, <code>on change</code>, <code>on enter</code>, <code>on hover</code>, and <code>on key</code> for the keyboard, which gives you <code>key</code>). <code>every 1 second</code> repeats its lines (<code>ms</code>, <code>seconds</code>, <code>minutes</code>). A program with <code>on</code> or <code>every</code> keeps running until you press Stop. Properties: <code>text</code>, <code>color</code>, <code>background</code>, <code>size</code>, <code>visible</code>, <code>width</code>, <code>height</code>. Canvas: <code>#pad-canvas.circle(x, y, r, "red")</code>, <code>.rect(x, y, w, h, color)</code>, <code>.line(x1, y1, x2, y2, color)</code>, <code>.write(x, y, "text", color)</code>, <code>.clear</code>. A trailing <code>then</code> on a block's first line and an <code>ok</code> line after a block are allowed, but the indentation is what counts</td></tr>
       <tr><td>Packages</td><td><code>use</code></td><td>Brings in code from elsewhere. <code>use python numpy as np</code> loads a Python package (the standard library, packages like numpy and pandas, or pure-Python packages from PyPI; the first Python import takes a few seconds). <code>use js lodash as lo</code> loads a JavaScript package from npm. <code>use "https://example.com/tools.vx"</code> runs a Mutter file and gives you its functions (add <code>as tools</code> to keep them under <code>tools.</code>). With no <code>as</code>, the name is the package's: <code>use js date-fns</code> gives <code>date_fns</code>. Package functions use the normal call syntax: <code>np.mean([1, 2, 3])</code>, <code>df["age"].max()</code>. If the install name differs from the import name, use the install name: <code>use python python-slugify as slugify</code>. Only use packages you trust: they run with the same access as this page</td></tr>
       <tr><td>Error Handling</td><td><code>try</code>, <code>catch</code></td><td>Exception blocks and exception variable binding</td></tr>
       <tr><td>Timing &amp; Automation</td><td><code>wait</code>, <code>every</code>, <code>from</code></td><td>Execution delays and event triggers</td></tr>
@@ -220,6 +228,8 @@
         <tr><td><code>so</code></td><td>New line at the same indent level</td></tr>
         <tr><td><code>ok</code></td><td>New line, one indent level back out (ends a block)</td></tr>
         <tr><td><code>back</code></td><td>Deletes the last word</td></tr>
+        <tr><td><code>comma</code></td><td><code>,</code> -- between arguments: <code>tag pad dot circle 10 comma 20 comma 5 pair</code> types <code>#pad.circle(10, 20, 5)</code></td></tr>
+        <tr><td><code>tag app</code></td><td><code>#app</code> -- a Screen element. <code>tag app dot text</code> types <code>#app.text</code>, and <code>on click tag submit then</code> types <code>on click #submit</code> and starts the block. One-word names are easiest to say</td></tr>
         <tr><td><code>it</code></td><td>Types the last variable, function or class name you mentioned</td></tr>
         <tr><td><code>run</code></td><td>Presses the Run button</td></tr>
         <tr><td><code>line five</code></td><td>Moves the cursor to line 5 (a spoken number or a digit both work)</td></tr>
@@ -294,7 +304,7 @@
       </tbody>
     </table></div>
     <h2>Good to know</h2>
-    <p><code>run</code>, <code>line</code>, <code>pair</code>, <code>par</code>, <code>curl</code>, <code>index</code>, <code>back</code>, <code>it</code>, <code>dot</code>, <code>quote</code>, the operator words, and spoken numbers are reserved while dictating. If a variable of yours has one of those names, it gets swallowed as the command, so type that name by hand or wrap it in <code>quote ... quote</code>.</p>
+    <p><code>run</code>, <code>line</code>, <code>pair</code>, <code>par</code>, <code>curl</code>, <code>index</code>, <code>back</code>, <code>it</code>, <code>dot</code>, <code>quote</code>, <code>tag</code>, <code>comma</code>, the operator words, and spoken numbers are reserved while dictating. If a variable of yours has one of those names, it gets swallowed as the command, so type that name by hand or wrap it in <code>quote ... quote</code>.</p>
     <p><code>par</code> and <code>pair</code> sound alike in fast speech but are deliberately not cross-corrected: they are the open and close.</p>
     <p class="note">The <code>the &lt;request&gt;</code> AI helper is switched off in this build. The corrections above cover the words Vertex's own commands collide with; if the browser keeps mishearing a keyword such as <code>define</code>, type it.</p>
   </div>
@@ -315,9 +325,11 @@
     <div class="sheet-head">
       <h2 id="consoleTitle">Console</h2>
       <div class="spacer"></div>
+      <button class="secondary" id="stopBtn" type="button" hidden>Stop &#9632;</button>
       <button class="secondary" id="clearBtn" type="button">Clear</button>
       <button class="secondary icon" id="closeConsoleBtn" type="button" aria-label="Close console">&#10005;</button>
     </div>
+    <div id="screen" hidden aria-label="Screen"></div>
     <div id="console"></div>
   </section>
 </div>
@@ -326,7 +338,7 @@
 const T = Object.freeze({
   NEWLINE: 'NEWLINE', INDENT: 'INDENT', DEDENT: 'DEDENT', EOF: 'EOF',
   NUMBER: 'NUMBER', STRING: 'STRING',
-  KEYWORD: 'KEYWORD', IDENTIFIER: 'IDENTIFIER', LAZY: 'LAZY',
+  KEYWORD: 'KEYWORD', IDENTIFIER: 'IDENTIFIER', LAZY: 'LAZY', SELECTOR: 'SELECTOR',
   OP: 'OP', LPAREN: 'LPAREN', RPAREN: 'RPAREN', LBRACKET: 'LBRACKET', RBRACKET: 'RBRACKET',
   LBRACE: 'LBRACE', RBRACE: 'RBRACE', COMMA: 'COMMA', COLON: 'COLON', SEMICOLON: 'SEMICOLON', BACKSLASH: 'BACKSLASH',
 });
@@ -347,7 +359,7 @@ const KEYWORDS = new Set([
   // Iteration
   'in', 'each', 'mostly', 'with', 'as', 'extends',
   // Other / Handling
-  'wait', 'note', 'try', 'catch', 'every',
+  'wait', 'note', 'try', 'catch', 'every', 'on', 'bind',
   // Network / AI
   'ask', 'post', 'use', 'get',
   // Google services
@@ -377,9 +389,17 @@ class Token {
   }
 }
 
+function stripSpokenBlockWords(src) {
+  return String(src).split('\n').map((line) => {
+    if (/^\s*ok\s*$/.test(line)) return '';
+    if (/^\s*note\b/.test(line)) return line;
+    return line.replace(/\s+then\s*$/, '');
+  }).join('\n');
+}
+
 class Lexer {
   constructor(source) {
-    this.src = source;
+    this.src = stripSpokenBlockWords(source);
     this.pos = 0;
     this.line = 1;
     this.col = 1;
@@ -567,6 +587,15 @@ class Lexer {
         continue;
       }
 
+      // #name -- an element on the Screen (#app, #submit-btn)
+      if (ch === '#' && /[A-Za-z_]/.test(this.peek(1))) {
+        this.advance();
+        let name = '';
+        while (/[A-Za-z0-9_-]/.test(this.peek()) && !(this.peek() === '-' && !/[A-Za-z0-9_]/.test(this.peek(1)))) name += this.advance();
+        this.emit(T.SELECTOR, name, sLine, sCol);
+        continue;
+      }
+
       const twoChar = ch + this.peek(1);
       if (TWO_CHAR_OPS.has(twoChar)) {
         this.advance(); this.advance();
@@ -719,6 +748,8 @@ class Parser {
       print: () => this.parseText(),
       say: () => this.parseSay(),
       take: () => this.parseTake(),
+      on: () => this.parseOn(),
+      bind: () => this.parseBind(),
       open: () => this.parseTake(), // Open reuses take file handling
       save: () => this.parseSave(),
       download: () => this.parseDownload(),
@@ -861,15 +892,21 @@ class Parser {
     }
     const nameTok = this.peek();
     const isLazy = nameTok.type === T.LAZY;
-    if (nameTok.type !== T.IDENTIFIER && !isLazy) {
+    if (nameTok.type !== T.IDENTIFIER && !isLazy && nameTok.type !== T.SELECTOR) {
       this.error("Expected variable name after 'make'", nameTok);
       return null;
     }
-    let target = Node('Identifier', { name: this.advance().value, line: nameTok.line, col: nameTok.col });
+    let target = nameTok.type === T.SELECTOR
+      ? Node('Element', { name: this.advance().value, line: nameTok.line, col: nameTok.col })
+      : Node('Identifier', { name: this.advance().value, line: nameTok.line, col: nameTok.col });
+    if (target.type === 'Element' && !this.checkOp('.')) {
+      this.error(`Say which part of #${target.name} to set, e.g. make #${target.name}.text "hello"`, this.peek());
+      return null;
+    }
     while (this.checkOp('.')) {
       const dot = this.advance();
       const fieldTok = this.peek();
-      if (fieldTok.type !== T.IDENTIFIER) {
+      if (fieldTok.type !== T.IDENTIFIER && fieldTok.type !== T.KEYWORD) {
         this.error("Expected field name after '.'", fieldTok);
         break;
       }
@@ -961,6 +998,62 @@ class Parser {
     return Node('Give', { expr, line: tok.line, col: tok.col });
   }
 
+  // "#app" or #app -> element name, else null
+  _elementName() {
+    const t = this.peek();
+    if (t.type === T.SELECTOR) { this.advance(); return t.value; }
+    if (t.type === T.STRING && /^#[A-Za-z_][\w-]*$/.test(t.value)) { this.advance(); return t.value.slice(1); }
+    return null;
+  }
+
+  // on click "#submit-btn"      (also: type, change, enter, hover; and 'on key' for the keyboard)
+  //     ...block...
+  parseOn() {
+    const tok = this.advance();
+    const evTok = this.peek();
+    if (evTok.type !== T.IDENTIFIER && evTok.type !== T.KEYWORD) { this.error("Say which event, e.g. on click \"#submit-btn\"", evTok); return null; }
+    const EVENTS = { click: 'click', press: 'click', tap: 'click', type: 'input', input: 'input', typing: 'input', change: 'change', enter: 'enter', hover: 'hover', key: 'key' };
+    const event = EVENTS[String(evTok.value).toLowerCase()];
+    if (!event) { this.error(`'${evTok.value}' isn't an event I know. Use click, type, change, enter, hover or key`, evTok); return null; }
+    this.advance();
+    let target = null;
+    if (event !== 'key') {
+      target = this._elementName();
+      if (!target) { this.error(`Say which element, e.g. on ${evTok.value} "#submit-btn"`, this.peek()); return null; }
+    }
+    this.eatNewline();
+    if (!this.check(T.INDENT)) { this.error(`Put what should happen on the indented lines under 'on ${evTok.value}'`, this.peek()); return null; }
+    const body = this.parseBlock();
+    return Node('On', { event, target, body, line: tok.line, col: tok.col });
+  }
+
+  // bind #app.text counter   -- the element keeps showing the value as it changes
+  parseBind() {
+    const tok = this.advance();
+    if (this.peek().type !== T.SELECTOR && !(this.peek().type === T.STRING && /^#/.test(this.peek().value))) {
+      this.error("bind needs an element, e.g. bind #app.text counter", this.peek());
+      return null;
+    }
+    let target = this.parsePrimary();
+    if (target && target.type === 'Element') target = Node('MemberAccess', { object: target, field: 'text', line: target.line, col: target.col });
+    if (!target || target.type !== 'MemberAccess' || target.object.type !== 'Element') {
+      this.error("bind needs an element and what to show, e.g. bind #app.text counter", tok);
+      return null;
+    }
+    const expr = this.parseExpr();
+    if (!expr) { this.error("Say what to show, e.g. bind #app.text counter", this.peek()); return null; }
+    this.eatNewline();
+    return Node('Bind', { target, expr, line: tok.line, col: tok.col });
+  }
+
+  _timeUnit() {
+    const UNITS = { ms: 1, millisecond: 1, milliseconds: 1, s: 1000, sec: 1000, secs: 1000, second: 1000, seconds: 1000,
+                    min: 60000, mins: 60000, minute: 60000, minutes: 60000 };
+    const t = this.peek();
+    if ((t.type === T.IDENTIFIER || t.type === T.KEYWORD) && UNITS[String(t.value).toLowerCase()]) { this.advance(); return UNITS[String(t.value).toLowerCase()]; }
+    return null;
+  }
+
   parseEvery() {
     const tok = this.advance();
     return this._parseTrigger(tok, true);
@@ -1043,8 +1136,15 @@ class Parser {
     }
 
     const expr = this.parseExpr();
+    const unitMs = this._timeUnit();
     this.eatNewline();
-    return Node('Wait', { expr, condition: null, line: tok.line, col: tok.col });
+    if (recurring && (unitMs || this.check(T.INDENT))) {
+      // every 1 second  -- repeats the indented lines while the program runs
+      if (!this.check(T.INDENT)) { this.error("Put what should repeat on the indented lines under 'every'", this.peek()); return null; }
+      const body = this.parseBlock();
+      return Node('Every', { expr, unitMs: unitMs || 1000, body, line: tok.line, col: tok.col });
+    }
+    return Node('Wait', { expr, unitMs, condition: null, line: tok.line, col: tok.col });
   }
 
   parsePost() {
@@ -1661,6 +1761,18 @@ class Parser {
 
   parsePrimary() {
     const tok = this.peek();
+    if (tok.type === T.SELECTOR) {
+      this.advance();
+      return this.parsePostfix(Node('Element', { name: tok.value, line: tok.line, col: tok.col }));
+    }
+    if (tok.type === T.KEYWORD && tok.value === 'take') {
+      const n = this.peek(1);
+      if (n.type === T.SELECTOR || (n.type === T.STRING && /^#[A-Za-z_][\w-]*$/.test(n.value))) {
+        this.advance();
+        const name = this._elementName();
+        return this.parsePostfix(Node('ElementValue', { name, line: tok.line, col: tok.col }));
+      }
+    }
     if (tok.type === T.NUMBER) {
       this.advance();
       return this.parsePostfix(Node('NumberLit', { value: tok.value, line: tok.line, col: tok.col }));
@@ -2268,6 +2380,108 @@ class IVXClass {
 
     return instance;
   }
+}
+
+// ── Screen elements: #name ───────────────────────────────────────────────────
+// Every #name in a program is an element on the Screen panel, made when the program starts.
+// What kind it is comes from its name (…-btn, …-input, …-canvas) or from how it's used
+// (clicked -> button, read with take -> text box, drawn on -> canvas, otherwise a label).
+const CANVAS_METHODS = new Set(['circle', 'rect', 'line', 'write', 'clear', 'dot']);
+const ELEMENT_EVENTS = { click: 'click', input: 'input', change: 'change', hover: 'mouseenter', enter: 'keydown' };
+function elementKindFromName(name) {
+  if (/(^|[-_])(btn|button)$/i.test(name)) return 'button';
+  if (/(^|[-_])(input|box|field|textbox|entry)$/i.test(name)) return 'textbox';
+  if (/(^|[-_])(canvas|pad|board|drawing)$/i.test(name)) return 'canvas';
+  return null;
+}
+function humanizeElementName(name) {
+  const words = name.replace(/(^|[-_])(btn|button|input|box|field|textbox|entry)$/i, '').split(/[-_]+/).filter(Boolean);
+  const text = (words.length ? words : [name]).join(' ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+// Walk the program once and decide which elements exist and what kind each is
+function scanElements(ast) {
+  const order = [];
+  const kinds = new Map();
+  const vote = (name, kind) => {
+    if (!kinds.has(name)) { order.push(name); kinds.set(name, new Set()); }
+    if (kind) kinds.get(name).add(kind);
+  };
+  const walk = (n) => {
+    if (!n || typeof n !== 'object') return;
+    if (Array.isArray(n)) { n.forEach(walk); return; }
+    if (n.type === 'Element') vote(n.name, null);
+    if (n.type === 'ElementValue') vote(n.name, 'textbox');
+    if (n.type === 'On' && n.target) vote(n.target, n.event === 'click' ? 'button' : n.event === 'hover' ? null : 'textbox');
+    if (n.type === 'MemberAccess' && n.object && n.object.type === 'Element') {
+      if (CANVAS_METHODS.has(n.field)) vote(n.object.name, 'canvas');
+      if (n.field === 'value' || n.field === 'placeholder') vote(n.object.name, 'textbox');
+      if (n.field === 'label') vote(n.object.name, 'button');
+    }
+    for (const k in n) if (k !== 'type' && n[k] && typeof n[k] === 'object') walk(n[k]);
+  };
+  walk(ast);
+  return order.map((name) => {
+    const v = kinds.get(name);
+    const kind = elementKindFromName(name) || (v.has('canvas') ? 'canvas' : v.has('textbox') ? 'textbox' : v.has('button') ? 'button' : 'label');
+    return { name, kind };
+  });
+}
+const elementText = (v) => (typeof v === 'string' ? v : ivxRepr(v));
+
+class IVXElement {
+  constructor(name, kind) {
+    this.name = name;
+    this.kind = kind;
+    if (typeof document === 'undefined') throw new RuntimeError('Screen elements (#names) need the browser');
+    const tag = { button: 'button', textbox: 'input', canvas: 'canvas', label: 'div' }[kind];
+    const el = document.createElement(tag);
+    el.className = 'mu-el mu-' + kind;
+    el.id = 'mu-' + name;
+    el.dataset.name = '#' + name;
+    if (kind === 'button') { el.type = 'button'; el.textContent = humanizeElementName(name); }
+    if (kind === 'textbox') { el.type = 'text'; el.placeholder = humanizeElementName(name).toLowerCase(); el.autocomplete = 'off'; }
+    if (kind === 'canvas') { el.width = 320; el.height = 200; }
+    this.dom = el;
+  }
+  _ctx() {
+    if (this.kind !== 'canvas') throw new RuntimeError(`#${this.name} isn't a canvas. Give it a name ending in -canvas (like #${this.name}-canvas) to draw on it.`);
+    return this.dom.getContext('2d');
+  }
+  get text() {
+    if (this.kind === 'textbox') return this.dom.value;
+    if (this.kind === 'canvas') return '';
+    return this.dom.textContent;
+  }
+  set text(v) {
+    if (this.kind === 'textbox') this.dom.value = elementText(v);
+    else if (this.kind !== 'canvas') this.dom.textContent = elementText(v);
+  }
+  get value() { return this.text; }
+  set value(v) { this.text = v; }
+  get label() { return this.text; }
+  set label(v) { this.text = v; }
+  get placeholder() { return this.dom.placeholder || ''; }
+  set placeholder(v) { this.dom.placeholder = elementText(v); }
+  get color() { return this.dom.style.color || ''; }
+  set color(v) { this.dom.style.color = elementText(v); }
+  get background() { return this.dom.style.background || ''; }
+  set background(v) { this.dom.style.background = elementText(v); }
+  get size() { return parseFloat(this.dom.style.fontSize) || 16; }
+  set size(v) { this.dom.style.fontSize = Number(v) + 'px'; }
+  get visible() { return !this.dom.hidden; }
+  set visible(v) { this.dom.hidden = !isTruthy(v); }
+  get width() { return this.kind === 'canvas' ? this.dom.width : this.dom.offsetWidth; }
+  set width(v) { if (this.kind === 'canvas') this.dom.width = Number(v); else this.dom.style.width = Number(v) + 'px'; }
+  get height() { return this.kind === 'canvas' ? this.dom.height : this.dom.offsetHeight; }
+  set height(v) { if (this.kind === 'canvas') this.dom.height = Number(v); else this.dom.style.height = Number(v) + 'px'; }
+  // canvas drawing
+  circle(x, y, r, color = 'black') { const c = this._ctx(); c.beginPath(); c.arc(+x, +y, +r, 0, Math.PI * 2); c.fillStyle = elementText(color); c.fill(); }
+  dot(x, y, color = 'black') { this.circle(x, y, 2, color); }
+  rect(x, y, w, h, color = 'black') { const c = this._ctx(); c.fillStyle = elementText(color); c.fillRect(+x, +y, +w, +h); }
+  line(x1, y1, x2, y2, color = 'black', width = 2) { const c = this._ctx(); c.beginPath(); c.moveTo(+x1, +y1); c.lineTo(+x2, +y2); c.strokeStyle = elementText(color); c.lineWidth = +width; c.stroke(); }
+  write(x, y, words, color = 'black', size = 16) { const c = this._ctx(); c.fillStyle = elementText(color); c.font = `${+size}px sans-serif`; c.fillText(elementText(words), +x, +y); }
+  clear() { const c = this._ctx(); c.clearRect(0, 0, this.dom.width, this.dom.height); }
 }
 
 class IVXSuperProxy {
@@ -3564,6 +3778,7 @@ function inferImmutables(ast) {
     if (node.type === 'Try') { scanBlock(node.body); scanBlock(node.errBody); return; }
     if (node.type === 'Print' || node.type === 'Text' || node.type === 'Give') { scanExpr(node.expr); return; }
     if (node.type === 'ExprStatement') { scanExpr(node.expr); return; }
+    if (Array.isArray(node.body)) scanBlock(node.body);   // on / every / other blocks
   }
 
   scanBlock(ast.body);
@@ -3589,6 +3804,13 @@ class Interpreter {
     // onStep(srcLine) — called before each statement executes with the 1-based source line
     this.onStep = options.onStep ?? null;
     this.onStatus = options.onStatus ?? null;
+    this.screen = options.screen ?? null;   // DOM node the program's #elements go in
+    this.onLive = options.onLive ?? null;   // told when the program starts/stops waiting for events
+    this._elements = new Map();
+    this._bindings = [];
+    this._cleanups = [];
+    this._queue = Promise.resolve();
+    this.live = false;
 
     this.maxIterations = options.maxIterations ?? 100_000;
 
@@ -3623,11 +3845,56 @@ class Interpreter {
       Convert: async (node, env) => ivxConvert(this, node.conv, await this.evalExpr(node.expr, env), node),
       Call: (node, env) => this.evalCall(node, env),
       Invoke: (node, env) => this._evalInvokeExpr(node, env),
+      Element: async (node) => this._element(node.name, node),
+      ElementValue: async (node) => this._element(node.name, node).text,
     };
   }
 
   abort() {
     this._aborted = true;
+    this.stop();
+  }
+
+  // End a running app: timers and event handlers stop, the Screen stays as it was.
+  stop() {
+    this._stopped = true;
+    this._aborted = true;
+    for (const f of this._cleanups.splice(0)) { try { f(); } catch (e) {} }
+    if (this._endLive) { const r = this._endLive; this._endLive = null; r(); }
+  }
+
+  // Event handlers and timer ticks run one at a time, in the order they happened.
+  _enqueue(task, line) {
+    const run = this._queue.then(async () => {
+      if (this._stopped) return;
+      try { await task(); if (this._bindings.length) await this._refreshBindings(); }
+      catch (e) {
+        if (this._stopped) return;
+        this.onError(e instanceof RuntimeError ? e : new RuntimeError(e && e.message ? e.message : String(e), line));
+      }
+    });
+    this._queue = run;
+    return run;
+  }
+
+  async _refreshBindings() {
+    if (this._refreshing) return;
+    this._refreshing = true;
+    try {
+      for (const b of this._bindings.slice()) {
+        let v;
+        try { v = await this.evalExpr(b.expr, b.env); }
+        catch (e) { this._bindings.splice(this._bindings.indexOf(b), 1); throw e; }
+        const shown = typeof v === 'string' ? v : ivxRepr(FOREIGN.deep(v));
+        if (shown !== b.last) { b.last = shown; b.element[b.prop] = v; }
+      }
+    } finally { this._refreshing = false; }
+  }
+
+  _element(name, node) {
+    const el = this._elements.get(name);
+    if (!el) throw new RuntimeError(`There's no #${name} on the screen`, node && node.line);
+    return el;
   }
 
   // ── Execute a block of statements ─────────────────────────────────────────
@@ -3635,6 +3902,7 @@ class Interpreter {
     for (const stmt of stmts) {
       if (!stmt) continue;
       const result = await this.execStmt(stmt, env);
+      if (this._bindings.length && !this._refreshing) await this._refreshBindings();
       // Propagate control flow signals up
       if (result instanceof ReturnSignal) return result;
       if (result instanceof BreakSignal) return result;
@@ -3829,7 +4097,8 @@ class Interpreter {
           }
         } else {
           const cycles = await this.evalExpr(node.expr, env);
-          await this.onWait(Number(cycles) || 1);
+          if (node.unitMs) await new Promise(r => setTimeout(r, Math.max(0, Number(cycles) * node.unitMs)));
+          else await this.onWait(Number(cycles) || 1);
         }
         break;
       }
@@ -4052,6 +4321,49 @@ class Interpreter {
         break;
       }
 
+      case 'On': {
+        const el = node.target ? this._element(node.target, node) : null;
+        const domEvent = node.event === 'key' ? 'keydown' : ELEMENT_EVENTS[node.event];
+        const host = el ? el.dom : document;
+        const listener = (ev) => {
+          if (node.event === 'enter' && ev.key !== 'Enter') return;
+          if (node.event === 'key' && ev.target && /^(INPUT|TEXTAREA)$/.test(ev.target.tagName) && !(ev.target.classList && ev.target.classList.contains('mu-el'))) return;
+          const keyName = ev.key;
+          this._enqueue(async () => {
+            const henv = this.globals.child();
+            if (node.event === 'key' || node.event === 'enter') henv.define('key', keyName);
+            await this.execBlock(node.body, henv);
+          }, node.line);
+        };
+        host.addEventListener(domEvent, listener);
+        this._cleanups.push(() => host.removeEventListener(domEvent, listener));
+        break;
+      }
+
+      case 'Every': {
+        const amount = Number(await this.evalExpr(node.expr, env));
+        if (!Number.isFinite(amount) || amount <= 0) throw new RuntimeError("'every' needs a positive amount of time, like every 1 second", node.line);
+        const ms = Math.max(16, amount * node.unitMs);
+        let pending = false;
+        const id = setInterval(() => {
+          if (pending) return;          // don't pile up ticks if the last one is still running
+          pending = true;
+          this._enqueue(async () => {
+            try { await this.execBlock(node.body, this.globals.child()); } finally { pending = false; }
+          }, node.line);
+        }, ms);
+        this._cleanups.push(() => clearInterval(id));
+        break;
+      }
+
+      case 'Bind': {
+        const el = this._element(node.target.object.name, node);
+        const prop = node.target.field;
+        if (!(prop in el) || typeof el[prop] === 'function') throw new RuntimeError(`#${el.name} has no '${prop}' to bind. Use text, color, background, size or visible`, node.line);
+        this._bindings.push({ element: el, prop, expr: node.expr, env, last: undefined });
+        break;
+      }
+
       case 'Jump': return new ContinueSignal();   // restart top of loop header
       case 'Next': return new BreakSignal();      // exit loop
       case 'Stop': {
@@ -4147,11 +4459,39 @@ class Interpreter {
     }
     // Infer immutable variables before execution
     this._immutables = inferImmutables(parsed.ast);
+    const wanted = scanElements(parsed.ast.body);
+    if (this.screen) { this.screen.innerHTML = ''; this.screen.hidden = wanted.length === 0; }
     try {
-      await this.execBlock(parsed.ast.body, this.globals);
+      for (const { name, kind } of wanted) {
+        const el = new IVXElement(name, kind);
+        this._elements.set(name, el);
+        if (this.screen) this.screen.appendChild(el.dom);
+      }
     } catch (e) {
-      if (e instanceof RuntimeError) this.onError(e);
-      else throw e;
+      if (e instanceof RuntimeError) { this.onError(e); return; }
+      throw e;
+    }
+    let failed = false;
+    const main = this._queue.then(async () => {
+      try {
+        await this.execBlock(parsed.ast.body, this.globals);
+      } catch (e) {
+        failed = true;
+        if (e instanceof RuntimeError) { if (!this._stopped) this.onError(e); }
+        else throw e;
+      }
+    });
+    this._queue = main;
+    await main;
+    if (this._cleanups.length && !failed && !this._stopped) {
+      // the program set up 'on' handlers or 'every' timers: keep running until Stop
+      this.live = true;
+      if (this.onLive) this.onLive(true);
+      await new Promise(resolve => { this._endLive = resolve; });
+      this.live = false;
+      if (this.onLive) this.onLive(false);
+    } else if (failed) {
+      this.stop();
     }
   }
 
@@ -4926,6 +5266,7 @@ function toIterable(value, node) {
 // Human-readable representation of an IVX value
 function ivxRepr(value) {
   if (value === NONE) return 'none';
+  if (value instanceof IVXElement) return '#' + value.name;
   if (value === true) return 'yes';
   if (value === false) return 'no';
   if (value instanceof IVXFunction) return `<fun ${value.name}>`;
@@ -5155,23 +5496,37 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
     editorRef = editor;
     editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
+    let currentInterp = null;
     async function runProgram() {
+      if (currentInterp) { currentInterp.stop(); return; }   // the button says Stop while an app is running
       openConsole();
       runBtn.disabled = true;
       if (consoleEl.children.length > 0) addDivider();
       const interp = new Interpreter({
+        screen: document.getElementById('screen'),
+        onLive: (on) => {
+          runBtn.disabled = false;
+          runBtn.innerHTML = on ? 'Stop &#9632;' : 'Run &#9654;';
+          document.getElementById('stopBtn').hidden = !on;
+          if (on) addMessage('Running -- waiting for clicks and timers. Press Stop to end it.', 'info');
+        },
         onOutput: (v) => addMessage(ivxRepr(v), 'out'),
         onError: (e) => addMessage(formatError(e), 'err'),
         onInput: (name) => addTakePrompt(name),
         onStatus: (msg) => addMessage(msg, 'info'),
       });
+      currentInterp = interp;
       try {
         await interp.run(editor.getValue());
       } catch (e) {
         addMessage('Internal error: ' + (e && e.message ? e.message : String(e)), 'err');
       }
+      currentInterp = null;
       runBtn.disabled = false;
+      runBtn.innerHTML = 'Run &#9654;';
+      document.getElementById('stopBtn').hidden = true;
     }
+    document.getElementById('stopBtn').addEventListener('click', () => { if (currentInterp) currentInterp.stop(); });
 
     runBtn.addEventListener('click', runProgram);
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, runProgram);
@@ -5511,6 +5866,8 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
     // Voice commands that should still work right after 'dot' rather than
     // being taken as the method name.
     const DOT_NOT_METHOD = new Set(['back', 'pair', 'par', 'quote', 'then', 'so', 'ok', 'run']);
+    // properties of a Screen element (after 'tag name dot ...'), typed without '('
+    const ELEMENT_PROPS = new Set(['text', 'value', 'color', 'background', 'size', 'visible', 'width', 'height', 'label', 'placeholder']);
     function functionNamesIn(text) {
       const names = [];
       const re = /"""[\s\S]*?(?:"""|$)|'''[\s\S]*?(?:'''|$)|"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?|\bnote\b[^\n]*|\bfun[ \t]+([A-Za-z_]\w*)/g;
@@ -5601,6 +5958,16 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
           continue;
         }
 
+        // 'tag <name>' -> '#name', a Screen element; works inside quotes too ("#submit-btn")
+        if (bare === 'tag' && idx + 1 < words.length) {
+          const nm = words[idx + 1].replace(/[.,!?;:]+$/, '');
+          if (IDENT_RE.test(nm)) {
+            emit(sp() + '#' + nm.toLowerCase(), { elementRef: true });
+            idx++;
+            continue;
+          }
+        }
+
         // A newline macro ('so', 'then', 'ok') while a quote is open also
         // ends the string: the closing '"' is typed first, as its own
         // token (so one 'back' removes just the newline, a second the
@@ -5650,6 +6017,13 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
           emit(closer, { stack: st.stack.slice(0, -1) });
         } else if (bare === 'par' && st.autoParen) {
           // '(' was already auto-inserted -- don't double it.
+        } else if (bare === 'comma') {
+          emit(',');   // glued to the word before; the next word gets its space
+        } else if (bare === 'dot' && st.elementRef && idx + 1 < words.length
+                   && ELEMENT_PROPS.has(words[idx + 1].toLowerCase().replace(/[.,!?;:]+$/, ''))) {
+          // 'tag app dot text' -> '#app.text': element properties take no parentheses
+          emit('.' + words[idx + 1].toLowerCase().replace(/[.,!?;:]+$/, ''), { elementRef: false });
+          idx++;
         } else if (bare === 'dot' && idx + 1 < words.length && IDENT_RE.test(words[idx + 1].replace(/[.,!?;:]+$/, ''))
                    && !DOT_NOT_METHOD.has(words[idx + 1].toLowerCase().replace(/[.,!?;:]+$/, ''))) {
           // 'dot <name>' -> '.name(' glued to what came before; ')' owed to 'pair'.
@@ -5802,6 +6176,8 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
       '  take <name>               -- read user input into a variable',
       '  define <name> with <params>  -- define a function; give <value> returns from it',
       '  class <Name> with <params>   -- define a class (params become fields); class <Name> with <params> extends <Parent> inherits; take.<method>() calls the parent; call functions as name(args), or just name with no args',
+      '  #name is an element on the Screen (-btn button, -input text box, -canvas drawing area, else a label); bind #app.text counter keeps it showing a value; make #app.text "hi" sets it; take "#box" reads a text box',
+      '  on click "#submit-btn"  (or on type / change / enter / hover / key) then indented lines run per event; every 1 second repeats indented lines; such programs run until Stop',
       '  use python <package> [as <name>] / use js <package> [as <name>] / use "<https url to a .vx file>"  -- import a Python, npm or Mutter package, then call it normally: np.mean([1, 2])',
       '  make <name> a <Class> with <args>  -- create an object; <list> mostly yes -- true when most items are yes',
       'Comparisons: = != < > <= >= is (is means the same thing as =). Logic: and or not same.',
