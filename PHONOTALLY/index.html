@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phonological Process Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gentium+Book+Plus:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* layout: input on the left, results on the right; summary before detail */
+  --bg: #f5f6f4; --panel: #ffffff; --ink: #1b2023; --muted: #5d666b; --rule: #dde1de;
+  --accent: #1f6f78; --accent-soft: #e2f0f1;
+  --sub: #b8620f; --sub-bg: #fbeedd; --del: #b23a3a; --del-bg: #f8e3e3; --ins: #3a5fb2; --ins-bg: #e4ebf8; --ok-bg: #eef1ef;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --font-ipa: "Gentium Book Plus", "Charis SIL", "Doulos SIL", "Noto Serif", serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141819; --panel: #1c2123; --ink: #e6ebe9; --muted: #98a3a6; --rule: #2f3739;
+    --accent: #6cc3cc; --accent-soft: #1d3436;
+    --sub: #f0a356; --sub-bg: #3a2a18; --del: #f08484; --del-bg: #3a1f1f; --ins: #8eaaf0; --ins-bg: #1f2840; --ok-bg: #242a2c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141819; --panel: #1c2123; --ink: #e6ebe9; --muted: #98a3a6; --rule: #2f3739;
+  --accent: #6cc3cc; --accent-soft: #1d3436;
+  --sub: #f0a356; --sub-bg: #3a2a18; --del: #f08484; --del-bg: #3a1f1f; --ins: #8eaaf0; --ins-bg: #1f2840; --ok-bg: #242a2c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 24px 16px 56px; }
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 8px 24px; margin-bottom: 18px; }
+h1 { font-size: 24px; font-weight: 600; margin: 0 0 4px; text-wrap: balance; }
+.sub { color: var(--muted); margin: 0; max-width: 70ch; }
+.note { font-size: 12.5px; color: var(--muted); text-align: right; max-width: 42ch; }
+.cols { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .cols { grid-template-columns: minmax(0, 1fr); } .note { text-align: left; } }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; }
+h2 { font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+label.hint { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
+textarea { width: 100%; min-height: 330px; resize: vertical; font: 16px/1.55 var(--font-ipa); padding: 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); tab-size: 14; }
+textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+button { font: 500 13px var(--font-ui); padding: 7px 12px; border-radius: 6px; border: 1px solid var(--rule); background: var(--panel); color: var(--ink); cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+.kb { margin-top: 14px; }
+.kb-group { font-size: 11.5px; color: var(--muted); margin: 10px 0 4px; }
+.keys { display: flex; flex-wrap: wrap; gap: 3px; }
+.key { font: 16px var(--font-ipa); min-width: 30px; height: 30px; padding: 0 5px; border-radius: 5px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); cursor: pointer; }
+.key:hover { border-color: var(--accent); }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+@media (max-width: 640px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; }
+.tile .k { font-size: 12px; color: var(--muted); }
+.tile .v { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.tile .s { font-size: 12.5px; color: var(--muted); }
+.sev { display: inline-block; font-size: 12px; font-weight: 500; padding: 1px 8px; border-radius: 999px; background: var(--sub-bg); color: var(--sub); margin-top: 2px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 14px; margin-bottom: 14px; }
+@media (max-width: 1100px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+td { padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+tr.proc { cursor: pointer; }
+tr.proc:hover td, tr.proc.active td { background: var(--accent-soft); }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; font-family: var(--font-mono); font-size: 12.5px; }
+.bar { height: 8px; border-radius: 4px; background: var(--ok-bg); position: relative; min-width: 70px; }
+.bar i { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: var(--accent); }
+.desc { color: var(--muted); font-size: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.ph { font: 17px var(--font-ipa); padding: 1px 8px; border-radius: 5px; background: var(--ok-bg); }
+.ph.miss { background: var(--del-bg); color: var(--del); }
+.words { display: grid; gap: 8px; }
+.filter { font-size: 13px; color: var(--muted); margin-bottom: 8px; display: flex; gap: 10px; align-items: center; }
+.word { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 14px; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; }
+.word.dim { opacity: .35; }
+.word.hit { border-color: var(--accent); }
+@media (max-width: 640px) { .word { grid-template-columns: minmax(0, 1fr); } }
+.gloss { font-weight: 600; }
+.pair { font: 16px var(--font-ipa); color: var(--muted); }
+.ok-word { font-size: 12px; color: var(--accent); }
+.segs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.seg { display: grid; grid-template-rows: auto auto; text-align: center; min-width: 34px; border-radius: 6px; overflow: hidden; border: 1px solid var(--rule); }
+.seg span { font: 17px/1.35 var(--font-ipa); padding: 1px 6px; }
+.seg span + span { border-top: 1px solid var(--rule); }
+.seg.ok span { background: var(--ok-bg); }
+.seg.sub { border-color: var(--sub); } .seg.sub span { background: var(--sub-bg); color: var(--sub); }
+.seg.del { border-color: var(--del); } .seg.del span { background: var(--del-bg); color: var(--del); }
+.seg.ins { border-color: var(--ins); } .seg.ins span { background: var(--ins-bg); color: var(--ins); }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.legend b { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 4px; }
+.change { font-size: 12.5px; }
+.change .from { font-family: var(--font-ipa); font-size: 15px; }
+.tag { display: inline-block; font-size: 11.5px; font-weight: 500; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); margin-left: 4px; }
+.feat { color: var(--muted); }
+.warn { font-size: 12px; color: var(--del); }
+.copied { font-size: 12.5px; color: var(--accent); align-self: center; }
+footer { margin-top: 28px; font-size: 12.5px; color: var(--muted); max-width: 90ch; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+[hidden] { display: none !important; }
+/* inputs */
+.up { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; background: var(--bg); }
+.up.drag { border-color: var(--accent); background: var(--accent-soft); }
+.up-h { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.up-h b { font-weight: 600; font-size: 14px; }
+.up-h span { font-size: 12px; color: var(--muted); }
+.up-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.up-s { font-size: 12.5px; color: var(--muted); }
+.up-s.ok { color: var(--accent); }
+.up-s.bad { color: var(--del); }
+.up details { margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+.up details summary { cursor: pointer; }
+.up details textarea { min-height: 110px; font-size: 15px; margin-top: 6px; background: var(--panel); }
+.match { font-size: 12.5px; border-radius: 8px; padding: 8px 10px; margin: 0 0 12px; background: var(--ok-bg); }
+.match.warn { background: var(--sub-bg); }
+.match ul { margin: 4px 0 0; padding-left: 18px; }
+#sample { min-height: 220px; }
+.norms-ed { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+.norms-ed .ng { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px 14px; margin: 8px 0; }
+.norms-ed .ng label { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12.5px; }
+.norms-ed .ng input { width: 64px; font: 13px var(--font-mono); padding: 3px 6px; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); color: var(--ink); }
+.norms-ed .ng .ipa-l { font-family: var(--font-ipa); font-size: 15px; }
+.norms-ed .cite { width: 100%; font: 13px var(--font-ui); padding: 5px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); color: var(--ink); }
+/* clinical report */
+.report-sec { margin-top: 20px; }
+.case { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 14px; margin-bottom: 12px; }
+@media (max-width: 760px) { .case { grid-template-columns: minmax(0, 1fr); } }
+.case label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+.case input, .case select, .case textarea { width: 100%; font: 14px var(--font-ui); padding: 6px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); color: var(--ink); }
+.case textarea { min-height: 0; height: 34px; resize: vertical; font: 14px var(--font-ui); }
+.case .wide { grid-column: 1 / -1; }
+.case input:focus-visible, .case select:focus-visible, .case textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.rbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 12px; }
+.rbar .msg { font-size: 12.5px; color: var(--muted); }
+.edited { font-size: 12.5px; background: var(--sub-bg); color: var(--ink); border-radius: 6px; padding: 6px 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.paper { background: #e9ecea; border-radius: 10px; padding: 24px 12px; }
+#report { background: #fff; color: #1a1a1a; max-width: 8.5in; margin: 0 auto; padding: 0.8in 0.85in; box-shadow: 0 1px 3px rgba(0,0,0,.12); font: 11pt/1.45 "IBM Plex Sans", Calibri, Arial, sans-serif; outline: none; }
+#report:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+#report h1 { font-size: 16pt; margin: 0 0 2px; font-weight: 600; text-align: center; }
+#report .rsub { text-align: center; color: #555; margin: 0 0 16px; font-size: 10pt; }
+#report h2 { font-size: 11pt; text-transform: uppercase; letter-spacing: .05em; color: #1a1a1a; border-bottom: 1.5px solid #1a1a1a; padding-bottom: 2px; margin: 18px 0 8px; }
+#report h3 { font-size: 11pt; margin: 12px 0 4px; }
+#report p { margin: 0 0 8px; }
+#report table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: 10pt; }
+#report th, #report td { border: 1px solid #b9bfbc; padding: 4px 6px; text-align: left; vertical-align: top; }
+#report th { background: #eef1ef; font-weight: 600; }
+#report table.id td { border: none; padding: 2px 6px 2px 0; }
+#report table.id td.k { color: #555; width: 22%; }
+#report .ipa { font-family: "Gentium Book Plus", "Charis SIL", "Doulos SIL", "Times New Roman", serif; font-size: 11.5pt; }
+#report .fill { background: #fff3b8; }
+#report .flag { font-weight: 600; color: #8a2a12; }
+#report ul { margin: 0 0 8px; padding-left: 20px; }
+#report .sig { margin-top: 28px; }
+#report .sig p { margin: 0; }
+#report .fine { font-size: 8.5pt; color: #666; margin-top: 18px; }
+@media print {
+  body { background: #fff; }
+  body * { visibility: hidden; }
+  #report, #report * { visibility: visible; }
+  #report { position: absolute; left: 0; top: 0; box-shadow: none; padding: 0; max-width: none; }
+  #report .fill { background: none; }
+}
+
+/* layout: inputs left third, report right two thirds */
+.cols { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) !important; }
+@media (max-width: 1000px) { .cols { grid-template-columns: minmax(0, 1fr) !important; } }
+.left .case { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.left .case .wide { grid-column: 1 / -1; }
+.fold { margin-top: 12px; border-top: 1px solid var(--rule); padding-top: 10px; }
+.fold > summary { cursor: pointer; font-size: 13px; font-weight: 600; letter-spacing: .04em; color: var(--muted); }
+.fold[open] > summary { margin-bottom: 10px; }
+.fold #sample { min-height: 200px; }
+.left .case textarea { height: 64px; }
+.right .paper { padding: 16px 10px; }
+#report { max-width: 100%; padding: 0.6in 0.65in; }
+@media (max-width: 640px) { #report { padding: 0.35in; } .left .case { grid-template-columns: minmax(0, 1fr); } }
+
+.up2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.up2 .up { margin: 0; padding: 9px 10px; }
+.up-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+.up2 .up-row { margin-top: 6px; gap: 6px; }
+.up2 .up-row button { padding: 5px 9px; }
+.up2 .up-s { overflow-wrap: anywhere; }
+.up2 details textarea { min-height: 90px; }
+.rhead { display: flex; justify-content: space-between; align-items: center; gap: 8px 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.rhead h2 { margin: 0; }
+.rhead .rbar { margin: 0; justify-content: flex-end; }
+.rhead .rbar .msg { order: -1; }
+
+.up2 .up-h { justify-content: center; }
+.up2 .up-sub { text-align: center; }
+.up2 .up-row { flex-wrap: nowrap; justify-content: center; }
+.up2 .up-row button { flex: none; }
+.right .paper { height: calc(100vh - 104px); min-height: 420px; overflow-y: auto; overscroll-behavior: contain; }
+@media (max-width: 1000px) { .right .paper { height: 80vh; } }
+@media print { .right .paper { height: auto; overflow: visible; } }
+.up2 .up-s:not(.ok):not(.bad) { white-space: nowrap; font-size: 12px; }
+.up2 .up-row { gap: 6px; }
+.up2 .up-row button { padding: 5px 8px; font-size: 12.5px; }
+.up2 .up { padding: 9px 7px; }
+.up2 .up-row { gap: 5px; }
+@media (max-width: 1170px) { .up2 .up-s:not(.ok):not(.bad) { white-space: normal; } }
+#ex-pick { font: 500 13px var(--font-ui); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--rule); background: var(--panel); color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cols">
+    <section class="panel left" aria-labelledby="in-h">
+      <h2 id="in-h">Inputs</h2>
+      <div class="up2">
+      <div class="up" id="up-exp">
+        <div class="up-h"><b>1. Expected</b></div>
+        <div class="up-row"><button type="button" data-pick="exp">Choose file</button><span class="up-s" id="s-exp">or drop here</span></div>
+      </div>
+      <div class="up" id="up-child">
+        <div class="up-h"><b>2. Child</b></div>
+        <div class="up-row"><button type="button" data-pick="child">Choose file</button><span class="up-s" id="s-child">or drop here</span></div>
+      </div>
+      </div>
+      <input type="file" id="f-pick" accept=".txt,.csv,.tsv,.tab,text/plain,text/csv" hidden>
+      <div class="match" id="match" hidden></div>
+      <div class="btns" style="margin:0 0 6px">
+        <select id="ex-pick" aria-label="Load an example case"><option value="">Load example…</option><option value="moderate">Moderate, age 4;8</option><option value="mild">Mild, age 4;10</option><option value="severe">Severe, age 3;10</option><option value="lisp">Lateral lisp, age 7;3</option></select>
+        <button type="button" id="b-exfiles">Example files</button>
+        <button type="button" id="b-clear">Clear</button>
+        <span class="copied" id="in-msg" aria-live="polite"></span>
+      </div>
+      <h2 style="margin-top:18px">Case details</h2>
+  <div class="case">
+    <div><label for="c-name">Client name</label><input id="c-name" autocomplete="off"></div>
+    <div><label for="c-dob">Date of birth</label><input id="c-dob" type="date"></div>
+    <div><label for="c-date">Date of evaluation</label><input id="c-date" type="date"></div>
+    <div><label for="c-exam">Examiner</label><input id="c-exam" autocomplete="off"></div>
+    <div><label for="c-cred">Credentials</label><input id="c-cred" placeholder="M.S., CCC-SLP" autocomplete="off"></div>
+    <div><label for="c-type">Sample</label><select id="c-type">
+      <option value="single-word picture-naming">Single-word picture naming</option>
+      <option value="single-word imitation">Single-word imitation</option>
+      <option value="connected speech">Connected speech</option></select></div>
+    <div><label for="c-norms">Age norms</label><select id="c-norms">
+      <option value="bowen">Bowen (2011), English</option>
+      <option value="custom">Custom ages</option>
+      <option value="none">No age comparison</option></select></div>
+    <div class="wide"><label for="c-ref">Reason for referral</label><textarea id="c-ref"></textarea></div>
+  </div>
+  <div class="norms-ed" id="norms-ed" hidden>
+    <div class="up-h"><b>Custom ages of elimination</b><span>years;months, for example 3;6. Leave blank for no age. Saved in this browser.</span></div>
+    <div class="ng" id="ng-proc"></div>
+    <div class="kb-group">Stopping, by target sound</div>
+    <div class="ng" id="ng-stop"></div>
+    <label class="hint" for="n-cite" style="margin-top:8px">Source to cite in the report</label>
+    <input class="cite" id="n-cite" placeholder="e.g. your clinic's norms, or a published table">
+    <div class="btns"><button type="button" id="b-nreset">Start from Bowen (2011)</button><button type="button" id="b-nexport">Export</button><button type="button" id="b-nimport">Import</button><span class="copied" id="n-msg" aria-live="polite"></span></div>
+    <input type="file" id="f-norms" accept=".json,application/json" hidden>
+  </div>
+      <details class="fold">
+        <summary>Matched sample <span class="desc" id="n-words"></span></summary>
+        <label class="hint" for="sample">Word, target, produced, one per line. You can edit any line or paste a sample here directly.</label>
+        <textarea id="sample" spellcheck="false"></textarea>
+      </details>
+      <details class="fold">
+        <summary>IPA keyboard</summary>
+        <div id="kb"></div>
+      </details>
+    </section>
+
+    <section class="panel right" aria-labelledby="rep-h">
+      <div class="rhead">
+        <h2 id="rep-h">Report</h2>
+        <div class="rbar">
+      <button type="button" class="primary" id="b-doc">Download Word</button>
+      <button type="button" id="b-print">Print or save as PDF</button>
+      <button type="button" id="b-copy">Copy text</button>
+      <span class="msg" id="r-msg" aria-live="polite"></span>
+        </div>
+      </div>
+    <div class="edited" id="edited" hidden>You've edited the report. Case details still update, but changes to the sample, age norms or date of birth won't change the analysis text. <button type="button" id="b-regen">Regenerate (discards your edits)</button></div>
+    <div class="paper"><article id="report" contenteditable="true" spellcheck="true" aria-label="Report, editable"></article></div>
+      <details class="fold" style="margin-top:14px">
+        <summary>Analysis details: processes, inventory, word by word</summary>
+        <div class="tiles" id="tiles"></div>
+      <div class="grid2">
+        <div class="panel">
+          <h2>Phonological processes</h2>
+          <table aria-label="Processes ranked by rate of occurrence">
+            <thead><tr><th>Process</th><th>Occurrences</th><th style="width:30%">Rate</th></tr></thead>
+            <tbody id="procs"></tbody>
+          </table>
+          <p class="desc" style="margin:8px 0 0">Rate is occurrences out of opportunities: fronting 3 of 5 means 3 of the 5 velar targets were fronted. Select a process to show its words.</p>
+        </div>
+        <div class="panel">
+          <h2>Consonant inventory</h2>
+          <div class="kb-group">Produced anywhere in the sample</div>
+          <div class="chips" id="inv-yes"></div>
+          <div class="kb-group" style="margin-top:12px">Attempted but never produced</div>
+          <div class="chips" id="inv-no"></div>
+          <p class="desc" style="margin:12px 0 0">Sounds the child never produces are candidates for stimulability testing.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Word by word</h2>
+        <div class="legend"><span><b style="background:var(--ok-bg)"></b>correct</span><span><b style="background:var(--sub-bg)"></b>substituted</span><span><b style="background:var(--del-bg)"></b>omitted</span><span><b style="background:var(--ins-bg)"></b>added</span><span>Top row target, bottom row produced</span></div>
+        <div class="filter" id="filter" hidden></div>
+        <div class="words" id="words"></div>
+      </div>
+      </details>
+    </section>
+  </div>
+
+  <footer>Runs entirely in your browser; nothing you enter is sent anywhere. Results support clinical judgement and are not a diagnosis. Built on the NEFS v4 phoneme encoding: every sound is one byte whose high nibble is its place and whose low nibble is its manner and voicing, so a substitution is read directly as the features that changed. Severity bands for percent consonants correct follow Shriberg and Kwiatkowski (1982). Weak syllable deletion uses the stress marks ˈ and ˌ when the target has them; for unmarked words it falls back to counting vowels, and the word is labelled as an estimate.</footer>
+</div>
+
+<script>
+// generated from nefs_converter.py (v4)
+const NEFS_TABLE={"0": "ˈ", "1": "̘", "2": "ˌ", "3": "̙", "4": "̝", "5": "̞", "6": "̟", "7": "̠", "8": "˞", "9": "̈", "10": "̤", "11": "̰", "12": "̬", "13": "̥", "14": "̚", "16": "β", "17": "ɸ", "18": "b", "19": "p", "20": "ɓ", "21": "ʘ", "23": "ʍ", "24": "m", "25": "w", "27": "ʙ", "30": "ʷ", "32": "v", "33": "f", "40": "ɱ", "41": "ʋ", "42": "ɥ", "44": "ⱱ", "46": "̼", "47": ".", "48": "ð", "49": "θ", "53": "ǀ", "62": "̪", "63": "̆", "64": "z", "65": "s", "66": "d", "67": "t", "68": "ɗ", "69": "ǁ", "70": "ɮ", "71": "ɬ", "72": "n", "73": "ɹ", "74": "l", "75": "r", "76": "ɾ", "77": "ɺ", "78": "̺", "79": "ː", "80": "ʒ", "81": "ʃ", "85": "ǃ", "86": "ʑ", "87": "ɕ", "94": "̃", "95": "˥", "96": "ʐ", "97": "ʂ", "98": "ɖ", "99": "ʈ", "104": "ɳ", "105": "ɻ", "106": "ɭ", "108": "ɽ", "110": "ʲʲ", "111": "˦", "112": "ʝ", "113": "ç", "114": "ɟ", "115": "c", "116": "ʄ", "117": "ǂ", "119": "ɧ", "120": "ɲ", "121": "j", "122": "ʎ", "126": "ʲ", "127": "˧", "128": "ɣ", "129": "x", "130": "ɡ", "131": "k", "132": "ɠ", "136": "ŋ", "137": "ɰ", "138": "ʟ", "142": "ɣˤ", "143": "˨", "144": "ʁ", "145": "χ", "146": "ɢ", "147": "q", "148": "ʛ", "152": "ɴ", "155": "ʀ", "158": "ˤˤ", "159": "˩", "160": "ʕ", "161": "ħ", "164": "i", "165": "e", "166": "ɛ", "167": "a", "168": "ɪ", "169": "0", "170": "A", "171": "D♯", "173": "Mk", "174": "ˤ", "175": "˩˥", "176": "ʢ", "177": "ʜ", "179": "ʡ", "180": "y", "181": "ø", "182": "œ", "183": "ɶ", "184": "ʏ", "185": "1", "186": "A♯", "187": "E", "189": "Au", "190": "ʼ", "191": "˥˩", "192": "ɦ", "193": "h", "194": "ʔ", "196": "ɨ", "197": "ɘ", "198": "ɜ", "199": "ä", "200": "æ", "201": "2", "202": "B", "203": "F", "205": "Vc", "206": "ˀ", "207": "˦˥", "208": "ʱ", "209": "ˠ", "210": "͈", "211": "͉", "212": "ʉ", "213": "ɵ", "214": "ɞ", "215": "ɒ̈", "216": "ɐ", "217": "3", "218": "C", "219": "F♯", "221": "Ef", "222": "ʰ", "223": "˩˨", "224": "̩", "225": "̯", "226": "ˑ", "228": "ɯ", "229": "ɤ", "230": "ʌ", "231": "ɑ", "232": "ʊ", "233": "4", "234": "C♯", "235": "G", "238": "ʰʰ", "239": "˧˦˧", "240": "↗", "241": "‖", "242": "|", "244": "u", "245": "o", "246": "ɔ", "247": "ɒ", "248": "ə", "249": "5", "250": "D", "251": "G♯", "254": "̻", "255": "↘"};
+const NEFS_CANON={"ȶ": "c̟", "ȡ": "ɟ̟", "ȵ": "ɲ̟", "ȴ": "ʎ̟", "ʨ": "tɕ", "ʥ": "dʑ", "ʦ": "ts", "ʣ": "dz", "ʧ": "tʃ", "ʤ": "dʒ", "̊": "̥", "ʆ": "ʃʲ", "ʓ": "ʒʲ", "ɫ": "lˠ", "ɚ": "ə˞", "ɝ": "ɜ˞", "͡": "", "͜": ""};
+const NEFS_AFF={"tʃ": [67, 81], "dʒ": [66, 80], "ts": [67, 65], "dz": [66, 64], "tɕ": [67, 87], "dʑ": [66, 86], "tʂ": [67, 97], "dʐ": [66, 96]};
+
+// NEFS phonological analysis engine. Depends on nefs_data.js (generated from the v4 converter).
+
+const IPA2B = {};
+for (const [b, s] of Object.entries(NEFS_TABLE)) IPA2B[s.normalize("NFD")] = +b;
+IPA2B["g"] = 0x82;
+const B2IPA = {};
+for (const [b, s] of Object.entries(NEFS_TABLE)) B2IPA[+b] = s;
+
+function canonicalize(s) {
+  s = s.normalize("NFD");
+  for (const [k, v] of Object.entries(NEFS_CANON)) s = s.split(k).join(v);
+  return s.normalize("NFD");
+}
+
+function classify(b) {
+  if (b === 0x0F) return "silence";
+  const lo = b & 15, hi = b >> 4;
+  if (lo === 0xF) return "tone";
+  if (lo === 0xE || hi === 0) return "diacritic";
+  if (hi >= 0xE && lo <= 3) return "stress";
+  if (hi === 0xD && lo <= 3) return "diacritic";
+  if (hi >= 0xA && lo >= 0xC && lo <= 0xD) return "effects";
+  if (hi >= 0xA && lo >= 9 && lo <= 0xB) return "pitch";
+  if (hi >= 0xA && lo >= 4 && lo <= 8) return "vowel";
+  return "consonant";
+}
+
+// ---- consonant features read straight off the byte -------------------------
+const PLACE = ["", "bilabial", "labiodental", "dental", "alveolar", "postalveolar", "retroflex",
+  "palatal", "velar", "uvular", "pharyngeal", "epiglottal", "glottal"];
+const PLACE_OVERRIDE = { 0x56: "alveolo-palatal", 0x57: "alveolo-palatal", 0x77: "palatal-velar", 0x17: "labial-velar" };
+function place(b) { return PLACE_OVERRIDE[b] || PLACE[b >> 4] || "?"; }
+const segPlace = s => s.second != null ? place(s.second) : place(s.base);
+function manner(b) {
+  return ["fricative", "fricative", "stop", "stop", "implosive", "click", "fricative", "fricative",
+          "nasal", "approximant", "lateral", "trill", "tap", "lateral flap"][b & 15] || "?";
+}
+function voiced(b) {
+  if (classify(b) === "vowel") return true;
+  if (b === 0xC2) return false;                // ʔ
+  const lo = b & 15;
+  if (lo <= 7) return lo % 2 === 0;            // obstruent rows: bit 0 is voicing
+  return true;                                 // sonorant rows
+}
+const LIQUIDS = new Set([0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x69, 0x6A, 0x6C]);   // ɹ l r ɾ ɺ ɻ ɭ ɽ
+const GLIDES = new Set([0x19, 0x79, 0x2A]);                           // w j ɥ
+const SIBILANTS = new Set([0x40, 0x41, 0x50, 0x51]);                   // z s ʒ ʃ
+const VELARS = new Set([8, 9]);
+
+// ---- vowel features ----------------------------------------------------------
+function vowelFeats(b) {
+  const hi = b >> 4, lo = b & 15;
+  return {
+    front: ["front", "front", "central", "central", "back", "back"][hi - 0xA],
+    round: (hi - 0xA) % 2 === 1,
+    height: { 4: "close", 5: "close-mid", 6: "open-mid", 7: "open", 8: "lax" }[lo],
+  };
+}
+
+// ---- parsing IPA into segments ---------------------------------------------
+// A segment is one sound: a base byte (or two for an affricate) plus the
+// modifier bytes that follow it (ʰ ʲ ː ̃ ...). Stress marks and dots are dropped.
+const KEYS = Object.keys(IPA2B).sort((a, b) => b.length - a.length);
+function toBytes(ipa) {
+  ipa = canonicalize(ipa).replace(/[.\s]/g, "");
+  const out = [], unknown = [];
+  let i = 0;
+  while (i < ipa.length) {
+    let hit = false;
+    for (const len of [3, 2]) {
+      const sub = ipa.slice(i, i + len);
+      if (sub.length === len && NEFS_AFF[sub]) { out.push({ aff: NEFS_AFF[sub] }); i += len; hit = true; break; }
+      if (sub.length === len && IPA2B[sub] !== undefined) { out.push(IPA2B[sub]); i += len; hit = true; break; }
+    }
+    if (hit) continue;
+    const ch = ipa[i];
+    if (IPA2B[ch] !== undefined) out.push(IPA2B[ch]);
+    else unknown.push(ch);
+    i += 1;
+  }
+  return { bytes: out, unknown };
+}
+function segments(ipa) {
+  const { bytes, unknown } = toBytes(ipa);
+  const segs = [];
+  let pending = null, marked = false;
+  for (let k = 0; k < bytes.length; k++) {
+    const x = bytes[k];
+    if (typeof x === "object") { segs.push({ base: x.aff[0], second: x.aff[1], mods: [] }); continue; }
+    if (x === 0x00 || x === 0x02) { pending = x === 0x00 ? "primary" : "secondary"; marked = true; continue; }
+    const c = classify(x);
+    if ((c === "diacritic" || c === "tone" || c === "stress") && segs.length) { segs[segs.length - 1].mods.push(x); continue; }
+    if (c === "consonant" || c === "vowel") {
+      // two consecutive stop+fricative bytes from the affricate list
+      const seg = { base: x, second: null, mods: [] };
+      if (c === "vowel" && pending) { seg.stress = pending; pending = null; }
+      segs.push(seg);
+    }
+  }
+  for (const sg of segs) if (classify(sg.base) === "vowel") sg.stress = marked ? (sg.stress || "unstressed") : null;
+  for (const s of segs) {
+    s.kind = classify(s.base) === "vowel" ? "V" : "C";
+    s.ipa = (s.stress === "primary" ? "ˈ" : s.stress === "secondary" ? "ˌ" : "") + B2IPA[s.base] + (s.second != null ? B2IPA[s.second] : "") + s.mods.map(m => B2IPA[m]).join("");
+  }
+  return { segs, unknown };
+}
+// aspiration and non-release on a consonant are English allophones, not errors, so they are left out of the comparison
+const ALLOPHONIC = new Set(Object.keys(B2IPA).filter(k => B2IPA[k] === "ʰ" || B2IPA[k] === "̚").map(Number));
+const modKey = s => (s.kind === "C" ? s.mods.filter(m => !ALLOPHONIC.has(m)) : s.mods).join();
+const same = (a, b) => a.base === b.base && a.second === b.second && modKey(a) === modKey(b);
+
+// ---- featural alignment -------------------------------------------------------
+const pop = x => { let n = 0; while (x) { n += x & 1; x >>= 1; } return n; };
+function subCost(a, b) {
+  if (same(a, b)) return 0;
+  if (a.kind !== b.kind) return 1.5;
+  let c = 0.15 + 0.15 * pop(a.base ^ b.base);
+  if ((a.second == null) !== (b.second == null)) c += 0.15;
+  if (a.mods.join() !== b.mods.join()) c += 0.1;
+  return Math.min(c, 0.95);
+}
+function align(T, P) {
+  const n = T.length, m = P.length, D = [], B = [];
+  for (let i = 0; i <= n; i++) { D.push(new Array(m + 1).fill(0)); B.push(new Array(m + 1).fill(null)); }
+  for (let i = 1; i <= n; i++) { D[i][0] = i; B[i][0] = "del"; }
+  for (let j = 1; j <= m; j++) { D[0][j] = j; B[0][j] = "ins"; }
+  for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) {
+    const s = D[i - 1][j - 1] + subCost(T[i - 1], P[j - 1]), d = D[i - 1][j] + 1, a = D[i][j - 1] + 1;
+    const best = Math.min(s, d, a);
+    D[i][j] = best; B[i][j] = best === s ? "sub" : best === d ? "del" : "ins";
+  }
+  const ops = []; let i = n, j = m;
+  while (i > 0 || j > 0) {
+    const op = B[i][j];
+    if (op === "sub") { ops.push({ t: i - 1, p: j - 1 }); i--; j--; }
+    else if (op === "del") { ops.push({ t: i - 1, p: null }); i--; }
+    else { ops.push({ t: null, p: j - 1 }); j--; }
+  }
+  return ops.reverse();
+}
+
+// ---- what changed, in feature terms --------------------------------------------
+function changes(t, p) {
+  const out = [];
+  if (t.kind === "C" && p.kind === "C") {
+    if (segPlace(t) !== segPlace(p)) out.push(`place: ${segPlace(t)} → ${segPlace(p)}`);
+    const mt = t.second != null ? "affricate" : manner(t.base), mp = p.second != null ? "affricate" : manner(p.base);
+    if (mt !== mp) out.push(`manner: ${mt} → ${mp}`);
+    if (voiced(t.base) !== voiced(p.base)) out.push(`voicing: ${voiced(t.base) ? "voiced" : "voiceless"} → ${voiced(p.base) ? "voiced" : "voiceless"}`);
+  } else if (t.kind === "V" && p.kind === "V") {
+    const a = vowelFeats(t.base), b = vowelFeats(p.base);
+    if (a.height !== b.height) out.push(`height: ${a.height} → ${b.height}`);
+    if (a.front !== b.front) out.push(`backness: ${a.front} → ${b.front}`);
+    if (a.round !== b.round) out.push(`rounding: ${a.round ? "rounded" : "unrounded"} → ${b.round ? "rounded" : "unrounded"}`);
+  } else out.push("consonant ↔ vowel");
+  if (t.base === p.base && t.second === p.second && modKey(t) !== modKey(p)) out.push("diacritic differs");
+  return out;
+}
+
+// ---- phonological processes -------------------------------------------------------
+const PROCESSES = [
+  ["velar_fronting", "Velar fronting", "k ɡ ŋ produced further forward"],
+  ["palatal_fronting", "Palatal fronting", "ʃ ʒ tʃ dʒ produced as alveolars"],
+  ["backing", "Backing", "front consonants produced as velars"],
+  ["stopping", "Stopping", "fricatives or affricates produced as stops"],
+  ["gliding", "Gliding", "liquids produced as glides w or j"],
+  ["vocalization", "Vocalization", "liquids produced as vowels"],
+  ["deaffrication", "Deaffrication", "affricates produced as fricatives"],
+  ["final_devoicing", "Final devoicing", "voiced obstruents devoiced word-finally"],
+  ["prevocalic_voicing", "Prevocalic voicing", "voiceless obstruents voiced before a vowel"],
+  ["fcd", "Final consonant deletion", "word-final consonant omitted"],
+  ["cluster_reduction", "Cluster reduction", "a consonant in a cluster omitted"],
+  ["initial_deletion", "Initial consonant deletion", "word-initial consonant omitted"],
+  ["medial_deletion", "Medial consonant deletion", "a single consonant inside the word omitted"],
+  ["assimilation", "Consonant assimilation", "a consonant copies another in the word"],
+  ["glottal_replacement", "Glottal replacement", "consonant replaced by ʔ"],
+  ["lateral_lisp", "Lateralized sibilant", "s z ʃ ʒ produced as ɬ ɮ"],
+  ["interdental_lisp", "Interdental lisp", "s z produced as θ ð"],
+  ["weak_syllable_deletion", "Weak syllable deletion", "an unstressed syllable omitted"],
+  ["distortion", "Distortion", "right sound, different diacritic"],
+  ["other_sub", "Other substitution", "substitution not matching a named process"],
+];
+const isObstruent = b => (b & 15) <= 7;
+
+function analyzeWord(gloss, tIPA, pIPA) {
+  const T = segments(tIPA), P = segments(pIPA);
+  const t = T.segs, p = P.segs, ops = align(t, p);
+  const found = [], opp = {};
+  const bump = k => { opp[k] = (opp[k] || 0) + 1; };
+  // a vowel right after another vowel is the second half of a diphthong, not a new syllable
+  const nuc = (arr, i) => arr[i].kind === "V" && !(i > 0 && arr[i - 1].kind === "V");
+  const tc = t.map((s, i) => ({ s, i })).filter(x => x.s.kind === "C");
+  const lastC = t.length && t[t.length - 1].kind === "C" ? t.length - 1 : -1;
+  const inCluster = i => t[i].kind === "C" && ((i > 0 && t[i - 1].kind === "C") || (i + 1 < t.length && t[i + 1].kind === "C"));
+
+  // opportunities: counted from the target, once per eligible sound
+  for (const { s, i } of tc) {
+    const b = s.base;
+    if (VELARS.has(b >> 4) && ["stop", "nasal"].includes(manner(b))) bump("velar_fronting");
+    if ((b >> 4) === 5 && s.second == null && SIBILANTS.has(b) || (s.second != null && (s.second >> 4) === 5)) bump("palatal_fronting");
+    if ([3, 4].includes(b >> 4)) bump("backing");
+    if (manner(b) === "fricative" || s.second != null) bump("stopping");
+    if (LIQUIDS.has(b)) { bump("gliding"); bump("vocalization"); }
+    if (s.second != null) bump("deaffrication");
+    if (i === lastC && isObstruent(b) && voiced(b)) bump("final_devoicing");
+    if (isObstruent(b) && !voiced(b) && i + 1 < t.length && t[i + 1].kind === "V") bump("prevocalic_voicing");
+    if (i === lastC) bump("fcd");
+    if (inCluster(i)) bump("cluster_reduction");
+    if (i !== lastC && !inCluster(i)) bump(i === 0 ? "initial_deletion" : "medial_deletion");
+    bump("glottal_replacement");
+    if (SIBILANTS.has(b)) bump("lateral_lisp");
+    if (b === 0x40 || b === 0x41) bump("interdental_lisp");
+    bump("other_sub");
+    bump("distortion");
+  }
+  if (tc.length >= 2) bump("assimilation");
+  const tV = t.filter((s, i) => nuc(t, i)).length, pV = p.filter((s, i) => nuc(p, i)).length;
+  const stressKnown = t.some(s => s.kind === "V" && s.stress);
+  if (tV >= 2) {
+    if (stressKnown) t.filter((s, i) => nuc(t, i) && s.stress === "unstressed").forEach(() => bump("weak_syllable_deletion"));
+    else bump("weak_syllable_deletion");
+  }
+
+  const rows = [];
+  let correct = 0;
+  for (const op of ops) {
+    const ts = op.t != null ? t[op.t] : null, ps = op.p != null ? p[op.p] : null;
+    const row = { t: ts, p: ps, status: "", chips: [], procs: [] };
+    if (ts && ps && same(ts, ps)) { row.status = "ok"; if (ts.kind === "C") correct++; }
+    else if (ts && !ps) {
+      row.status = "del";
+      const k_ = ops.indexOf(op);
+      const nextToDeletedV = [ops[k_ - 1], ops[k_ + 1]].some(o => o && o.p == null && o.t != null && nuc(t, o.t)
+        && (!stressKnown || t[o.t].stress === "unstressed"));
+      if (ts.kind === "C" && nextToDeletedV && tV >= 2 && pV < tV) row.syllable = true;
+      else if (ts.kind === "C") {
+        const k = op.t === lastC ? "fcd" : inCluster(op.t) ? "cluster_reduction" : op.t === 0 ? "initial_deletion" : "medial_deletion";
+        row.procs.push(k);
+      }
+    } else if (!ts && ps) row.status = "ins";
+    else {
+      row.status = "sub"; row.chips = changes(ts, ps);
+      if (ts.kind === "C" && ps.kind === "C") {
+        const tb = ts.base, pb = ps.base;
+        const others = t.filter((s, k) => k !== op.t && s.kind === "C");
+        const procs = [];
+        if (ts.base === ps.base && ts.second === ps.second) procs.push("distortion");
+        else if (pb === 0xC2) procs.push("glottal_replacement");
+        else if (SIBILANTS.has(tb) && (pb === 0x46 || pb === 0x47)) procs.push("lateral_lisp");
+        else if ((tb === 0x40 || tb === 0x41) && (pb === 0x30 || pb === 0x31)) procs.push("interdental_lisp");
+        else {
+          const sameManner = manner(tb) === manner(pb) && (ts.second == null) === (ps.second == null);
+          const cognate = sameManner && segPlace(ts) === segPlace(ps);   // differs only in voicing
+          if (VELARS.has(tb >> 4) && sameManner && (pb >> 4) < (tb >> 4) && (pb >> 4) >= 3) procs.push("velar_fronting");
+          const tPal = ((tb >> 4) === 5 && SIBILANTS.has(tb)) || (ts.second != null && (ts.second >> 4) === 5);
+          const pAlv = (pb >> 4) === 4 || (ps.second != null && (ps.second >> 4) === 4);
+          const pFricLike = manner(pb) === "fricative" || ps.second != null;
+          if (tPal && pAlv && pFricLike) procs.push("palatal_fronting");
+          if ([3, 4].includes(tb >> 4) && VELARS.has(pb >> 4)) procs.push("backing");
+          const tFric = manner(tb) === "fricative" || ts.second != null;
+          if (tFric && manner(pb) === "stop" && ps.second == null) procs.push("stopping");
+          if (ts.second != null && ps.second == null && manner(pb) === "fricative") procs.push("deaffrication");
+          if (LIQUIDS.has(tb) && GLIDES.has(pb)) procs.push("gliding");
+          if (op.t === lastC && isObstruent(tb) && voiced(tb) && !voiced(pb) && cognate) procs.push("final_devoicing");
+          if (isObstruent(tb) && !voiced(tb) && voiced(pb) && cognate && op.t + 1 < t.length && t[op.t + 1].kind === "V") procs.push("prevocalic_voicing");
+          // assimilation: the new place is copied from another consonant in the same word
+          // alveolars are the default place, so copying one only counts when the copy is the same sound
+          const alv = ["alveolar", "dental"].includes(segPlace(ps));
+          const copies = segPlace(ps) !== segPlace(ts) && others.some(o => segPlace(o) === segPlace(ps)
+            && (!alv || (o.base === ps.base && o.second === ps.second)));
+          const bi = procs.indexOf("backing");
+          if (copies && bi >= 0) procs.splice(bi, 1, "assimilation");
+          else if (copies && !procs.length) procs.push("assimilation");
+          if (!procs.length) procs.push("other_sub");
+        }
+        row.procs = procs;
+      } else if (ts.kind === "C" && ps.kind === "V" && LIQUIDS.has(ts.base)) row.procs = ["vocalization"];
+    }
+    for (const k of row.procs) found.push(k);
+    rows.push(row);
+  }
+  let wsdEstimated = false;
+  if (tV >= 2) {
+    if (stressKnown) {
+      for (const op of ops) if (op.p == null && op.t != null && nuc(t, op.t) && t[op.t].stress === "unstressed") found.push("weak_syllable_deletion");
+    } else if (pV < tV) { found.push("weak_syllable_deletion"); wsdEstimated = true; }
+  }
+  return { gloss, tIPA, pIPA, rows, found, opp, consonants: tc.length, correct, wsdEstimated, stressKnown,
+           unknown: [...T.unknown, ...P.unknown], produced: p, target: t };
+}
+
+function analyzeSample(lines) {
+  const words = lines.map(l => analyzeWord(l.gloss, l.target, l.produced));
+  const occ = {}, opp = {}, where = {};
+  let C = 0, OK = 0;
+  for (const [w, wi] of words.map((w, i) => [w, i])) {
+    C += w.consonants; OK += w.correct;
+    for (const [k, v] of Object.entries(w.opp)) opp[k] = (opp[k] || 0) + v;
+    for (const k of w.found) { occ[k] = (occ[k] || 0) + 1; (where[k] = where[k] || new Set()).add(wi); }
+  }
+  const pcc = C ? 100 * OK / C : 0;
+  const severity = pcc >= 85 ? "mild" : pcc >= 65 ? "mild–moderate" : pcc >= 50 ? "moderate–severe" : "severe";
+  const procs = PROCESSES.filter(([k]) => occ[k]).map(([k, name, desc]) =>
+    ({ key: k, name, desc, n: occ[k], of: opp[k] || occ[k], pct: 100 * occ[k] / (opp[k] || occ[k]), words: [...where[k]] }))
+    .sort((a, b) => b.pct - a.pct || b.n - a.n);
+  // independent analysis: which target consonants appear anywhere in the child's output
+  const produced = new Set(), attempted = new Map();
+  for (const w of words) {
+    for (const s of w.produced) if (s.kind === "C") produced.add(B2IPA[s.base] + (s.second != null ? B2IPA[s.second] : ""));
+    for (const s of w.target) if (s.kind === "C") attempted.set(B2IPA[s.base] + (s.second != null ? B2IPA[s.second] : ""), s.base);
+  }
+  const missing = [...attempted.keys()].filter(k => !produced.has(k));
+  // substitution analysis: most frequent target → produced pairs, and sounds used for many targets
+  const subs = new Map(), pref = new Map();
+  words.forEach((w, wi) => {
+    const lastC = w.target.length && w.target[w.target.length - 1].kind === "C" ? w.target.length - 1 : -1;
+    for (const r of w.rows) {
+      if (!r.t || r.t.kind !== "C" || r.status === "ok" || r.status === "ins") continue;
+      const tk = B2IPA[r.t.base] + (r.t.second != null ? B2IPA[r.t.second] : "");
+      const pk = r.p ? (r.p.kind === "C" ? B2IPA[r.p.base] + (r.p.second != null ? B2IPA[r.p.second] : "") : "vowel") : "omitted";
+      if (tk === pk) continue;
+      const pos = w.target.indexOf(r.t) === lastC ? "final" : "other";
+      const k = tk + "→" + pk + "|" + pos;
+      const e = subs.get(k) || { t: tk, p: pk, pos, n: 0, words: [] }; e.n++; if (e.words.length < 3) e.words.push(wi); subs.set(k, e);
+      if (r.p && r.p.kind === "C") { const q = pref.get(pk) || { p: pk, targets: new Set(), n: 0 }; q.targets.add(tk); q.n++; pref.set(pk, q); }
+    }
+  });
+  const topSubs = [...subs.values()].sort((a, b) => b.n - a.n).slice(0, 10);
+  const prefMin = Math.max(8, Math.round(0.03 * C));
+  const preferred = [...pref.values()].filter(q => q.targets.size >= 5 && q.n >= prefMin).sort((a, b) => b.n - a.n)
+    .slice(0, 3).map(q => ({ p: q.p, n: q.n, targets: [...q.targets] }));
+  const unread = new Map(); let unreadWords = 0;
+  for (const w of words) { if (w.unknown.length) unreadWords++; for (const u of w.unknown) unread.set(u, (unread.get(u) || 0) + 1); }
+  return { words, pcc, severity, consonants: C, correct: OK, procs, produced: [...produced], missing, topSubs, preferred,
+           unreadWords, unread: [...unread].sort((a, b) => b[1] - a[1]).map(([s]) => s) };
+}
+
+
+
+
+const EXAMPLE = `cat	kæt	tæt
+cup	kʌp	tʌp
+go	ɡoʊ	doʊ
+key	ki	ki
+sun	sʌn	tʌn
+zoo	zu	du
+fish	fɪʃ	pɪs
+shoe	ʃu	su
+chair	tʃɛɹ	ʃɛɹ
+jump	dʒʌmp	dʌmp
+rabbit	ˈɹæbɪt	ˈwæbɪt
+leaf	lif	jif
+tree	tɹi	twi
+yellow	ˈjɛloʊ	ˈjɛwoʊ
+dog	dɔɡ	dɔ
+ball	bɔl	bɔ
+bed	bɛd	bɛt
+stop	stɑp	tɑp
+spoon	spun	pun
+sock	sɑk	θɑk
+soup	sup	ɬup
+duck	dʌk	ɡʌk
+banana	bəˈnænə	ˈnænə
+moon	mun	mun`;
+
+const EXAMPLES = {"moderate": {"label": "Moderate, age 4;8", "name": "Example Child", "months": 56, "type": "single-word picture-naming", "ref": "Referred by parent, who reports that the child is hard for unfamiliar listeners to understand.", "words": null}, "mild": {"label": "Mild, age 4;10", "name": "Maya (demo)", "months": 58, "type": "single-word picture-naming", "ref": "Parent reports that Maya says some /r/ words like a younger child and asked whether this is typical for her age.", "words": "cat\tkæt\tkæt\ndog\tdɔɡ\tdɔɡ\nfish\tfɪʃ\tfɪʃ\nshoe\tʃu\tʃu\nchair\ttʃɛɹ\ttʃɛɹ\njump\tdʒʌmp\tdʒʌmp\nleaf\tlif\tlif\nyellow\tˈjɛloʊ\tˈjɛloʊ\nsun\tsʌn\tsʌn\nzoo\tzu\tzu\nspoon\tspun\tspun\nstop\tstɑp\tstɑp\nbanana\tbəˈnænə\tbəˈnænə\ntelephone\tˈtɛləˌfoʊn\tˈtɛləˌfoʊn\nrabbit\tˈɹæbɪt\tˈwæbɪt\nred\tɹɛd\twɛd\ntree\ttɹi\ttwi\ncarrot\tˈkɛɹət\tˈkɛwət\nrope\tɹoʊp\twoʊp\nring\tɹɪŋ\twɪŋ\nfrog\tfɹɔɡ\tfwɔɡ\nguitar\tɡɪˈtɑɹ\tɡɪˈtɑɹ\nthumb\tθʌm\tθʌm\nvacuum\tˈvækjum\tˈvækjum"}, "severe": {"label": "Severe, age 3;10", "name": "Leo (demo)", "months": 46, "type": "single-word picture-naming", "ref": "Referred by preschool teacher. Parents and teachers understand little of Leo's speech, and he has started to avoid talking with peers.", "words": "cat\tkæt\ttæ\ncup\tkʌp\ttʌ\ngo\tɡoʊ\tdoʊ\nkey\tki\tti\nkite\tkaɪt\ttaɪ\ncookie\tˈkʊki\tˈtʊti\nsun\tsʌn\ttʌn\nsock\tsɑk\ttɑ\nsoap\tsoʊp\ttoʊ\nzoo\tzu\tdu\nfish\tfɪʃ\tpɪ\nfeet\tfit\tpi\nshoe\tʃu\ttu\nchair\ttʃɛɹ\ttɛ\njump\tdʒʌmp\tdʌ\nleaf\tlif\tti\nlamp\tlæmp\ttæ\ndog\tdɔɡ\tdɔ\nbed\tbɛd\tbɛ\nnose\tnoʊz\tnoʊ\nstop\tstɑp\ttɑ\ntree\ttɹi\tti\nblue\tblu\tbu\nboat\tboʊt\tboʊʔ\nwater\tˈwɑtɚ\tˈwɑʔə\nyellow\tˈjɛloʊ\tˈjɛjoʊ\nrabbit\tˈɹæbɪt\tˈwæbɪ\nbanana\tbəˈnænə\tˈnænə\nmoon\tmun\tmun\nduck\tdʌk\tdʌ"}, "lisp": {"label": "Lateral lisp, age 7;3", "name": "Ava (demo)", "months": 87, "type": "single-word picture-naming", "ref": "Referred by classroom teacher, who notes that Ava's s sounds are slushy. No other concerns with her speech or language.", "words": "sun\tsʌn\tɬʌn\nsoap\tsoʊp\tɬoʊp\nbus\tbʌs\tbʌɬ\nhouse\thaʊs\thaʊɬ\nzoo\tzu\tɮu\nnose\tnoʊz\tnoʊɮ\nshoe\tʃu\tɬu\nfish\tfɪʃ\tfɪɬ\nstar\tstɑɹ\tɬtɑɹ\nspoon\tspun\tɬpun\npencil\tˈpɛnsəl\tˈpɛnɬəl\nglasses\tˈɡlæsəz\tˈɡlæɬəɮ\ncat\tkæt\tkæt\ndog\tdɔɡ\tdɔɡ\nrabbit\tˈɹæbɪt\tˈɹæbɪt\nleaf\tlif\tlif\ntree\ttɹi\ttɹi\nthumb\tθʌm\tθʌm\nvacuum\tˈvækjum\tˈvækjum\nyellow\tˈjɛloʊ\tˈjɛloʊ\nfrog\tfɹɔɡ\tfɹɔɡ\nbanana\tbəˈnænə\tbəˈnænə\nguitar\tɡɪˈtɑɹ\tɡɪˈtɑɹ\numbrella\tʌmˈbɹɛlə\tʌmˈbɹɛlə"}};
+EXAMPLES.moderate.words = EXAMPLE;
+const ta = document.getElementById("sample");
+const $ = id => document.getElementById(id);
+let last = null, activeProc = null;
+
+function parse(text) {
+  return text.split(/\n/).map(l => l.trim()).filter(Boolean).map(l => {
+    let f = l.split(/\t|\s*\|\s*|\s{2,}/).map(x => x.trim()).filter(Boolean);
+    if (f.length === 2) f = ["", f[0], f[1]];
+    return f.length >= 3 ? { gloss: f[0], target: f[1], produced: f[2] } : null;
+  }).filter(Boolean);
+}
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const PNAME = Object.fromEntries(PROCESSES.map(([k, n]) => [k, n]));
+
+function render() {
+  const lines = parse(ta.value);
+  const S = analyzeSample(lines);
+  last = S;
+  const nProc = S.procs.filter(p => p.key !== "other_sub" && p.key !== "distortion").length;
+  $("tiles").innerHTML = lines.length ? `
+    <div class="tile"><div class="k">Percent consonants correct</div><div class="v">${S.pcc.toFixed(1)}%</div><div class="sev">${S.severity}</div></div>
+    <div class="tile"><div class="k">Consonants correct</div><div class="v">${S.correct} / ${S.consonants}</div><div class="s">target consonants</div></div>
+    <div class="tile"><div class="k">Words analyzed</div><div class="v">${S.words.length}</div><div class="s">${S.words.filter(w => !w.found.length && w.rows.every(r => r.status === "ok")).length} fully correct</div></div>
+    <div class="tile"><div class="k">Processes found</div><div class="v">${nProc}</div><div class="s">named patterns</div></div>`
+    : `<div class="tile" style="grid-column:1/-1"><div class="k">No sample yet</div><div class="s">Paste words in the box, or load the example child.</div></div>`;
+
+  $("procs").innerHTML = S.procs.map(p => `
+    <tr class="proc${activeProc === p.key ? " active" : ""}" data-k="${p.key}" tabindex="0">
+      <td><div>${esc(p.name)}</div><div class="desc">${esc(p.desc)}</div></td>
+      <td class="num">${p.n} of ${p.of}</td>
+      <td><div style="display:flex;gap:8px;align-items:center"><div class="bar" style="flex:1"><i style="width:${Math.min(100, p.pct).toFixed(0)}%"></i></div><span class="num">${p.pct.toFixed(0)}%</span></div></td>
+    </tr>`).join("") || `<tr><td colspan="3" class="desc">No processes found.</td></tr>`;
+
+  $("inv-yes").innerHTML = S.produced.map(s => `<span class="ph">${esc(s)}</span>`).join("") || `<span class="desc">None</span>`;
+  $("inv-no").innerHTML = S.missing.map(s => `<span class="ph miss">${esc(s)}</span>`).join("") || `<span class="desc">None. Every attempted consonant appears somewhere.</span>`;
+
+  const sel = activeProc ? new Set((S.procs.find(p => p.key === activeProc) || { words: [] }).words) : null;
+  $("filter").hidden = !activeProc;
+  if (activeProc) $("filter").innerHTML = `Showing words with <strong>${esc(PNAME[activeProc])}</strong> <button type="button" id="b-unfilter">Show all</button>`;
+
+  $("words").innerHTML = S.words.map((w, i) => {
+    const segs = w.rows.map(r => {
+      const top = r.t ? r.t.ipa : "–", bot = r.p ? r.p.ipa : "–";
+      return `<div class="seg ${r.status}" title="${esc(r.chips.join("; "))}"><span>${esc(top)}</span><span>${esc(bot)}</span></div>`;
+    }).join("");
+    const notes = w.rows.filter(r => r.status === "sub" || (r.status === "del" && r.procs.length)).map(r => {
+      const tags = r.procs.map(k => `<span class="tag">${esc(PNAME[k])}</span>`).join("");
+      if (r.status === "del") return `<div class="change"><span class="from">${esc(r.t.ipa)}</span> omitted ${tags}</div>`;
+      return `<div class="change"><span class="from">${esc(r.t.ipa)} → ${esc(r.p.ipa)}</span> <span class="feat">${esc(r.chips.join(" · "))}</span> ${tags}</div>`;
+    });
+    if (w.found.includes("weak_syllable_deletion")) notes.push(`<div class="change">${w.wsdEstimated ? "syllable omitted (estimated: no stress marked)" : "unstressed syllable omitted"} <span class="tag">Weak syllable deletion</span></div>`);
+    const allOk = !w.found.length && w.rows.every(r => r.status === "ok");
+    const cls = sel ? (sel.has(i) ? " hit" : " dim") : "";
+    return `<div class="word${cls}">
+      <div><div class="gloss">${esc(w.gloss || "—")}</div><div class="pair">${esc(w.tIPA)} → ${esc(w.pIPA)}</div>${allOk ? `<div class="ok-word">Correct</div>` : ""}${w.unknown.length ? `<div class="warn">Unrecognized: ${esc(w.unknown.join(" "))}</div>` : ""}</div>
+      <div><div class="segs">${segs}</div>${notes.join("")}</div>
+    </div>`;
+  }).join("");
+  const nw = $("n-words"); if (nw) nw.textContent = lines.length ? `· ${lines.length} words` : "";
+  updateReport();
+}
+
+$("procs").addEventListener("click", e => { const r = e.target.closest("tr.proc"); if (!r) return; activeProc = activeProc === r.dataset.k ? null : r.dataset.k; render(); });
+$("procs").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { const r = e.target.closest("tr.proc"); if (r) { e.preventDefault(); activeProc = activeProc === r.dataset.k ? null : r.dataset.k; render(); } } });
+$("filter").addEventListener("click", e => { if (e.target.id === "b-unfilter") { activeProc = null; render(); } });
+
+let t0;
+ta.addEventListener("input", () => { clearTimeout(t0); t0 = setTimeout(() => { activeProc = null; render(); }, 200); });
+let currentEx = "moderate";
+function exampleCase(key = "moderate") {
+  const E = EXAMPLES[key], d = new Date();
+  d.setMonth(d.getMonth() - E.months); d.setDate(d.getDate() - 10);
+  $("c-name").value = E.name; $("c-dob").value = new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  $("c-date").value = isoToday(); $("c-type").value = E.type; $("c-ref").value = E.ref;
+}
+function loadExample(key) {
+  currentEx = key;
+  setInput("exp", "", ""); setInput("child", "", ""); $("match").hidden = true;
+  reportEdited = false; $("edited").hidden = true;
+  ta.value = EXAMPLES[key].words; exampleCase(key); activeProc = null; render();
+}
+$("ex-pick").addEventListener("change", e => { if (e.target.value) loadExample(e.target.value); e.target.value = ""; });
+$("b-clear").addEventListener("click", () => { ta.value = ""; setInput("exp", "", ""); setInput("child", "", ""); $("match").hidden = true; activeProc = null; render(); ta.focus(); });
+
+// ---- clinical report -----------------------------------------------------------------
+// Approximate ages of elimination in typical development: Bowen (2011), after Grunwell (1987). Months.
+const NORM = { prevocalic_voicing: 36, final_devoicing: 36, fcd: 39, velar_fronting: 42, palatal_fronting: 42,
+               assimilation: 45, weak_syllable_deletion: 48, cluster_reduction: 48, gliding: 60 };
+const STOP_NORM = { "f": 36, "s": 36, "v": 42, "z": 42, "ʃ": 54, "ʒ": 54, "tʃ": 54, "dʒ": 54, "θ": 60, "ð": 60 };
+const ATYPICAL = new Set(["backing", "glottal_replacement", "initial_deletion"]);
+const PHONETIC = new Set(["lateral_lisp", "interdental_lisp", "distortion"]);
+const ym = m => `${Math.floor(m / 12)};${m % 12}`;
+const isoToday = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const fmtDate = s => s ? new Date(s + "T00:00").toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "";
+function ageMonths(dob, at) {
+  if (!dob) return null;
+  const a = new Date(dob + "T00:00"), b = new Date((at || isoToday()) + "T00:00");
+  if (isNaN(a) || isNaN(b) || b < a) return null;
+  let m = (b.getFullYear() - a.getFullYear()) * 12 + b.getMonth() - a.getMonth();
+  if (b.getDate() < a.getDate()) m--;
+  return m;
+}
+const ipa = s => `<span class="ipa">${esc(s)}</span>`;
+const fill = s => `<span class="fill">[${esc(s)}]</span>`;
+const list = a => a.length <= 1 ? a.join("") : a.slice(0, -1).join(", ") + (a.length > 2 ? "," : "") + " and " + a[a.length - 1];
+const pct = x => `${Math.round(x)}%`;
+
+// typical age and status for one process
+function norm(S, p, age) {
+  const NS = activeNorms();
+  if (!NS) return { label: "not compared", past: null };
+  const NORM = NS.proc, STOP_NORM = NS.stop;
+  if (p.key === "stopping") {
+    const snd = new Map();
+    for (const wi of p.words) for (const r of S.words[wi].rows)
+      if (r.t && r.procs.includes("stopping") && STOP_NORM[r.t.ipa] != null) snd.set(r.t.ipa, STOP_NORM[r.t.ipa]);
+    if (!snd.size) return { label: "—", past: null };
+    const parts = [...snd].sort((a, b) => a[1] - b[1]).map(([s, m]) => `/${s}/ ${ym(m)}`);
+    const late = [...snd].filter(([, m]) => age != null && age >= m).map(([s]) => `/${s}/`);
+    return { label: parts.join(", "), past: age == null ? null : late.length > 0, which: late };
+  }
+  const m = NORM[p.key];
+  if (m == null) return { label: "—", past: null };
+  return { label: ym(m), past: age == null ? null : age >= m };
+}
+
+function wordChanges(w) {
+  const out = [], ns = s => String(s).replace(/[ˈˌ]/g, "");
+  for (const r of w.rows) {
+    const names = r.procs.filter(k => k !== "other_sub").map(k => PNAME[k].toLowerCase());
+    if (r.status === "sub") out.push(`${ns(r.t.ipa)} → ${ns(r.p.ipa)}${names.length ? " (" + names.join(", ") + ")" : ""}`);
+    else if (r.status === "del" && r.t) out.push(`${ns(r.t.ipa)} omitted${names.length ? " (" + names.join(", ") + ")" : ""}`);
+    else if (r.status === "ins" && r.p) out.push(`${ns(r.p.ipa)} added`);
+  }
+  if (w.found.includes("weak_syllable_deletion")) out.push("weak syllable deleted");
+  return out;
+}
+
+function caseInfo() {
+  const v = id => $(id).value.trim();
+  return { name: v("c-name"), dob: $("c-dob").value, date: $("c-date").value || isoToday(), exam: v("c-exam"), cred: v("c-cred"), type: $("c-type").value, ref: v("c-ref") };
+}
+
+// case-detail fields are tagged so they keep updating after the clinician edits the report
+function fieldHTML(I) {
+  const age = ageMonths(I.dob, I.date);
+  return {
+    name: I.name ? esc(I.name) : fill("Client name"),
+    who: esc(I.name || "The child"),
+    date: esc(fmtDate(I.date)),
+    dob: I.dob ? esc(fmtDate(I.dob)) : fill("Date of birth"),
+    age: age != null ? `${ym(age)} (years;months)` : fill("Age"),
+    examcred: I.exam ? esc(I.exam) + (I.cred ? ", " + esc(I.cred) : "") : fill("Examiner, credentials"),
+    sig: (I.exam ? esc(I.exam) : fill("Examiner")) + (I.cred ? ", " + esc(I.cred) : ""),
+    ref: I.ref ? esc(I.ref) : fill("Reason for referral and background information"),
+  };
+}
+const F = (H, k) => `<span data-f="${k}">${H[k]}</span>`;
+function patchFields() {
+  const H = fieldHTML(caseInfo());
+  $("report").querySelectorAll("[data-f]").forEach(el => { const v = H[el.dataset.f]; if (v != null && el.innerHTML !== v) el.innerHTML = v; });
+}
+
+function buildReport(S, I) {
+  const H = fieldHTML(I);
+  const age = ageMonths(I.dob, I.date);
+  const who = I.name || "The child", whoL = I.name || "the child";
+  const N = S.words.length;
+  const okWords = S.words.filter(w => !w.found.length && w.rows.every(r => r.status === "ok")).length;
+  const named = S.procs.filter(p => !PHONETIC.has(p.key) && p.key !== "other_sub");
+  const rows = named.map(p => ({ p, n: norm(S, p, age) }));
+  const active = rows.filter(x => x.p.pct >= 40);
+  const past = rows.filter(x => x.n.past);
+  const atyp = named.filter(p => ATYPICAL.has(p.key));
+  const phon = S.procs.filter(p => PHONETIC.has(p.key));
+  const other = S.procs.find(p => p.key === "other_sub");
+  const ex = p => p.words.slice(0, 2).map(i => { const w = S.words[i]; return `${esc(w.gloss || "")} ${ipa("/" + w.tIPA + "/")} → ${ipa("[" + w.pIPA + "]")}`; }).join("; ");
+  const h = [];
+
+  h.push(`<h1>Speech Sound Evaluation</h1><p class="rsub">Phonological analysis</p>`);
+  h.push(`<table class="id"><tbody>
+    <tr><td class="k">Name</td><td>${F(H, "name")}</td><td class="k">Date of evaluation</td><td>${F(H, "date")}</td></tr>
+    <tr><td class="k">Date of birth</td><td>${F(H, "dob")}</td><td class="k">Age at evaluation</td><td>${F(H, "age")}</td></tr>
+    <tr><td class="k">Examiner</td><td colspan="3">${F(H, "examcred")}</td></tr>
+  </tbody></table>`);
+
+  h.push(`<h2>Reason for referral</h2><p>${F(H, "ref")}</p>`);
+
+  h.push(`<h2>Assessment procedures</h2><p>A ${esc(I.type)} sample of ${N} word${N === 1 ? "" : "s"} was transcribed in broad IPA and analyzed with an automated phonological analysis. Each production was aligned with its adult target sound by sound, and every substitution is described by the features that changed (place, manner and voicing). Percent Consonants Correct (PCC) was calculated over all target consonants (Shriberg &amp; Kwiatkowski, 1982); aspiration and unreleased stops were treated as normal English variants, not errors. Each phonological process is reported as occurrences out of opportunities, the number of targets where the process could have applied. ${(() => { const NS = activeNorms(); return NS ? `Typical ages of elimination are from ${esc(NS.name)}; a dash means no age is given for the pattern.` : "Patterns were not compared with age norms."; })()}</p>${S.unreadWords ? `<p>${S.unreadWords} of ${N} productions contain narrow-transcription marks this analysis does not interpret (${ipa(S.unread.slice(0, 10).join(" "))}${S.unread.length > 10 ? " …" : ""}). Those sounds were scored on their base symbol, so a distortion shown only by one of these marks is counted as correct.</p>` : ""}`);
+
+  h.push(`<h2>Results</h2><h3>Consonant accuracy</h3><p>${F(H, "who")} produced ${S.correct} of ${S.consonants} target consonants correctly, a PCC of ${S.pcc.toFixed(1)}%. This falls in the <strong>${esc(S.severity)}</strong> range (Shriberg &amp; Kwiatkowski, 1982: mild 85% or above, mild–moderate 65–84%, moderate–severe 50–64%, severe below 50%). ${okWords} of ${N} words ${okWords === 1 ? "was" : "were"} produced fully correctly.</p>`);
+
+  h.push(`<h3>Phonological processes</h3>`);
+  if (rows.length) {
+    h.push(`<table><thead><tr><th>Process</th><th>Occurrences</th><th>Rate</th><th>Typical age of elimination</th><th>Status at ${age != null ? ym(age) : "this age"}</th><th>Examples</th></tr></thead><tbody>${rows.map(({ p, n }) => {
+      const status = ATYPICAL.has(p.key) ? `<span class="flag">Atypical pattern</span>` : n.past == null ? (age == null && activeNorms() ? "Enter date of birth" : "—") : n.past ? `<span class="flag">Past expected age${n.which && n.which.length ? " for " + esc(n.which.join(" ")) : ""}</span>` : "Within expected age";
+      return `<tr><td>${esc(p.name)}</td><td>${p.n} of ${p.of}</td><td>${pct(p.pct)}</td><td>${esc(n.label)}</td><td>${status}</td><td>${ex(p)}</td></tr>`;
+    }).join("")}</tbody></table>`);
+    const parts = [];
+    if (active.length) parts.push(`The following patterns occurred in 40% or more of opportunities, a common threshold for an active pattern: ${list(active.map(x => `${esc(x.p.name.toLowerCase())} (${pct(x.p.pct)})`))}.`);
+    const low = rows.filter(x => x.p.pct < 40);
+    if (low.length) parts.push(`Less frequent patterns were ${list(low.map(x => `${esc(x.p.name.toLowerCase())} (${pct(x.p.pct)})`))}.`);
+    if (other) parts.push(`${other.n} further substitution${other.n === 1 ? " did" : "s did"} not match a named process; see the word-by-word transcription.`);
+    h.push(`<p>${parts.join(" ")}</p>`);
+  } else h.push(`<p>No phonological processes were identified in this sample.</p>`);
+
+  if (S.topSubs && S.topSubs.length) {
+    const lab = s => s.p === "omitted" ? "omitted" : s.p === "vowel" ? "a vowel" : ipa("[" + s.p + "]");
+    h.push(`<h3>Substitution patterns</h3><table><thead><tr><th>Target</th><th>Produced as</th><th>Position</th><th>Count</th><th>Examples</th></tr></thead><tbody>${S.topSubs.map(s =>
+      `<tr><td>${ipa("/" + s.t + "/")}</td><td>${lab(s)}</td><td>${s.pos === "final" ? "word-final" : "initial or medial"}</td><td>${s.n}</td><td>${s.words.map(i => esc(S.words[i].gloss || "")).filter(Boolean).join(", ")}</td></tr>`).join("")}</tbody></table>`);
+    if (S.preferred.length) h.push(`<p>${list(S.preferred.map(q => `${ipa("[" + q.p + "]")} replaced ${q.targets.length} different target sounds (${ipa(q.targets.map(x => "/" + x + "/").join(" "))}) in ${q.n} productions`))}, which suggests ${S.preferred.length === 1 ? "a preferred or default sound" : "preferred or default sounds"}. A pattern like this may not appear under any single named process above.</p>`);
+  }
+  if (phon.length) h.push(`<h3>Articulation</h3><p>Phonetic (articulation) errors were also observed: ${list(phon.map(p => `${esc(p.name.toLowerCase())}, ${p.n} of ${p.of} opportunities (${ex(p)})`))}.</p>`);
+
+  h.push(`<h3>Consonant inventory</h3><p>Consonants produced anywhere in the sample: ${S.produced.length ? ipa(S.produced.join(" ")) : "none"}.</p><p>${S.missing.length ? `Attempted but not produced in any position: ${ipa(S.missing.join(" "))}.` : "Every attempted consonant was produced correctly at least once."}</p>`);
+
+  const imp = [`Overall consonant accuracy is in the ${esc(S.severity)} range.`];
+  if (!activeNorms()) imp.push(`Patterns were not compared with age norms and should be interpreted against expectations appropriate to the child's age and language background.`);
+  else if (age == null) imp.push(`${fill("Enter date of birth to compare the observed patterns with typical ages of elimination.")}`);
+  else if (past.length) {
+    const desc = x => `${esc(x.p.name.toLowerCase())} (${pct(x.p.pct)}${x.n.which && x.n.which.length ? " for " + esc(x.n.which.join(" ")) : ""})`;
+    const hi = past.filter(x => x.p.pct >= 40), lo = past.filter(x => x.p.pct < 40);
+    if (hi.length) imp.push(`For a child aged ${ym(age)}, ${hi.length === 1 ? "one active pattern persists" : `${hi.length} active patterns persist`} beyond the age by which most typically developing children have eliminated ${hi.length === 1 ? "it" : "them"}: ${list(hi.map(desc))}.`);
+    if (lo.length) imp.push(hi.length ? `At lower rates, ${list(lo.map(desc))} also occurred past ${lo.length === 1 ? "its" : "their"} typical age of elimination.`
+      : `For a child aged ${ym(age)}, ${list(lo.map(desc))} occurred past ${lo.length === 1 ? "its" : "their"} typical age of elimination, though below 40% of opportunities.`);
+  }
+  else if (rows.length) imp.push(`All observed patterns are within the range expected for a child aged ${ym(age)}.`);
+  if (atyp.length) imp.push(`The sample also shows ${list(atyp.map(p => esc(p.name.toLowerCase())))}, which ${atyp.length === 1 ? "is" : "are"} uncommon in typical development and may warrant further investigation.`);
+  if (S.preferred && S.preferred.length) imp.push(`${list(S.preferred.map(q => ipa("[" + q.p + "]")))} ${S.preferred.length === 1 ? "is" : "are"} used in place of many different target sounds (see Substitution patterns).`);
+  if (phon.length) imp.push(rows.length ? `Phonetic errors (${list(phon.map(p => esc(p.name.toLowerCase())))}) were noted in addition to the phonological patterns.`
+    : `No phonological processes were identified; the errors are phonetic (articulation): ${list(phon.map(p => esc(p.name.toLowerCase())))}.`);
+  imp.push(`These results come from a single speech sample and should be interpreted together with stimulability, intelligibility, oral mechanism examination, hearing screening, language testing and case history.`);
+  h.push(`<h2>Summary and clinical impressions</h2><p>${imp.join(" ")}</p><p>${fill("Diagnostic statement, to be completed by the evaluating clinician")}</p>`);
+
+  const rec = [];
+  if (S.missing.length) rec.push(`Stimulability testing for ${ipa(S.missing.map(s => "/" + s + "/").join(" "))}.`);
+  const targets = (age != null && activeNorms() ? active.filter(x => x.n.past || ATYPICAL.has(x.p.key)) : active).map(x => esc(x.p.name.toLowerCase()));
+  if (targets.length) rec.push(`Consider intervention targeting ${list(targets)}.`);
+  else {
+    // nothing is both frequent and past its expected age: point at what is most prominent instead
+    const pre = (S.preferred || [])[0];
+    const freq = rows.filter(x => x.p.n >= 3 && !ATYPICAL.has(x.p.key)).sort((a, b) => b.p.pct - a.p.pct).slice(0, 3);
+    const bits = [];
+    if (pre) bits.push(`the use of ${ipa("[" + pre.p + "]")} in place of many different target sounds`);
+    if (freq.length) bits.push(`the most frequent patterns, ${list(freq.map(x => `${esc(x.p.name.toLowerCase())} (${pct(x.p.pct)})`))}`);
+    if (bits.length && (S.pcc < 85 || pre)) rec.push(`No single pattern is both frequent and past its expected age. Consider prioritizing ${list(bits)}${age != null && activeNorms() ? ", weighed against what is expected at " + ym(age) : ""}.`);
+  }
+  const lisps = phon.filter(p => p.key !== "distortion" && p.n >= 2);
+  if (lisps.length) rec.push(`Consider articulation treatment for the ${list(lisps.map(p => esc(p.name.toLowerCase())))}.`);
+  if (atyp.length) rec.push(`Further assessment of the atypical pattern${atyp.length === 1 ? "" : "s"} noted above.`);
+  rec.push(`${fill("Services recommended (frequency, duration, setting), or monitoring and re-screening")}.`);
+  rec.push(`Re-evaluation in ${fill("interval")} to measure progress.`);
+  h.push(`<h2>Recommendations</h2><ul>${rec.map(r => `<li>${r}</li>`).join("")}</ul>`);
+
+  h.push(`<div class="sig"><p>${F(H, "sig")}</p><p>${F(H, "date")}</p></div>`);
+
+  h.push(`<h2>Appendix: word-by-word transcription</h2><table><thead><tr><th>Word</th><th>Target</th><th>Produced</th><th>Changes</th></tr></thead><tbody>${S.words.map(w => {
+    const c = wordChanges(w);
+    return `<tr><td>${esc(w.gloss || "—")}</td><td>${ipa("/" + w.tIPA + "/")}</td><td>${ipa("[" + w.pIPA + "]")}</td><td>${c.length ? c.map(x => `<span class="ipa">${esc(x)}</span>`).join("; ") : "correct"}</td></tr>`;
+  }).join("")}</tbody></table>`);
+
+  h.push(`<p class="fine">References: ${(activeNorms() || { refs: "" }).refs ? esc(activeNorms().refs) + " " : ""}Shriberg, L. D., &amp; Kwiatkowski, J. (1982). Phonological disorders III: A procedure for assessing severity of involvement. Journal of Speech and Hearing Disorders, 47, 256–270. Automated analysis reviewed by the evaluating clinician; it supports, and does not replace, clinical judgement.</p>`);
+  return h.join("\n");
+}
+
+let reportEdited = false;
+function updateReport() {
+  if (reportEdited || !last) return;
+  $("report").innerHTML = last.words.length ? buildReport(last, caseInfo()) : `<p>${fill("Paste a sample to generate the report")}</p>`;
+}
+$("report").addEventListener("input", () => { reportEdited = true; $("edited").hidden = false; });
+$("b-regen").addEventListener("click", () => { reportEdited = false; $("edited").hidden = true; updateReport(); });
+for (const id of ["c-name", "c-dob", "c-date", "c-exam", "c-cred", "c-type", "c-ref"]) $(id).addEventListener("input", () => reportEdited ? patchFields() : updateReport());
+$("c-date").value = isoToday();
+
+const rmsg = (t, ms = 4000) => { $("r-msg").textContent = t; clearTimeout(rmsg.t); rmsg.t = setTimeout(() => $("r-msg").textContent = "", ms); };
+const fileBase = () => { const I = caseInfo(); return `${(I.name || "speech").replace(/[^\w-]+/g, "_")}_phonology_report_${I.date}`; };
+
+const DOC_CSS = `body{font:11pt Calibri,Arial,sans-serif;color:#1a1a1a}h1{font-size:16pt;text-align:center;margin:0}.rsub{text-align:center;color:#555;font-size:10pt}
+h2{font-size:11pt;text-transform:uppercase;border-bottom:1.5pt solid #1a1a1a;margin:14pt 0 6pt}h3{font-size:11pt;margin:10pt 0 3pt}
+table{border-collapse:collapse;width:100%;font-size:10pt}th,td{border:1px solid #b9bfbc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#eef1ef}
+table.id td{border:none}td.k{color:#555}.ipa{font-family:"Charis SIL","Doulos SIL","Gentium Book Plus","Times New Roman",serif}
+.fill{background:#fff3b8}.flag{font-weight:bold;color:#8a2a12}.sig{margin-top:24pt}.sig p{margin:0}.fine{font-size:8.5pt;color:#666}`;
+
+$("b-doc").addEventListener("click", () => {
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Speech Sound Evaluation</title><style>@page{size:8.5in 11in;margin:1in}${DOC_CSS}</style></head><body>${$("report").innerHTML}</body></html>`;
+  try {
+    const url = URL.createObjectURL(new Blob(["﻿", html], { type: "application/msword" }));
+    const a = Object.assign(document.createElement("a"), { href: url, download: fileBase() + ".doc" });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    rmsg("Word file downloaded. It opens in Word, Google Docs and Pages.");
+  } catch (e) { rmsg("Download blocked here. Use Copy text and paste into your report template.", 6000); }
+});
+$("b-print").addEventListener("click", () => {
+  rmsg("In the print dialog, choose Save as PDF to make a PDF. If no dialog opens, download the Word file and export it from there.", 8000);
+  try { window.print(); } catch (e) {}
+});
+$("b-copy").addEventListener("click", () => {
+  const txt = $("report").innerText;
+  try { navigator.clipboard.writeText(txt).then(() => rmsg("Report text copied"), () => rmsg("Copy blocked here. Select the report and copy it manually.", 6000)); }
+  catch (e) { rmsg("Copy blocked here. Select the report and copy it manually.", 6000); }
+});
+
+// ---- inputs: expected forms + child transcription -------------------------------------
+const INPUT = { exp: { text: "", name: "" }, child: { text: "", name: "" } };
+const unwrap = s => s.trim().replace(/^[\/\[]+/, "").replace(/[\/\]]+$/, "").trim();
+function csvRow(line) {
+  const out = []; let cur = "", q = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (q) { if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; } else if (c === '"') q = false; else cur += c; }
+    else if (c === '"') q = true; else if (c === ",") { out.push(cur); cur = ""; } else cur += c;
+  }
+  out.push(cur); return out;
+}
+function splitRow(l) {
+  if (l.includes("\t")) return l.split("\t");
+  if (l.includes("|")) return l.split("|");
+  if (l.includes(",")) return csvRow(l);
+  if (/\S\s{2,}\S/.test(l)) return l.split(/\s{2,}/);
+  return [l];
+}
+const HEADER = /^(word|words|gloss|item|target|targets|expected|adult|ipa|produced|production|child|transcription|response|#|no\.?|number)$/i;
+// returns items {gloss, ipa} or {gloss, target, produced}
+function readList(text) {
+  const lines = text.replace(/^﻿/, "").split(/\r?\n/).map(l => l.trim().replace(/^\d+[.)]\s+/, "")).filter(l => l && !l.startsWith("#"));
+  let rows = lines.map(l => splitRow(l).map(x => x.trim()).filter(x => x !== ""));
+  rows = rows.filter(r => r.length);
+  if (rows.length && rows[0].every(x => HEADER.test(x))) rows.shift();
+  // drop a leading item-number column
+  if (rows.length && rows.every(r => r.length >= 2 && /^\d+\.?$/.test(r[0]))) rows = rows.map(r => r.slice(1));
+  // single-column lines of exactly two space-separated tokens throughout: word + IPA
+  const pairs = rows.length > 1 && rows.every(r => r.length === 1 && r[0].split(/\s+/).length === 2);
+  const items = [];
+  for (const r of rows) {
+    if (r.length >= 3) items.push({ gloss: r[0], target: unwrap(r[1]), produced: unwrap(r[2]) });
+    else if (r.length === 2) items.push({ gloss: r[0], ipa: unwrap(r[1]) });
+    else if (pairs) { const [g, p] = r[0].split(/\s+/); items.push({ gloss: g, ipa: unwrap(p) }); }
+    else for (const tok of r[0].split(/\s+/)) if (unwrap(tok)) items.push({ gloss: "", ipa: unwrap(tok) });
+  }
+  return items;
+}
+// spelled English rather than IPA?
+function looksSpelled(items) {
+  const xs = items.map(x => x.ipa || x.target || "").filter(Boolean);
+  if (!xs.length) return false;
+  const ascii = xs.filter(s => /^[a-z'-]+$/i.test(s));
+  const spelled = ascii.filter(s => /[cqx]|sh|ch|th|ee|oo|ph|ck|[A-Z]/.test(s));
+  return ascii.length / xs.length > 0.6 && spelled.length / xs.length > 0.25;
+}
+const keyOf = s => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+
+function mergeInputs() {
+  const E = readList(INPUT.exp.text), C = readList(INPUT.child.text);
+  const notes = [], warn = [];
+  let out = [];
+  // a three-column file already has everything
+  const tri = [...E, ...C].filter(x => x.target != null);
+  if (tri.length && (!E.length || !C.length || E.every(x => x.target != null) || C.every(x => x.target != null))) {
+    out = tri.map(x => ({ gloss: x.gloss, target: x.target, produced: x.produced }));
+    notes.push(`${out.length} words read from a combined word, target, produced file.`);
+    return { out, notes, warn };
+  }
+  if (looksSpelled(E)) { warn.push("The expected file looks like spelled words, not IPA. It needs a target transcription for each word, for example cat → kæt, or cat and kæt in two columns."); return { out: [], notes, warn, partial: true }; }
+  if (!E.length || !C.length) {
+    if (E.length) notes.push(`${E.length} expected forms loaded. Add the child's transcription.`);
+    if (C.length) notes.push(`${C.length} productions loaded. Add the expected forms.`);
+    return { out: [], notes, warn, partial: true };
+  }
+  const byWord = E.every(x => x.gloss) && C.every(x => x.gloss);
+  if (byWord) {
+    const pool = new Map();
+    for (const x of C) { const k = keyOf(x.gloss); (pool.get(k) || pool.set(k, []).get(k)).push(x); }
+    const missing = [];
+    for (const e of E) {
+      const q = pool.get(keyOf(e.gloss));
+      if (q && q.length) out.push({ gloss: e.gloss, target: e.ipa, produced: q.shift().ipa });
+      else missing.push(e.gloss);
+    }
+    const extra = [...pool.values()].flat().map(x => x.gloss);
+    notes.push(`${out.length} words matched by word.`);
+    if (missing.length) warn.push(`No production for ${missing.length} expected word${missing.length === 1 ? "" : "s"}: ${missing.slice(0, 12).join(", ")}${missing.length > 12 ? "…" : ""}. Left out of the analysis.`);
+    if (extra.length) warn.push(`${extra.length} production${extra.length === 1 ? " has" : "s have"} no expected form: ${extra.slice(0, 12).join(", ")}${extra.length > 12 ? "…" : ""}. Check the spelling of the word, or add it to the expected file.`);
+  } else {
+    const n = Math.min(E.length, C.length);
+    for (let i = 0; i < n; i++) out.push({ gloss: E[i].gloss || C[i].gloss || "", target: E[i].ipa, produced: C[i].ipa });
+    notes.push(`${n} words matched by order${E.some(x => x.gloss) || C.some(x => x.gloss) ? " (one file has no words to match on)" : ""}.`);
+    if (E.length !== C.length) warn.push(`The files have different lengths: ${E.length} expected, ${C.length} produced. Matching by order is only safe when both list the same words in the same order. Check the combined sample, or add the word to each line of both files.`);
+  }
+  return { out, notes, warn };
+}
+
+function applyInputs() {
+  const { out, notes, warn, partial } = mergeInputs();
+  const m = $("match");
+  m.hidden = !notes.length && !warn.length;
+  m.className = "match" + (warn.length ? " warn" : "");
+  m.innerHTML = esc(notes.join(" ")) + (warn.length ? `<ul>${warn.map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : "");
+  if (out.length) { ta.value = out.map(x => [x.gloss || "", x.target, x.produced].join("\t")).join("\n"); activeProc = null; render(); }
+  else if (INPUT.exp.text && INPUT.child.text) { ta.value = ""; activeProc = null; render(); }
+  else if (!partial && !INPUT.exp.text && !INPUT.child.text) m.hidden = true;
+}
+function setInput(which, text, name) {
+  INPUT[which] = { text, name };
+  const n = readList(text).length, s = $(which === "exp" ? "s-exp" : "s-child");
+  s.className = "up-s " + (n ? "ok" : "bad");
+  s.textContent = text ? `${name ? name + ": " : ""}${n} line${n === 1 ? "" : "s"} read` : "or drop here";
+  if (!text) s.className = "up-s";
+  applyInputs();
+}
+async function readFile(file, which) {
+  if (/\.(xlsx|xls|docx?|pdf)$/i.test(file.name)) {
+    const s = $(which === "exp" ? "s-exp" : "s-child");
+    s.className = "up-s bad"; s.textContent = `${file.name}: save it as .csv or .txt first (in Excel: File, Save As, CSV UTF-8).`; return;
+  }
+  const text = await file.text();
+  setInput(which, text, file.name);
+}
+let pickFor = "exp";
+document.querySelectorAll("[data-pick]").forEach(b => b.addEventListener("click", () => { pickFor = b.dataset.pick; $("f-pick").value = ""; $("f-pick").click(); }));
+$("f-pick").addEventListener("change", e => { const f = e.target.files[0]; if (f) readFile(f, pickFor); });
+for (const [box, which] of [["up-exp", "exp"], ["up-child", "child"]]) {
+  const el = $(box);
+  el.addEventListener("dragover", e => { e.preventDefault(); el.classList.add("drag"); });
+  el.addEventListener("dragleave", () => el.classList.remove("drag"));
+  el.addEventListener("drop", e => { e.preventDefault(); el.classList.remove("drag"); const f = e.dataTransfer.files[0]; if (f) readFile(f, which); });
+}
+let tp;
+
+const inmsg = t => { $("in-msg").textContent = t; setTimeout(() => $("in-msg").textContent = "", 5000); };
+$("b-exfiles").addEventListener("click", () => {
+  const rows = parse(EXAMPLES[currentEx].words);
+  const files = [[`${currentEx}_expected_forms.txt`, "word\ttarget\n" + rows.map(r => `${r.gloss}\t${r.target}`).join("\n")],
+                 [`${currentEx}_child_transcription.txt`, "word\tproduced\n" + rows.map(r => `${r.gloss}\t${r.produced}`).join("\n")]];
+  try {
+    files.forEach(([name, body], i) => setTimeout(() => {
+      const url = URL.createObjectURL(new Blob([body], { type: "text/plain;charset=utf-8" }));
+      const a = Object.assign(document.createElement("a"), { href: url, download: name });
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }, i * 400));
+    inmsg(`Downloaded the ${EXAMPLES[currentEx].label.toLowerCase()} example files`);
+  } catch (e) { inmsg("Download blocked here."); }
+});
+
+// ---- age norms ---------------------------------------------------------------------
+const BOWEN = { name: "Bowen (2011), after Grunwell (1987)", proc: NORM, stop: STOP_NORM,
+  refs: "Bowen, C. (2011). Elimination of phonological processes in typical development. Grunwell, P. (1987). Clinical phonology (2nd ed.)." };
+const NORM_PROCS = PROCESSES.filter(([k]) => !PHONETIC.has(k) && k !== "other_sub" && k !== "stopping");
+const STOP_SOUNDS = ["f", "s", "v", "z", "ʃ", "ʒ", "tʃ", "dʒ", "θ", "ð"];
+const parseAge = s => { s = String(s || "").trim(); if (!s) return null; const m = s.match(/^(\d+)\s*(?:[;:.y]\s*(\d+))?/); if (!m) return null; return +m[1] * 12 + (+m[2] || 0); };
+let custom = null;
+try { custom = JSON.parse(localStorage.getItem("pa.customNorms") || "null"); } catch (e) {}
+if (!custom) custom = { name: "", proc: { ...NORM }, stop: { ...STOP_NORM } };
+function saveCustom() { try { localStorage.setItem("pa.customNorms", JSON.stringify(custom)); } catch (e) {} }
+function activeNorms() {
+  const v = $("c-norms").value;
+  if (v === "none") return null;
+  if (v === "custom") return { name: custom.name || "custom ages entered by the clinician", proc: custom.proc, stop: custom.stop, refs: custom.name ? `Ages of elimination: ${custom.name}.` : "" };
+  return BOWEN;
+}
+function drawNormEditor() {
+  const cell = (key, label, val, ipaL) => `<label><span${ipaL ? ' class="ipa-l"' : ""}>${esc(label)}</span><input data-n="${key}" value="${val != null ? ym(val) : ""}" inputmode="numeric" aria-label="Age for ${esc(label)}"></label>`;
+  $("ng-proc").innerHTML = NORM_PROCS.map(([k, n]) => cell("p:" + k, n, custom.proc[k])).join("");
+  $("ng-stop").innerHTML = STOP_SOUNDS.map(s => cell("s:" + s, "/" + s + "/", custom.stop[s], true)).join("");
+  $("n-cite").value = custom.name || "";
+}
+$("norms-ed").addEventListener("input", e => {
+  const k = e.target.dataset.n;
+  if (k) { const [t, id] = [k[0], k.slice(2)], v = parseAge(e.target.value); const tab = t === "p" ? custom.proc : custom.stop; if (v == null) delete tab[id]; else tab[id] = v; }
+  else if (e.target.id === "n-cite") custom.name = e.target.value.trim();
+  saveCustom(); updateReport();
+});
+$("c-norms").addEventListener("change", () => { $("norms-ed").hidden = $("c-norms").value !== "custom"; if (!$("norms-ed").hidden) drawNormEditor(); updateReport(); });
+$("b-nreset").addEventListener("click", () => { custom = { name: "Bowen (2011), after Grunwell (1987)", proc: { ...NORM }, stop: { ...STOP_NORM } }; saveCustom(); drawNormEditor(); updateReport(); });
+const nmsg = t => { $("n-msg").textContent = t; setTimeout(() => $("n-msg").textContent = "", 5000); };
+$("b-nexport").addEventListener("click", () => {
+  try {
+    const url = URL.createObjectURL(new Blob([JSON.stringify({ format: "phonological-norms/1", ...custom }, null, 2)], { type: "application/json" }));
+    const a = Object.assign(document.createElement("a"), { href: url, download: "age_norms.json" });
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); nmsg("Exported age_norms.json");
+  } catch (e) { nmsg("Download blocked here."); }
+});
+$("b-nimport").addEventListener("click", () => { $("f-norms").value = ""; $("f-norms").click(); });
+$("f-norms").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    const num = o => Object.fromEntries(Object.entries(o || {}).filter(([, v]) => Number.isFinite(v)));
+    custom = { name: String(j.name || ""), proc: num(j.proc), stop: num(j.stop) };
+    saveCustom(); drawNormEditor(); updateReport(); nmsg(`Imported ${f.name}`);
+  } catch (err) { nmsg("That file isn't a norms file exported from this tool."); }
+});
+
+let lastBox = ta;
+for (const id of ["sample"]) $(id).addEventListener("focus", e => lastBox = e.target);
+// IPA keyboard built from the NEFS v4 table
+(function keyboard() {
+  const C = [], V = [], M = [];
+  const order = Object.keys(NEFS_TABLE).map(Number).sort((a, b) => (a & 15) - (b & 15) || a - b);
+  for (const b of order) {
+    const s = NEFS_TABLE[b], k = classify(b);
+    if (k === "consonant" && !/[ʰ̚]/.test(s)) C.push(s);
+    else if (k === "vowel") V.push(s);
+  }
+  for (const s of ["ʰ", "ʲ", "ʷ", "ː", "̃", "̥", "̪", "̩", "ˈ", "ˌ"]) M.push(s);
+  const AFF = ["tʃ", "dʒ", "ts", "dz"];
+  const grp = (name, arr) => `<div class="kb-group">${name}</div><div class="keys">${arr.map(s => `<button type="button" class="key" data-s="${esc(s)}" aria-label="Insert ${esc(s)}">${esc(/^\p{M}/u.test(s) ? "◌" + s : s)}</button>`).join("")}</div>`;
+  $("kb").innerHTML = grp("Consonants, by manner then place", C) + grp("Affricates", AFF) + grp("Vowels", V) + grp("Diacritics and marks", M);
+  $("kb").addEventListener("click", e => {
+    const k = e.target.closest(".key"); if (!k) return;
+    const box = lastBox, s = k.dataset.s, a = box.selectionStart ?? box.value.length, z = box.selectionEnd ?? a;
+    box.value = box.value.slice(0, a) + s + box.value.slice(z);
+    box.focus(); box.selectionStart = box.selectionEnd = a + s.length;
+    box.dispatchEvent(new Event("input"));
+  });
+})();
+
+ta.value = EXAMPLE;
+exampleCase("moderate");
+render();
+</script>
+</body>
+</html>
