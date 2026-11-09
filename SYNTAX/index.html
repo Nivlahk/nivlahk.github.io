@@ -466,7 +466,7 @@ details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text
 <script>
 const DEFAULT_GRAMMAR={
   pos:[['N','Noun','#a0693a'],['D','Determiner','var(--cls-white)'],['V','Verb','#2f78f0'],['Adj','Adjective','#df12ae'],['Adv','Adverb','#e82a5b'],['P','Preposition','#f3661f'],['T','Tense','#e09f00'],['C','Complementizer','#1faa3a'],['Conj','Conjunction','#8f45f0']].map(([tag,name,color])=>({tag,name,color})),
-  rules:['CP -> (Conj) ({NP/PP/AdvP/AdjP/CP}) ({C/T}) TP','TP -> {NP/CP} (AdvP+) (T) VP','VP -> (AdvP+) {V/V_Conj} Comps (AdvP+) (PP+) (AdvP+)','NP -> (AdvP) (D) ({D/DP}) (AdjP+) (N+) {N/N_Conj} (PP+) (CP)','NP -> (AdvP) {D/DP} AdjP+ (PP+)','PP -> (AdvP) {P/P_Conj} ({NP/CP})','AdvP -> (AdvP) {Adv/Adv_Conj} (PP)','AdjP -> (AdvP) {Adj/Adj_Conj} ({PP/CP})','DP -> NP D']
+  rules:['CP -> (Conj) ({NP/PP/AdvP/AdjP/CP}) ({C/T}) TP','TP -> {NP/CP} (AdvP+) (T) VP','VP -> (AdvP+) {V/V_Conj} (AdvP) Comps (AdvP+) (PP+) (AdvP+)','NP -> (AdvP) (D) ({D/DP}) (AdjP+) (N+) {N/N_Conj} (PP+) (CP)','NP -> (AdvP) {D/DP} AdjP+ (PP+)','PP -> (AdvP) {P/P_Conj} ({NP/CP})','AdvP -> (AdvP) {Adv/Adv_Conj} (PP)','AdjP -> (AdvP) {Adj/Adj_Conj} ({PP/CP})','DP -> NP D']
 };
 const cloneG=g=>JSON.parse(JSON.stringify(g));
 let G=cloneG(DEFAULT_GRAMMAR);
@@ -507,8 +507,8 @@ const VERB_FRAMES={
  try:'t',plan:'t',decide:'ti',hope:'ti',expect:'t',start:'ti',stop:'ti',begin:'ti',finish:'ti',draw:'tid',cook:'tid',bake:'tdi',throw:'td',take:'td',make:'td',do:'t',get:'tdl',have:'tl',
  give:'dt',put:'d',place:'d',set:'dt',show:'dt',tell:'dt',send:'dt',lend:'d',offer:'dt',teach:'dti',ask:'dt',pay:'dti',hand:'d',pass:'dti',owe:'d',bring:'dt',move:'tid',add:'td',remove:'td',copy:'td',store:'td',return:'tid',wish:'dt',
  be:'l',seem:'l',become:'l',remain:'l',look:'li',feel:'ltd',let:'d',sound:'l',taste:'lt',prove:'lt'};
-const IRREG={am:'be',is:'be',are:'be',was:'be',were:'be',been:'be',being:'be',has:'have',had:'have',having:'have',did:'do',done:'do',does:'do',went:'go',gone:'go',saw:'see',seen:'see',ate:'eat',eaten:'eat',gave:'give',given:'give',took:'take',taken:'take',made:'make',said:'say',thought:'think',knew:'know',known:'know',wrote:'write',written:'write',ran:'run',came:'come',fell:'fall',fallen:'fall',found:'find',got:'get',gotten:'get',brought:'bring',bought:'buy',sold:'sell',told:'tell',taught:'teach',caught:'catch',built:'build',sent:'send',lent:'lend',left:'leave',kept:'keep',held:'hold',met:'meet',sat:'sit',stood:'stand',lay:'lie',lain:'lie',slept:'sleep',drank:'drink',drunk:'drink',swam:'swim',swum:'swim',flew:'fly',flown:'fly',drew:'draw',drawn:'draw',threw:'throw',thrown:'throw',broke:'break',broken:'break',began:'begin',begun:'begin',sang:'sing',sung:'sing',rose:'rise',risen:'rise',grew:'grow',grown:'grow',became:'become',felt:'feel',heard:'hear',paid:'pay',forgot:'forget',forgotten:'forget',showed:'show',shown:'show'};
-function lemma(t){const w=t.toLowerCase();if(IRREG[w])return IRREG[w];if(VERB_FRAMES[w])return w;
+const IRREG={"'m":'be',"'re":'be',"'s":'be',"'ve":'have',am:'be',is:'be',are:'be',was:'be',were:'be',been:'be',being:'be',has:'have',had:'have',having:'have',did:'do',done:'do',does:'do',went:'go',gone:'go',saw:'see',seen:'see',ate:'eat',eaten:'eat',gave:'give',given:'give',took:'take',taken:'take',made:'make',said:'say',thought:'think',knew:'know',known:'know',wrote:'write',written:'write',ran:'run',came:'come',fell:'fall',fallen:'fall',found:'find',got:'get',gotten:'get',brought:'bring',bought:'buy',sold:'sell',told:'tell',taught:'teach',caught:'catch',built:'build',sent:'send',lent:'lend',left:'leave',kept:'keep',held:'hold',met:'meet',sat:'sit',stood:'stand',lay:'lie',lain:'lie',slept:'sleep',drank:'drink',drunk:'drink',swam:'swim',swum:'swim',flew:'fly',flown:'fly',drew:'draw',drawn:'draw',threw:'throw',thrown:'throw',broke:'break',broken:'break',began:'begin',begun:'begin',sang:'sing',sung:'sing',rose:'rise',risen:'rise',grew:'grow',grown:'grow',became:'become',felt:'feel',heard:'hear',paid:'pay',forgot:'forget',forgotten:'forget',showed:'show',shown:'show'};
+function lemma(t){const w=t.toLowerCase().replace(/’/g,"'");if(IRREG[w])return IRREG[w];if(VERB_FRAMES[w])return w;
   const c=[];if(/ies$/.test(w))c.push(w.slice(0,-3)+'y');if(/ied$/.test(w))c.push(w.slice(0,-3)+'y');
   if(/es$/.test(w))c.push(w.slice(0,-2));if(/s$/.test(w))c.push(w.slice(0,-1));
   if(/ed$/.test(w)){c.push(w.slice(0,-2),w.slice(0,-1));if(/(.)\1ed$/.test(w))c.push(w.slice(0,-3))}
@@ -636,16 +636,16 @@ function resetGrammar(){
 const LEXICON={the:['D'],a:['D'],an:['D'],this:['D'],that:['C','D'],these:['D'],those:['D'],his:['D'],her:['D','N'],my:['D'],your:['D'],their:['D'],our:['D'],its:['D'],every:['D'],some:['D'],no:['D'],
  and:['Conj'],or:['Conj'],but:['Conj'],if:['C'],whether:['C'],
  will:['T'],would:['T'],can:['T','N','V'],could:['T'],should:['T'],must:['T'],might:['T'],may:['T'],did:['T','V'],does:['T','V'],do:['T','V'],
- to:['P','T'],in:['P'],on:['P'],at:['P'],with:['P'],from:['P'],by:['P'],for:['P'],of:['P'],under:['P'],over:['P'],near:['P'],into:['P'],after:['P'],before:['P'],about:['P'],
+ to:['P','T'],in:['P'],on:['P'],at:['P'],with:['P'],from:['P'],by:['P'],for:['P','C'],of:['P'],under:['P'],over:['P'],near:['P'],into:['P'],after:['P'],before:['P'],about:['P'],
  i:['N'],you:['N'],he:['N'],she:['N'],it:['N'],we:['N'],they:['N'],me:['N'],him:['N'],us:['N'],them:['N'],
  saw:['V','N'],man:['N','V'],old:['Adj','N'],cut:['V','N','Adj'],iron:['N','V','Adj'],fish:['N','V'],duck:['N','V'],watch:['N','V'],watched:['V'],light:['N','V','Adj'],home:['N','Adv'],fast:['Adj','Adv'],well:['Adv','Adj','N'],
  dog:['N','V'],cat:['N'],girl:['N'],boy:['N'],telescope:['N'],park:['N','V'],book:['N','V'],ran:['V'],run:['V','N'],quickly:['Adv'],slowly:['Adv'],very:['Adv'],small:['Adj'],big:['Adj'],happy:['Adj'],red:['Adj','N'],
  said:['V'],thinks:['V'],know:['V'],chased:['V'],barked:['V'],mouse:['N'],boats:['N','V'],friend:['N'],letter:['N'],wrote:['V'],gave:['V'],owner:['N'],binoculars:['N']};
 /* contextual tagging via compromise; small curated list of genuinely ambiguous words adds extra classes */
-const ALTS={saw:['V','N'],old:['Adj','N'],that:['C','D'],home:['N','Adv'],cut:['V','N','Adj'],iron:['N','V','Adj'],fish:['N','V'],duck:['N','V'],watch:['V','N'],light:['N','V','Adj'],fast:['Adj','Adv'],well:['Adv','Adj'],can:['T','N'],run:['V','N'],down:['P','Adv'],up:['P','Adv'],out:['P','Adv'],like:['P','V'],before:['P'],after:['P'],since:['P'],her:['D','N']};
-const FORCE={forward:['Adv'],forwards:['Adv'],backward:['Adv'],backwards:['Adv'],ahead:['Adv'],away:['Adv'],onward:['Adv'],upward:['Adv'],downward:['Adv'],homeward:['Adv']};
+const ALTS={do:['V','T'],does:['V','T'],did:['V','T'],saw:['V','N'],old:['Adj','N'],that:['C','D'],home:['N','Adv'],cut:['V','N','Adj'],iron:['N','V','Adj'],fish:['N','V'],duck:['N','V'],watch:['V','N'],light:['N','V','Adj'],fast:['Adj','Adv'],well:['Adv','Adj'],can:['T','N'],run:['V','N'],down:['P','Adv'],up:['P','Adv'],out:['P','Adv'],like:['P','V'],before:['P'],after:['P'],since:['P'],her:['D','N']};
+const FORCE={who:['N'],whom:['N'],whose:['D'],what:['N','D'],which:['D','N'],forward:['Adv'],forwards:['Adv'],backward:['Adv'],backwards:['Adv'],ahead:['Adv'],away:['Adv'],onward:['Adv'],upward:['Adv'],downward:['Adv'],homeward:['Adv']};
 /* place and direction words: the tagger often calls these nouns or adjectives, but after a verb they are adverbs (go there, come inside) */
-const EXTRA={than:['P'],as:['P'],there:['Adv'],here:['Adv'],where:['Adv'],upstairs:['Adv'],downstairs:['Adv'],indoors:['Adv'],outdoors:['Adv'],inside:['P','Adv'],outside:['P','Adv'],downtown:['Adv'],overseas:['Adv']};
+const EXTRA={for:['C'],than:['P'],as:['P'],there:['Adv'],here:['Adv'],where:['Adv'],upstairs:['Adv'],downstairs:['Adv'],indoors:['Adv'],outdoors:['Adv'],inside:['P','Adv'],outside:['P','Adv'],downtown:['Adv'],overseas:['Adv']};
 const SUBORD=new Set(['if','whether','lest']);   /* CGEL: the true subordinators (with that, for) */
 /* modern descriptive classes (CGEL) */
 const PREP_SUB=new Set(['because','before','after','since','until','till','while','whilst','though','although','unless','whereas','once','like','as','than']);
@@ -679,24 +679,53 @@ function loadNlp(){
   /* never hold up adding words for long: fall back to the built-in lexicon */
   return Promise.race([nlpLoad,new Promise(r=>setTimeout(r,4000))]);
 }
+/* clitics and words whose class depends on the clitic next to them */
+const NEG_IRREG={"can't":2,"won't":2,"shan't":3};
+const CLITIC_S_HOSTS=new Set(['it','he','she','that','what','there','here','who','where','how','when','why','let','this','i','you','we','they','everyone','everybody','someone','somebody','nobody','nothing','something','everything']);
+const PARTICLES=new Set(['up','down','out','off','back','away','over','around','along','through','in','on','about','apart','aside']);
+const participle=w=>/ing$|ed$|en$/.test(w)||(IRREG[w]&&!['am','is','are','was','were','has','had','does','did','went','saw','ate','gave','took','made','said','thought','knew','wrote','ran','came','fell'].includes(w));
+function cliticCats(toks,i){
+  const n=k=>(toks[k]||'').toLowerCase().replace(/’/g,"'"),l=n(i),nx=n(i+1),pv=n(i-1);
+  if(l==="n't")return['Adv'];
+  if(nx==="n't"&&['ca','wo','sha','do','does','did'].includes(l))return['T'];
+  if(l==="'ll"||l==="'d")return['T'];
+  if(l==="'ve")return['T','V'];
+  if(l==="'s"&&pv==='let')return['N'];
+  if(l==="'s"||l==="'re"||l==="'m")return participle(nx)?['T','V']:['V','T'];
+  return null;
+}
+/* rejoin clitics to their hosts so the tagger sees "it's" and splits it into the same two words */
+const tagText=toks=>toks.map((t,i)=>i&&/^(['’]|n['’]t$)/i.test(t)?t:(i?' ':'')+t).join('');
 function tagWords(toks){
-  if(!window.nlp)return toks.map(t=>adjust(t.toLowerCase(),lookup(t)));
-  let terms=[];try{terms=nlp(toks.join(' ')).json().flatMap(x=>x.terms)}catch(e){}
+  if(!window.nlp)return toks.map((t,i)=>{const l=t.toLowerCase();return cliticCats(toks,i)||(FORCE[l]?[...FORCE[l]]:finishCats(l,adjust(l,lookup(t))))});
+  let terms=[];try{terms=nlp(tagText(toks)).json().flatMap(x=>x.terms)}catch(e){}
   return toks.map((t,i)=>{
-    const l=t.toLowerCase();
+    const l=t.toLowerCase(),cl=cliticCats(toks,i);
+    if(cl)return cl;
     if(FORCE[l])return[...FORCE[l]];
     const ctx=terms.length===toks.length?mapTags(terms[i].tags):null;
     let iso=null;try{const it=nlp(t).json()[0];iso=it?mapTags(it.terms[0].tags):null}catch(e){}
     let primary=ctx||iso||'N';
     if(SUBORD.has(l))primary='C';
     if(l==='that'&&primary==='Conj')primary='C';
+    /* for-to clause: "for this country to start" — for is the subordinator when an infinitival to follows its noun phrase */
+    if(l==='for'){for(let j=i+2;j<Math.min(toks.length-1,i+7);j++){const w=toks[j].toLowerCase();if(w==='to'){const nt=terms.length===toks.length&&terms[j+1]?mapTags(terms[j+1].tags):null;if(nt==='V')return['C','P'];break}
+      const tj=terms.length===toks.length&&terms[j]?mapTags(terms[j].tags):null;if(tj==='V'||tj==='T'||tj==='P')break}}
     if(l==='to'){const nx=terms.length===toks.length&&terms[i+1]?mapTags(terms[i+1].tags):null;return nx==='V'?['T','P']:['P','T']}
     const cats=[primary];
     if(iso&&iso!==primary&&['N','V'].includes(iso)&&['N','V'].includes(primary))cats.push(iso);
     if(ALTS[l]&&ALTS[l].includes(primary))ALTS[l].forEach(c=>{if(!cats.includes(c))cats.push(c)});
     (EXTRA[l]||[]).forEach(c=>{if(!cats.includes(c))cats.push(c)});
-    return adjust(l,cats);
+    return finishCats(l,adjust(l,cats));
   });
+}
+/* particles (look it up, love them back) are intransitive prepositions, shown here as adverbs;
+   a known verb form always keeps Verb as an option (the man who I met left) */
+function finishCats(l,cats){
+  if(PARTICLES.has(l)&&cats[0]!=='P')cats=['Adv',...cats.filter(c=>c!=='Adv'&&c!=='V'&&c!=='N')];
+  else if(PARTICLES.has(l)&&!cats.includes('Adv'))cats.push('Adv');
+  if(!cats.includes('V')&&lemma(l)&&!['T','D','P','C','Conj'].includes(cats[0]))cats.push('V');
+  return cats;
 }
 function lookup(t){const l=t.toLowerCase();if(LEXICON[l])return LEXICON[l];if(/ly$/.test(l))return['Adv','Adj'];if(/ed$/.test(l))return['V','Adj'];if(/ing$/.test(l))return['V','N','Adj'];if(/s$/.test(l))return['N','V'];return['N','V','Adj']}
 
@@ -777,6 +806,9 @@ function treeProblem(rootId){
         }
       }else return'∅ only stands for an understood subject, or for a verb that moved up into C. An object can simply be left out.';
     }
+    if(n.cat==='VP'){const vi=kids.findIndex(k=>k.cat==='V'),a=kids[vi+1],o=kids[vi+2];
+      if(vi>=0&&a&&a.cat==='AdvP'&&o&&['NP','CP'].includes(o.cat)&&!PARTICLES.has(words(a.id).toLowerCase()))
+        return'Only a particle (up, out, off, back …) can come between a verb and its object: "look up the word", not "eat quickly the cake".'}
     if(n.cat==='NP'){const ds=kids.filter(k=>k.cat==='D'||k.cat==='DP');if(ds.length>=2&&!PREDET.has(wordOf(ds[0].id)))return'Only all, both, half or such can come before another determiner.'}
     if(n.cat==='TP'){const subj=kids[0];
       if(subj&&subj.cat==='CP'){const cp=S.nodes[subj.id],ck=catKids(cp);const tp=ck.find(x=>x.cat==='TP');
@@ -831,8 +863,10 @@ function tryAttach(did,cid,ord){
   if(!c||c.type!=='node'||isLex(c.cat)||!d||d.type!=='word')return direct;
   let dcat=null;
   if(direct.ok){const o=d.ord;attach(did,cid,ord);dcat=kidCats(c,evalNode(c))[did];detach(did);d.ord=o}
-  if(direct.ok&&dcat&&dcat===headOf(c.cat))return direct;
   const cats=S.words[d.wid].cats,cands=[];
+  /* a word whose first class is this phrase's head goes straight in (will → T of a Story);
+     a word that only might be the head (copula 's: Verb first, Tense second) has to compete with the other readings */
+  if(direct.ok&&dcat&&dcat===headOf(c.cat)&&cats[0]===dcat)return direct;
   if(direct.ok)cands.push(null);
   for(const x of cats){const W=RULES[x+'P']?x+'P':null;if(W&&wrapOk(did,cid,ord,W))cands.push([W])}
   cands.push(...inferredChains(did,cid,ord,cats));
@@ -846,6 +880,18 @@ function tryAttach(did,cid,ord){
   let best=cands[0],bestN=cands.length>1?score(best):0;
   for(const ch of cands.slice(1)){const n=score(ch);if(n<bestN){best=ch;bestN=n}}
   return best?{ok:true,wrap:best}:direct;
+}
+/* build the inferred phrases around a dropped word; a to-clause built this way also gets its understood ∅ subject,
+   since "you need [∅ to go]" can't have any other kind */
+function placeWrapped(id,chain,cid,ord){
+  let inner=id;const made=[];
+  for(const W of chain){const w=mkNode(W);w.auto=true;attach(inner,w.id);made.push(w);inner=w.id}
+  attach(inner,cid,ord);
+  const tp=made.find(w=>w.cat==='TP'),d=S.nodes[id];
+  if(tp&&d.type==='word'&&S.words[d.wid].text.toLowerCase()==='to'){
+    const e=mkEmpty(),o=candOrds(tp.id)[0];
+    if(tryDirect(e.id,tp.id,o).ok)attach(e.id,tp.id,o);else delete S.nodes[e.id];
+  }
 }
 function dropEmptyAuto(pid){let p=S.nodes[pid];while(p&&p.auto&&!p.children.length){const up=p.parent;if(up)detach(p.id);else S.roots=S.roots.filter(r=>r!==p.id);delete S.nodes[p.id];p=up?S.nodes[up]:null}}
 function tryDirect(did,cid,ord){
@@ -1030,7 +1076,7 @@ function pivotsFor(root){
    Each finished structure is remembered by its labelled bracketing, so rebuilding the same tree,
    or undoing and redoing, earns nothing new. The score lasts for this visit only; reloading starts at 0. */
 const PHRASE_PTS=5,BLOCK_PTS=50,CLAUSE_PTS=100;
-let SCORE={points:0,blocks:0,seen:{}};
+let SCORE={points:0,blocks:0,clauses:0,seen:{}};
 function phraseDone(id){const n=S.nodes[id];return!!n&&n.type==='node'&&!isLex(n.cat)&&fullYield(id)&&deepComplete(id)&&!treeProblem(id)}
 let gainT;
 function scoreBench(){
@@ -1043,7 +1089,7 @@ function scoreBench(){
       if(!block&&!clause){const ev=evalNode(n);if(!ev.rule||ev.rule.els.filter(e=>e.min>0).length<2)continue}
       const k=n.cat+' '+bracket(id);
       if(SCORE.seen[k])continue;
-      SCORE.seen[k]=1;const pts=clause?CLAUSE_PTS:block?BLOCK_PTS:PHRASE_PTS;SCORE.points+=pts;if(block)SCORE.blocks++;
+      SCORE.seen[k]=1;const pts=clause?CLAUSE_PTS:block?BLOCK_PTS:PHRASE_PTS;SCORE.points+=pts;if(block)SCORE.blocks++;if(clause)SCORE.clauses++;
       gains.push({id,pts,block,clause,text:words(id)});
     }
     if(gains.length){
@@ -1235,15 +1281,23 @@ function placeContainer(h){
   const y=nextRowY();setRoot(n.id,16,y);renderAll();reveal(y);
 }
 function addWords(text){
-  /* possessive 's (or a bare ' after plural s) splits off as its own determiner: the man + 's + hat */
-  const CONTR=new Set(["it's","he's","she's","that's","what's","there's","here's","who's","where's","let's","how's","when's","why's"]);
-  const toks=text.replace(/[.?!,:"“”()]/g,' ').replace(/;/g,' ; ').split(/\s+/).filter(Boolean)
-    .flatMap(t=>{const l=t.toLowerCase().replace(/’/g,"'");if(CONTR.has(l))return[t];
-      let m=t.match(/^(.+?)(['’]s)$/);if(m)return[m[1],m[2]];m=t.match(/^(.+s)(['’])$/);if(m)return[m[1],m[2]];return[t]});
-  const isPossMark=t=>/^['’]s?$/.test(t);
-  const wordToks=toks.filter(t=>t!==';'&&!isPossMark(t));
+  /* contractions split into host + clitic the way descriptive grammars (and the tagger) do: it 's, do n't, ca n't, I 'm;
+     possessive 's (or a bare ' after plural s) splits off as its own determiner: the man + 's + hat */
+  const parts=[];
+  text.replace(/[.?!,:"“”()]/g,' ').replace(/;/g,' ; ').split(/\s+/).filter(Boolean).forEach(t=>{
+    const l=t.toLowerCase().replace(/’/g,"'"),add=(x,k)=>parts.push({t:x,k});let m;
+    if(t===';')return add(t,'semi');
+    if(NEG_IRREG[l])return(add(t.slice(0,NEG_IRREG[l]),'word'),add(t.slice(-3),'word'));
+    if((m=t.match(/^(.+)(n['’]t)$/i)))return(add(m[1],'word'),add(m[2],'word'));
+    if((m=t.match(/^(.+?)(['’](?:m|re|ve|ll|d))$/i)))return(add(m[1],'word'),add(m[2],'word'));
+    if((m=t.match(/^(.+?)(['’]s)$/i)))return CLITIC_S_HOSTS.has(m[1].toLowerCase())?(add(m[1],'word'),add(m[2],'word')):(add(m[1],'word'),add(m[2],'poss'));
+    if((m=t.match(/^(.+s)(['’])$/)))return(add(m[1],'word'),add(m[2],'poss'));
+    add(t,'word');
+  });
+  const toks=parts.map(x=>x.t);
+  const wordToks=parts.filter(x=>x.k==='word').map(x=>x.t);
   const tagged=tagWords(wordToks).map(cs=>{cs=cs.filter(c=>LEX.includes(c));return cs.length?cs:[LEX.includes('N')?'N':LEX[0]]});
-  let wi=0;const cats=toks.map(t=>t===';'?['Semi']:isPossMark(t)?['D']:tagged[wi++]);
+  let wi=0;const cats=parts.map(x=>x.k==='semi'?['Semi']:x.k==='poss'?['D']:tagged[wi++]);
   const y0=nextRowY(),limit=Math.max(280,bench.clientWidth-40);let x=16,y=y0;
   toks.forEach((t,i)=>{
     const w={text:t,idx:S.words.length,cats:cats[i]};S.words.push(w);
@@ -1258,7 +1312,9 @@ function addWords(text){
 function coach(){
   const onlyWords=S.roots.length>0&&S.roots.every(id=>S.nodes[id].type==='word');
   const tp=document.querySelector('#phrInv [data-cat="TP"]');if(tp)tp.classList.toggle('nudge',onlyWords&&!reduceMotion);
-  $('#scoreGoal').innerHTML=SCORE.blocks?`Next: a ${esc(shown('CP'))} · <b>+${CLAUSE_PTS}</b>`:`Goal: finish a ${esc(shown('TP'))} · <b>+${BLOCK_PTS}</b>`;
+  $('#scoreGoal').innerHTML=!SCORE.blocks?`Goal: finish a ${esc(shown('TP'))} · <b>+${BLOCK_PTS}</b>`
+    :!SCORE.clauses?`Next: a ${esc(shown('CP'))} · <b>+${CLAUSE_PTS}</b>`
+    :`Each new ${esc(shown('TP'))} <b>+${BLOCK_PTS}</b> · ${esc(shown('CP'))} <b>+${CLAUSE_PTS}</b>`;
 }
 
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800)}
@@ -1460,7 +1516,7 @@ function endDrag(){
   if(!t)restore();
   let moved=!!t;
   if(t&&t.kind==='node'){
-    if(t.res.ok){if(t.res.wrap){let inner=id;for(const W of t.res.wrap){const w=mkNode(W);w.auto=true;attach(inner,w.id);inner=w.id}attach(inner,t.cid,t.ord)}else attach(id,t.cid,t.ord)}
+    if(t.res.ok){if(t.res.wrap)placeWrapped(id,t.res.wrap,t.cid,t.ord);else attach(id,t.cid,t.ord)}
     else{if(t.res.reason)toast(t.res.reason);restore();moved=false}
   }
   else if(t&&t.kind==='canvas')setRoot(id,t.x,t.y);
