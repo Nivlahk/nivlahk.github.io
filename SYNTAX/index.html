@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Syntax Tree Sandbox: Drag-and-Drop Constituency Parser | Calvin W. Hancock</title>
   <!-- SEO + social -->
-  <meta name="description" content="Build syntax trees by hand in your browser. Drag words into phrase-structure containers and watch nested boxes become constituency trees. Open-ended, with SVG export.">
+  <meta name="description" content="Build syntax trees by hand in your browser. Drag words next to each other and watch them grow into constituency trees. Open-ended, with SVG export.">
   <link rel="canonical" href="https://calvinhancock.com/SYNTAX/">
   <meta name="author" content="Calvin W. Hancock">
   <meta name="robots" content="index, follow, max-image-preview:large">
@@ -9,7 +9,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Calvin W. Hancock">
   <meta property="og:title" content="Syntax Tree Sandbox: Drag-and-Drop Constituency Parser | Calvin W. Hancock">
-  <meta property="og:description" content="Build syntax trees by hand in your browser. Drag words into phrase-structure containers and watch nested boxes become constituency trees. Open-ended, with SVG export.">
+  <meta property="og:description" content="Build syntax trees by hand in your browser. Drag words next to each other and watch them grow into constituency trees. Open-ended, with SVG export.">
   <meta property="og:url" content="https://calvinhancock.com/SYNTAX/">
   <meta property="og:image" content="https://calvinhancock.com/assets/og-syntax.png">
   <meta property="og:image:width" content="1200">
@@ -17,7 +17,7 @@
   <meta property="og:image:alt" content="Syntax Tree Sandbox: Drag-and-Drop Constituency Parser | Calvin W. Hancock">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Syntax Tree Sandbox: Drag-and-Drop Constituency Parser | Calvin W. Hancock">
-  <meta name="twitter:description" content="Build syntax trees by hand in your browser. Drag words into phrase-structure containers and watch nested boxes become constituency trees. Open-ended, with SVG export.">
+  <meta name="twitter:description" content="Build syntax trees by hand in your browser. Drag words next to each other and watch them grow into constituency trees. Open-ended, with SVG export.">
   <meta name="twitter:image" content="https://calvinhancock.com/assets/og-syntax.png">
   <script type="application/ld+json">
 {
@@ -31,7 +31,7 @@
       "name": "Syntax Tree Sandbox",
       "alternateName": "SYNTAX",
       "url": "https://calvinhancock.com/SYNTAX/",
-      "description": "Build syntax trees by hand in your browser. Drag words into phrase-structure containers and watch nested boxes become constituency trees. Open-ended, with SVG export.",
+      "description": "Build syntax trees by hand in your browser. Drag words next to each other and watch them grow into constituency trees. Open-ended, with SVG export.",
       "applicationCategory": "EducationalApplication",
       "operatingSystem": "Any (web browser)",
       "browserRequirements": "Requires JavaScript.",
@@ -43,7 +43,7 @@
       },
       "featureList": [
         "Drag-and-drop word inventory with word classes",
-        "Phrase-structure containers that become tree nodes",
+        "Phrase structure inferred as words are dragged together",
         "Nested-box and branching-tree views",
         "Undo, redo, and phrase-structure rules panel",
         "SVG export of finished trees"
@@ -89,7 +89,7 @@
 }
   </script>
 </head><body>
-<noscript><p style="max-width:40rem;margin:2rem auto;padding:0 1rem;font:16px/1.5 system-ui,sans-serif">Syntax Tree Sandbox is a browser-native tool for building constituency (phrase-structure) syntax trees by hand. You drag color-coded words into phrase containers such as NP, VP and PP, and the nested boxes morph into a branching tree. It is open-ended, with no preset puzzles, so you can compare different analyses of the same sentence, and export trees as SVG. JavaScript is required. <a href="/SYNTAX/about/">Read how it works</a>. Made by <a href="https://calvinhancock.com/">Calvin W. Hancock</a>.</p></noscript>
+<noscript><p style="max-width:40rem;margin:2rem auto;padding:0 1rem;font:16px/1.5 system-ui,sans-serif">Syntax Tree Sandbox is a browser-native tool for building constituency (phrase-structure) syntax trees by hand. You drag color-coded words next to each other, and the phrases they need (Noun Phrase, Verb Phrase and so on) grow around them into a branching tree. It is open-ended, with no preset puzzles, so you can compare different analyses of the same sentence, and export trees as SVG. JavaScript is required. <a href="/SYNTAX/about/">Read how it works</a>. Made by <a href="https://calvinhancock.com/">Calvin W. Hancock</a>.</p></noscript>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -150,6 +150,10 @@ button{font:inherit;color:inherit}
 .layout{max-width:1480px;width:100%;margin:0 auto;display:grid;grid-template-columns:290px minmax(0,1fr);gap:14px;align-items:stretch;flex:1}
 .top{width:100%;align-items:flex-start}
 .legendbar{flex:1;min-width:0}
+.legendbar[hidden],.legendfoot[hidden],.inv-containers[hidden]{display:none}
+/* the legend floats in the sandbox's bottom-right corner, like Clear all in the top-right */
+.legendfoot{position:absolute;right:10px;bottom:8px;max-width:calc(100% - 20px);z-index:5;display:flex;justify-content:flex-end;background:color-mix(in srgb,var(--bench) 85%,transparent);padding:4px;border-radius:10px}
+.legendfoot .btn{background:var(--panel)}
 .scorebar{display:flex;align-items:baseline;gap:6px 16px;flex-wrap:wrap;margin-left:auto;font-size:13px;color:var(--ink2);white-space:nowrap}
 .scorebar .sc b{display:inline-block;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;margin-right:3px}
 .sc-gain{font-weight:700;color:var(--gold);opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s}
@@ -173,7 +177,8 @@ button{font:inherit;color:inherit}
 .dock h2{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);font-weight:500;margin:0 0 10px;display:flex;justify-content:space-between}
 .dock h3{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);font-weight:400;margin:12px 0 6px}
 .inv{display:flex;flex-wrap:wrap;gap:7px}
-.inv-containers{padding-bottom:10px;margin-bottom:10px;border-bottom:1px dashed var(--line)}
+.inv-containers{padding-top:10px;margin-top:10px;border-top:1px dashed var(--line)}
+#contBtn{margin-top:10px}
 
 /* chips */
 .word{display:inline-flex;align-items:center;gap:6px;color:#fff;font-weight:600;border-radius:999px;padding:5px 12px;font-size:15px;
@@ -433,8 +438,7 @@ details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text
 
 <header class="top">
   <h1 class="sr-only">Syntax Tree Sandbox</h1>
-  <div class="legendbar" id="lexInv" aria-label="Word class colors"></div>
-  <div class="scorebar" id="scoreBar" aria-live="polite"><span class="sc-gain" id="scoreGain"></span><span class="sc"><b id="scorePts">0</b> points</span><span class="sc"><b id="scoreBlocks">0</b> stories completed</span><span class="sc-goal" id="scoreGoal"></span></div>
+  <div class="scorebar" id="scoreBar" aria-live="polite"><span class="sc-gain" id="scoreGain"></span><span class="sc"><b id="scorePts">0</b> points</span><span class="sc"><b id="scoreBlocks">0</b> <span id="scoreBlocksLbl">sentences completed</span></span><span class="sc-goal" id="scoreGoal"></span></div>
   <!-- Save + Storage: saved trees go to a "Syntax Tree Sandbox" folder in the player's own Google Drive
        (tools/syntax-library builds library.js). Hidden unless data-google-client-id is set. -->
   <div class="libbar" id="libraryBar" data-google-client-id="956116332062-gtkuegrrjb54fucnp66v0lt15he1jf3q.apps.googleusercontent.com"></div>
@@ -444,24 +448,27 @@ details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text
 <main class="layout">
   <aside class="docks">
     <section class="dock" data-dock id="wordDock">
-      <h2><span>Words and containers</span><span id="wordCount"></span></h2>
+      <h2><span>Words</span><span id="wordCount"></span></h2>
       <form class="addwords" id="addForm"><input id="addInput" aria-label="Words to add" placeholder="Type words or a sentence" autocomplete="off"><button class="btn" type="submit">Add</button></form>
-      <p class="dock-hint">Tap a container (or drag it) to put it on the bench, then drop words into its open slots. Tap a word on the bench to change its class.</p>
-      <div class="inv inv-containers" id="phrInv" aria-label="Containers"></div>
+      <p class="dock-hint">Drag words next to each other on the bench to build a tree. Tap a word on the bench to change its class.</p>
       <div class="inv" id="wordInv"></div>
       <div class="wedit" id="wedit" hidden></div>
+      <div class="inv inv-containers" id="phrInv" aria-label="Containers" hidden></div>
+      <button class="btn small" type="button" id="contBtn" hidden>Show containers</button>
     </section>
     <details class="rules"><summary>Phrase-structure rules</summary><div class="rulelist" id="ruleList"></div></details>
     <div class="status" id="status"></div>
   </aside>
   <section class="work">
     <div class="benchwrap">
-<div class="benchbar" role="toolbar" aria-label="History">
-        <button class="btn small" type="button" id="undoBtn" title="Undo (Ctrl+Z)">Undo</button>
-        <button class="btn small" type="button" id="redoBtn" title="Redo (Ctrl+Shift+Z)">Redo</button>
+<div class="benchbar" role="toolbar" aria-label="Bench">
         <button class="btn small" type="button" id="clearBtn">Clear all</button>
       </div>
       <div class="bench" id="bench"><div class="canvas" id="canvas"></div><div class="fx" id="fx" aria-hidden="true"></div></div>
+      <div class="legendfoot" id="legendFoot" hidden>
+      <button class="btn small" type="button" id="legendBtn">Show legend</button>
+      <div class="legendbar" id="lexInv" aria-label="Word class colors" hidden></div>
+      </div>
     </div>
     <div class="readings" id="readings" hidden></div>
   </section>
@@ -548,18 +555,24 @@ function headOf(cat){
 const coordOut=X=>isLex(X)?X+'_Conj':X;
 const coordRule=X=>({lhs:coordOut(X),els:[{alts:[X],min:1,max:Infinity},{alts:CLAUSES.includes(X)?['Conj','Semi']:['Conj'],min:1,max:1},{alts:[X],min:1,max:1}]});
 function coordCands(n){const kids=n.children.map(opts);return COORD_HEADS.filter(X=>align(coordRule(X).els,kids,true))}
-/* friendly display names; rules keep TP/CP internally and accept either name */
-const DISPLAY={TP:'Story',CP:'Clause',NP:'Actor',VP:'Command',PP:'Position',AdjP:'Description',AdvP:'Changer',DP:'Owner',X_Conj:'Join'};
+/* display names: every phrase is named after the word class that heads it; rules keep TP/CP… internally and accept any of the names */
+const DISPLAY={TP:'Tense Phrase',CP:'Complementizer Phrase',NP:'Noun Phrase',VP:'Verb Phrase',PP:'Prepositional Phrase',AdjP:'Adjective Phrase',AdvP:'Adverb Phrase',DP:'Determiner Phrase',X_Conj:'Conjunction Phrase'};
 /* a coordinated X ("cats and dogs") is still an X, so N_Conj, V_Conj… display as N, V… */
 const shown=c=>DISPLAY[c]||(/_Conj$/.test(c)?shown(c.slice(0,-5)):c);
-const altsLabel=alts=>[...new Set(alts.map(a=>a==='Semi'?';':shown(a)))].join('/');
+const altsLabel=alts=>[...new Set(alts.map(a=>a==='Semi'?';':catName(a.replace(/_Conj$/,''))))].join('/');
+/* tree labels and slots spell word classes out (Noun, Verb) and use the friendly phrase names */
+const catName=c=>isLex(c)?(LEXNAMES[c]||c):shown(c);
 /* a rule token as written, minus the X_Conj alternatives that coordination already implies */
 function tokLabel(t){let pre='',post='',b=t;if(b.startsWith('(')&&b.endsWith(')')){pre='(';post=')';b=b.slice(1,-1)}
   let plus='';if(b.endsWith('+')){plus='+';b=b.slice(0,-1)}
   const alts=b.startsWith('{')?b.slice(1,-1).split('/'):[b],lab=[...new Set(alts.map(shown))];
   return pre+(lab.length>1?'{'+lab.join('/')+'}':lab[0])+plus+post}
 const toDisplay=t=>t.replace(/\b(TP|CP|NP|VP|PP|AdjP|AdvP|DP)\b/g,m=>DISPLAY[m]);
-const fromDisplay=t=>t.replace(/\b(Story|Block|Sentence)\b/g,'TP').replace(/\bClause\b/g,'CP').replace(/\bActor\b/g,'NP').replace(/\bDescription\b/g,'AdjP').replace(/\bChanger\b/g,'AdvP').replace(/\bOwner\b/g,'DP').replace(/\bCommand\b/g,'VP').replace(/\bPosition\b/g,'PP');
+/* names typed in the rule editor: the current names, plus the older friendly ones (Story, Actor, Command …) from earlier saves */
+const FROM_NAMES=[...Object.entries(DISPLAY).filter(([c])=>c!=='X_Conj').map(([c,n])=>[n,c]),
+  ['Story','TP'],['Block','TP'],['Sentence','TP'],['Clause','CP'],['Actor','NP'],['Description','AdjP'],['Changer','AdvP'],['Owner','DP'],['Command','VP'],['Position','PP']]
+  .sort((a,b)=>b[0].length-a[0].length);
+const fromDisplay=t=>FROM_NAMES.reduce((acc,[n,c])=>acc.replace(new RegExp('\\b'+n.replace(' ','\\s+')+'\\b','g'),c),t);
 function rawCat(n){if(n.type==='empty')return'∅';if(n.cat!=='X_Conj')return n.cat;const c=coordCands(n);return c.length===1?coordOut(c[0]):'X_Conj'}
 function dispCat(n){return shown(rawCat(n))}
 function parseTok(raw){
@@ -592,7 +605,7 @@ function checkRule(line,skip){
   const lhs=m[0].trim(),rhs=m[1].trim();
   if(!ID.test(lhs))return`“${lhs}” isn't a valid category name. Use letters, digits and _.`;
   if(isLex(lhs))return`${lhs} is a word class. Put a phrase name on the left, such as ${lhs}P.`;
-  if(/_Conj$/.test(lhs))return'Coordination is built in (Join). Pick a name that doesn\'t end in _Conj.';
+  if(/_Conj$/.test(lhs))return'Coordination is built in ('+shown('X_Conj')+'). Pick a name that doesn\'t end in _Conj.';
   if(lhs in PUNCT)return`${lhs} is built in. Pick another name.`;
   if(!rhs)return'Add at least one part after the arrow.';
   const known=new Set([...LEX,...G.rules.filter((_,i)=>i!==skip).map(lhsOf),lhs,'X_Conj',COMPS]);
@@ -632,6 +645,8 @@ function deleteClass(tag){
 }
 const NEW_COLORS=['#7c5cff','#0f9f8f','#c2410c','#65a30d','#be185d','#0369a1','#a16207','#6d28d9','#0891b2','#b91c1c'];
 let legendEdit=false,classForm=null,ruleForm=null;
+/* the word-class legend and the ∅ chip stay out of the way until the first tree exists */
+let everTree=false,legendShown=false,contShown=false;
 function resetGrammar(){
   G=cloneG(DEFAULT_GRAMMAR);applyGrammar();
   S.words.forEach(w=>{w.cats=w.cats.filter(isLex);if(!w.cats.length)w.cats=['N']});
@@ -851,7 +866,7 @@ function wrapOk(did,cid,ord,W){
   detach(did);delete S.nodes[w.id];return ok;
 }
 /* inferred structure: when no phrase of the word's own type fits, try any phrase that can hold the word
-   (a determiner dropped on a Command's object slot becomes the start of an Actor), up to two levels deep */
+   (a determiner dropped on a Verb Phrase's object slot becomes the start of an Actor), up to two levels deep */
 const WRAP_ALTS={};
 const altsOf=P=>WRAP_ALTS[P]||(WRAP_ALTS[P]=new Set((RULES[P]||[]).flatMap(r=>expandRule(r,FKEYS)).flatMap(r=>r.els.flatMap(e=>e.alts))));
 function wrapChainOk(did,cid,ord,chain){
@@ -878,7 +893,24 @@ function openAfter(did,cid,ord,chain){
   detach(inner);made.forEach(w=>{if(w.children.length)detach(w.children[0])});made.forEach(w=>delete S.nodes[w.id]);d.ord=o;
   return n;
 }
+/* coordination: a conjunction dropped on a phrase wraps it — [NP vodka] + and → [NP [NP vodka] and ___],
+   with an open slot for a second phrase of the same kind (rather than starting a clause with "and") */
+function coordinate(cid,did){
+  const c=S.nodes[cid],par=c.parent,J=mkNode('X_Conj');
+  if(par){const o=c.ord;detach(cid);attach(J.id,par,o)}else{const x=c.x,y=c.y;detach(cid);setRoot(J.id,x,y)}
+  attach(cid,J.id);attach(did,J.id);return J.id;
+}
+function coordOk(did,cid){
+  const save=JSON.stringify({nodes:S.nodes,roots:S.roots,uid});let ok=false;
+  try{const J=S.nodes[coordinate(cid,did)],par=J.parent?S.nodes[J.parent]:null;
+    ok=coordCands(J).length>0&&orderOk(J)&&(!par||(evalNode(par).status!=='invalid'&&orderOk(par)))&&!treeProblem(rootOf(J.id));
+  }catch(e){ok=false}
+  const o=JSON.parse(save);S.nodes=o.nodes;S.roots=o.roots;uid=o.uid;
+  return ok;
+}
 function tryAttach(did,cid,ord){
+  {const d=S.nodes[did],c=S.nodes[cid];
+   if(d&&d.type==='word'&&c&&c.type==='node'&&!isLex(c.cat)&&c.cat!=='X_Conj'&&S.words[d.wid].cats[0]==='Conj'&&coordOk(did,cid))return{ok:true,coord:true}}
   const direct=tryDirect(did,cid,ord),c=S.nodes[cid],d=S.nodes[did];
   if(!c||c.type!=='node'||isLex(c.cat)||!d||d.type!=='word')return direct;
   let dcat=null;
@@ -949,7 +981,7 @@ function tryDirect(did,cid,ord){
   return{ok,reason};
 }
 function explain(c,d){
-  if(d.type==='empty')return'∅ only stands for an understood subject (a Story\'s subject slot) or a verb that moved up into C (a Command\'s verb slot).';
+  if(d.type==='empty')return'∅ only stands for an understood subject (a Tense Phrase\'s subject slot) or a verb that moved up into C (a Verb Phrase\'s verb slot).';
   const cr=RULES[c.cat]||[],hf=headFrames(c);
   if(hasComps(cr)&&hf&&evalNode(c,true).status!=='invalid'){
     const v=c.children.find(x=>verbFrames(x)),vt=words(v)||'This verb';
@@ -966,7 +998,9 @@ function candOrds(cid){const ks=S.nodes[cid].children.map(key);if(!ks.length)ret
 
 /* ---------- rendering ---------- */
 function chipBg(cats,k){const col=c=>c==='V'&&k!=null?FRAMECOL[wordFrames(k)[0]]:COLORS[c];if(cats.length===1)return col(cats[0]);const step=100/cats.length;return`linear-gradient(120deg,${cats.map((c,i)=>`${col(c)} ${i*step}% ${(i+1)*step}%`).join(',')})`}
-function slotPill(el){const lab=altsLabel(el.alts)+(el.max===Infinity?'+':'');const a0=el.alts[0],tc=isLex(a0)?COLORS[a0]:(headOf(a0)?COLORS[headOf(a0)]:null);const st=[isLex(a0)&&el.min?`--c:${COLORS[a0]}`:'',tc?`--tc:${tc}`:''].filter(Boolean).join(';');return`<span class="slot${el.min?' req':' opt'}"${st?` style="${st}"`:''}>${esc(lab)}</span>`}
+/* a slot that takes one category names it; a slot that takes several just says Phrase (or Word or phrase), with the full list as a tooltip */
+function slotPill(el){const u=[...new Set(el.alts.map(a=>a.replace(/_Conj$/,'')))],full=altsLabel(el.alts);
+  const lab=(u.length===1?full:u.every(a=>!isLex(a)&&a!=='Semi')?'Phrase':'Word or phrase')+(el.max===Infinity?'+':'');const a0=el.alts[0],tc=isLex(a0)?COLORS[a0]:(headOf(a0)?COLORS[headOf(a0)]:null);const st=[isLex(a0)&&el.min?`--c:${COLORS[a0]}`:'',tc?`--tc:${tc}`:''].filter(Boolean).join(';');return`<span class="slot${el.min?' req':' opt'}"${st?` style="${st}"`:''}${u.length>1?` title="${esc(full)}"`:''}>${esc(lab)}</span>`}
 const sel=id=>S.sel===id?' selected':'';
 function frameTitle(id){const n=S.nodes[id],f=FPICK.get(id)||wordFrames(n.wid)[0];return`${FRAMES[f].name}: ${FRAMES[f].hint}`}
 const delBtn=id=>S.sel===id?`<button class="del" type="button" data-del="${id}" aria-label="Delete">×</button>`:'';
@@ -996,16 +1030,16 @@ function rBox(id,pick){
 function rTree(id,pick){
   const n=S.nodes[id];
   if(n.type==='empty'){const cat=pick&&pick!=='*'?pick:'?';
-    return`<div class="tnode leaf empty${sel(id)}" data-id="${id}"${par(n)}><span class="tlabel">${esc(cat)}</span><span class="tword null" data-drag="${id}">∅${delBtn(id)}</span></div>`}
+    return`<div class="tnode leaf empty${sel(id)}" data-id="${id}"${par(n)}><span class="tlabel">${esc(cat==='?'?cat:catName(cat))}</span><span class="tword null" data-drag="${id}">∅${delBtn(id)}</span></div>`}
   if(n.type==='word'){
     const w=S.words[n.wid],cat=pick||w.cats[0];
-    return`<div class="tnode leaf${sel(id)}" data-id="${id}"${par(n)}><span class="tlabel">${cat}</span><span class="tword" data-drag="${id}" style="--c:${catColor(cat,id)}"${cat==='V'?` title="${esc(frameTitle(id))}"`:''}>${esc(w.text)}${delBtn(id)}</span></div>`;
+    return`<div class="tnode leaf${sel(id)}" data-id="${id}"${par(n)}><span class="tlabel">${esc(catName(cat))}</span><span class="tword" data-drag="${id}" style="--c:${catColor(cat,id)}"${cat==='V'?` title="${esc(frameTitle(id))}"`:''}>${esc(w.text)}${delBtn(id)}</span></div>`;
   }
   const m=prevMode[id]==='box'?' morph':'';modes[id]='tree';
   if(isLex(n.cat)){
     const c=n.children[0],ev=evalNode(n);
     const body=c?`<span class="tword${sel(c)}" data-drag="${c}" style="--c:${catColor(n.cat,c)}">${esc(S.words[S.nodes[c].wid].text)}${delBtn(c)}</span>`:`<span class="slot req" style="--c:${COLORS[n.cat]}">word</span>`;
-    return`<div class="tnode leaf${m}${sel(id)}" data-id="${id}" data-drop data-status="${ev.status}"${par(n)}><span class="tlabel" data-drag="${id}">${n.cat}${delBtn(id)}</span>${body}</div>`;
+    return`<div class="tnode leaf${m}${sel(id)}" data-id="${id}" data-drop data-status="${ev.status}"${par(n)}><span class="tlabel" data-drag="${id}">${esc(catName(n.cat))}${delBtn(id)}</span>${body}</div>`;
   }
   const ev=evalNode(n);noteFrames(n,ev);let kids='';
   let hasOpt=false;
@@ -1054,7 +1088,7 @@ function renderCanvas(){
   if(flipFrom&&!before[flipFrom.id])before[flipFrom.id]=flipFrom.rect;flipFrom=null;
   modes={};
   const done=completeRoots();
-  canvas.innerHTML=S.roots.map(r=>rRoot(r,done)).join('')+(S.roots.length?'':`<div class="hint-empty">${S.words.length?'Tap or drag a container onto the bench, then drop words into it.':'Type a sentence in the box to put its words on the bench, then build a tree around them.'}</div>`);
+  canvas.innerHTML=S.roots.map(r=>rRoot(r,done)).join('')+(S.roots.length?'':`<div class="hint-empty">${S.words.length?'Drag words onto the bench and next to each other to build a tree.':'Type a sentence in the box to put its words on the bench, then build a tree around them.'}</div>`);
   prevMode=modes;
   // size bench
   let mx=0,my=0;canvas.querySelectorAll('.rootwrap').forEach(w=>{mx=Math.max(mx,w.offsetLeft+w.offsetWidth);my=Math.max(my,w.offsetTop+w.offsetHeight)});
@@ -1129,7 +1163,7 @@ function scoreBench(){
     }
     if(gains.length){
       const total=gains.reduce((a,g)=>a+g.pts,0),b=gains.find(g=>g.clause)||gains.find(g=>g.block);
-      $('#scoreGain').textContent=`+${total}`+(b?` · ${b.clause?'Clause':'Story'} complete`:'');
+      $('#scoreGain').textContent=`+${total}`+(b?` · ${shown(b.clause?'CP':'TP')} complete`:'');
       const g=$('#scoreGain'),bar=$('#scoreBar');g.classList.add('show');
       bar.classList.remove('bump');void bar.offsetWidth;bar.classList.add('bump');
       clearTimeout(gainT);gainT=setTimeout(()=>g.classList.remove('show'),b?3000:2000);
@@ -1139,7 +1173,7 @@ function scoreBench(){
       setTimeout(()=>gains.filter(g=>!((g.block||g.clause)&&inside(g))).forEach(scoreFx),reduceMotion?0:400);
     }
   }
-  $('#scorePts').textContent=SCORE.points.toLocaleString();$('#scoreBlocks').textContent=SCORE.blocks.toLocaleString();
+  $('#scorePts').textContent=SCORE.points.toLocaleString();$('#scoreBlocks').textContent=SCORE.blocks.toLocaleString();$('#scoreBlocksLbl').textContent=SCORE.blocks===1?'sentence completed':'sentences completed';
 }
 
 /* +5 floats up off a finished phrase; a finished Block or Clause flashes green */
@@ -1153,6 +1187,7 @@ function scoreFx(g){
   fx.appendChild(d);d.addEventListener('animationend',()=>d.remove());setTimeout(()=>d.remove(),2500);
 }
 function renderAll(){
+  if(!everTree&&S.roots.some(id=>{const n=S.nodes[id];return n&&n.type==='node'&&!isLex(n.cat)}))everTree=true;
   renderChrome();
   const done=renderCanvas();
   commit();
@@ -1160,7 +1195,7 @@ function renderAll(){
   coach();
   const used=new Set(Object.values(S.nodes).filter(n=>n.type==='word').map(n=>n.wid));
   const live=S.words.filter(w=>!w.gone);
-  $('#wordInv').innerHTML=live.length?live.map(w=>`<span class="word inv-word${used.has(w.idx)?' used':''}${S.edit===w.idx?' editing':''}${onWhite(w.cats)}" data-inv="word" data-k="${w.idx}" style="background:${chipBg(w.cats,w.idx)}" title="${w.cats.join(' / ')}${w.cats.includes('V')?' · verb: '+wordFrames(w.idx).map(f=>FRAMES[f].name.toLowerCase()).join(', '):''}">${esc(w.text)}${w.cats.length>1?`<small>${w.cats.join('·')}</small>`:''}</span>`).join(''):`<span class="inv-empty">No words yet.</span>`;
+  $('#wordInv').innerHTML=live.length?live.map(w=>`<span class="word inv-word${used.has(w.idx)?' used':''}${S.edit===w.idx?' editing':''}${onWhite(w.cats)}" data-inv="word" data-k="${w.idx}" style="background:${chipBg(w.cats,w.idx)}" title="${w.cats.join(' / ')}${w.cats.includes('V')?' · verb: '+wordFrames(w.idx).map(f=>FRAMES[f].name.toLowerCase()).join(', '):''}">${esc(w.text)}${w.cats.length>1?`<small>${w.cats.join('·')}</small>`:''}</span>`).join('')+(everTree?`<span class="inv-phr nullpill" data-inv="empty" title="Silent word: an understood subject (∅ to go) or a verb that moved up (Is he ∅ happy?)">∅</span>`:''):`<span class="inv-empty">No words yet.</span>`;
   $('#wordCount').textContent=live.length?`${used.size}/${live.length} on bench`:'';
   const ew=S.words[S.edit],we=$('#wedit');
   if(ew&&!ew.gone){we.hidden=false;we.innerHTML=`<div class="wedit-head"><b>${esc(ew.text)}</b><span>can be</span><button class="btn small" type="button" data-wclose>Done</button></div><div class="wedit-pos">${LEX.map(c=>`<button type="button" class="posbtn${onWhite([c])}" data-pos="${c}" aria-pressed="${ew.cats.includes(c)}" style="--c:${COLORS[c]}">${c}</button>`).join('')}</div>${ew.cats.includes('V')?`<div class="wedit-head"><span>as a verb it takes</span></div><div class="wedit-pos">${FKEYS.map(f=>`<button type="button" class="posbtn" data-frame="${f}" aria-pressed="${wordFrames(ew.idx).includes(f)}" title="${esc(FRAMES[f].hint)}" style="--c:${FRAMECOL[f]}">${FRAMES[f].name}</button>`).join('')}</div>`:''}<button class="btn small danger" type="button" data-wremove>${used.has(ew.idx)?'Remove word (also from the bench)':'Remove word'}</button>`}
@@ -1193,15 +1228,22 @@ function renderChrome(){
     :`<span class="inv-lex legend" style="--c:${COLORS[c]}">${esc(LEXNAMES[c])}</span>`).join('');
   if(legendEdit&&!classForm)lg+=`<button class="btn small" type="button" data-addclass>+ Word class</button>`;
   if(legendEdit)lg+=`<button class="btn small legend-toggle" type="button" data-legendedit aria-pressed="true">Done</button>`;
+  else lg+=`<button class="btn small legend-toggle" type="button" data-legendhide>Hide legend</button>`;
   if(classForm){const f=classForm;
     lg+=`<form class="classform" id="classForm"><input id="cfTag" aria-label="Abbreviation" placeholder="Abbreviation, e.g. Pron" value="${esc(f.tag||'')}" ${f.mode==='edit'?'disabled':''} autocomplete="off"><input id="cfName" aria-label="Full name" placeholder="Full name, e.g. Pronoun" value="${esc(f.name||'')}" autocomplete="off"><input id="cfColor" type="color" aria-label="Color" value="${f.color}"><button class="btn small" type="submit">${f.mode==='edit'?'Save':'Add class'}</button><button class="btn small" type="button" data-cfcancel>Cancel</button>${f.err?`<p class="formerr">${esc(f.err)}</p>`:''}</form>`}
   $('#lexInv').innerHTML=lg;
-  $('#phrInv').innerHTML=[...PHRASES,...COORD].map(c=>{const h=headOf(c);return`<span class="inv-phr${h?' headed':''}" data-inv="class" data-cat="${c}"${h?` style="--c:${COLORS[h]}"`:''}>${esc(shown(c))}</span>`}).join('')+`<span class="inv-phr nullpill" data-inv="empty">∅</span>`;
+  if(legendEdit)legendShown=true;
+  $('#legendFoot').hidden=!(everTree||legendEdit);$('#legendBtn').hidden=legendShown;$('#lexInv').hidden=!legendShown;
+  $('#wordDock h2 span').textContent='Words';
+  $('#wordDock .dock-hint').textContent='Drag words next to each other on the bench to build a tree. Tap a word on the bench to change its class.'+(everTree?' ∅ is a silent word for an understood subject or a verb that moved.':'')+(contShown?' Containers: tap or drag one onto the bench, then drop words into its open slots.':'');
+  $('#contBtn').hidden=!everTree;$('#contBtn').textContent=contShown?'Hide containers':'Show containers';
+  $('#phrInv').hidden=!(everTree&&contShown);
+  $('#phrInv').innerHTML=[...PHRASES,...COORD].map(c=>{const h=headOf(c);return`<span class="inv-phr${h?' headed':''}" data-inv="class" data-cat="${c}"${h?` style="--c:${COLORS[h]}"`:''}>${esc(shown(c))}</span>`}).join('');
   $('#ruleList').innerHTML=G.rules.map((line,i)=>ruleForm&&ruleForm.index===i?ruleFormHTML()
       :`<div class="rule editable" data-editrule="${i}" title="Click to edit">${ruleChips(line)}<button class="rx" type="button" data-delrule="${i}" aria-label="Delete rule">×</button></div>`).join('')
     +`<div class="rule builtin conds"><em class="rule-note"><b>Built-in conditions.</b> ∅ can be an understood subject only in a to-clause, an -ing/-ed clause, a command, or after a fronted wh- or relative word; it can stand for a verb only when an auxiliary or "be" has moved into C (Is he ∅ happy?). Only all, both, half or such can precede another determiner. A clause used as a subject needs a complementizer or a ∅ subject.</em></div>`
     +`<div class="rule builtin frames"><span class="compsc">Comps</span><span class="arr">→</span><em class="rule-note">Built in. Filled by the verb's frame. ${FKEYS.map(f=>`<span class="lexc" style="--c:${FRAMECOL[f]}">${FRAMES[f].name}</span> ${FRAMES[f].pat?esc(toDisplay(FRAMES[f].pat)):'nothing'}`).join(' · ')}. Tap a verb in the inventory to set its frames.</em></div>`
-    +`<div class="rule builtin"><span>Join</span><span class="arr">→</span><span>X+</span><span class="lexc" style="--c:${COLORS.Conj||'#888'}">Conj</span><span>X</span><em class="rule-note">Built in. X is any word class or phrase, the same throughout, so lists like red, white and blue work. Clauses and sentences can also be joined with ;</em></div>`
+    +`<div class="rule builtin"><span>${esc(shown('X_Conj'))}</span><span class="arr">→</span><span>X+</span><span class="lexc" style="--c:${COLORS.Conj||'#888'}">Conj</span><span>X</span><em class="rule-note">Built in. X is any word class or phrase, the same throughout, so lists like red, white and blue work. Clauses and sentences can also be joined with ;</em></div>`
 
     +(ruleForm&&ruleForm.index<0?ruleFormHTML():`<div class="rule-actions"><button class="btn small" type="button" data-addrule>+ New rule</button><button class="btn small" type="button" data-legendedit aria-pressed="${legendEdit}">${legendEdit?'Done editing classes':'Edit word classes'}</button><button class="linkbtn" type="button" data-resetgrammar>Reset to default grammar</button></div>`);
   const ri=$('#ruleInput');if(ri&&ruleForm.focus){ri.focus();ri.setSelectionRange(ri.value.length,ri.value.length);ruleForm.focus=false}
@@ -1229,7 +1271,7 @@ function commit(){
   lastSnap=now;
   /* the tree library listens for edits (including undo/redo) to offer "Save changes" */
   if(now!==announcedSnap){announcedSnap=now;dispatchEvent(new Event('syntax:change'))}
-  $('#undoBtn').disabled=!undoStack.length;$('#redoBtn').disabled=!redoStack.length;
+  
   $('#clearBtn').disabled=!S.words.length&&!S.roots.length;
 }
 function undo(){if(!undoStack.length)return;redoStack.push(lastSnap);const prev=undoStack.pop();loadSnap(prev);lastSnap=prev;renderAll()}
@@ -1343,10 +1385,8 @@ function addWords(text){
   renderAll();reveal(y0);
 }
 
-/* quiet cues only: the Story container pulses while the bench holds nothing but loose words, and the score bar names the next goal */
+/* quiet cue: the score bar names the next goal */
 function coach(){
-  const onlyWords=S.roots.length>0&&S.roots.every(id=>S.nodes[id].type==='word');
-  const tp=document.querySelector('#phrInv [data-cat="TP"]');if(tp)tp.classList.toggle('nudge',onlyWords&&!reduceMotion);
   $('#scoreGoal').innerHTML=!SCORE.blocks?`Goal: finish a ${esc(shown('TP'))} · <b>+${BLOCK_PTS}</b>`
     :!SCORE.clauses?`Next: a ${esc(shown('CP'))} · <b>+${CLAUSE_PTS}</b>`
     :`Each new ${esc(shown('TP'))} <b>+${BLOCK_PTS}</b> · ${esc(shown('CP'))} <b>+${CLAUSE_PTS}</b>`;
@@ -1371,9 +1411,10 @@ function wordEditAction(e){
 }
 document.addEventListener('pointerup',e=>{if(!drag&&!pending)wordEditAction(e)},true);
 document.addEventListener('click',e=>{
-  if(e.target.closest('#undoBtn')){undo();return}
-  if(e.target.closest('#redoBtn')){redo();return}
   if(e.target.closest('#clearBtn')){clearAll();return}
+  if(e.target.closest('#contBtn')){contShown=!contShown;renderChrome();return}
+  if(e.target.closest('#legendBtn')){legendShown=true;renderChrome();return}
+  if(e.target.closest('[data-legendhide]')){legendShown=false;renderChrome();return}
   if(e.target.closest('#exportBtn')){exportSVG();return}
 
   if(e.target.closest('[data-legendedit]')){legendEdit=!legendEdit;if(!legendEdit)classForm=null;renderChrome();if(legendEdit){const lb=$('#lexInv');if(lb.getBoundingClientRect().top<0)lb.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'})}return}
@@ -1403,7 +1444,7 @@ document.addEventListener('submit',e=>{
     if(err){ruleForm.text=toDisplay(line);ruleForm.err=toDisplay(err);ruleForm.focus=true;renderChrome();return}
     const n=normRule(line);if(ruleForm.index<0)G.rules.push(n);else G.rules[ruleForm.index]=n;
     const isNew=!PHRASES.includes(lhsOf(n));ruleForm=null;applyGrammar();renderAll();
-    toast(isNew?`Added ${lhsOf(n)}. It's in your containers now.`:'Rule saved.');return}
+    toast(isNew?`Added ${lhsOf(n)}. Words can now build it.`:'Rule saved.');return}
   if(e.target.id==='classForm'){e.preventDefault();const f=classForm;let err=null;
     if(f.mode==='add'){
       if(!ID.test(f.tag||''))err='Give it a short abbreviation using letters, like Pron.';
@@ -1577,7 +1618,7 @@ const SNAP_GAP=40;let snapCache=null,snapPill=null,snapEl=null;
 function rootRects(){const ws=[...canvas.querySelectorAll(':scope>.rootwrap')];return S.roots.map((id,i)=>{const w=ws[i];if(!w)return null;const r=(w.firstElementChild||w).getBoundingClientRect();return{id,r,el:w}}).filter(Boolean)}
 function nearestRoot(gr){let best=null;for(const x of rootRects()){const dx=Math.max(0,x.r.left-gr.right,gr.left-x.r.right),dy=Math.max(0,x.r.top-gr.bottom,gr.top-x.r.bottom),d=Math.hypot(dx,dy);if(d<=SNAP_GAP&&(!best||d<best.d))best={...x,d}}return best}
 const firstIdx=id=>{const y=yieldIdx(id);return y.length?Math.min(...y):Infinity};
-function place(id,cid,ord,res){S.roots=S.roots.filter(r=>r!==id);if(res.wrap)placeWrapped(id,res.wrap,cid,ord);else attach(id,cid,ord)}
+function place(id,cid,ord,res){S.roots=S.roots.filter(r=>r!==id);if(res.coord)coordinate(cid,id);else if(res.wrap)placeWrapped(id,res.wrap,cid,ord);else attach(id,cid,ord)}
 function snapPlan(a,b,leftSide){
   const na=S.nodes[a],nb=S.nodes[b];if(!na||na.type!=='word')return null;
   const w=S.words[na.wid],oldIdx=w.idx,yb=yieldIdx(b);
@@ -1589,7 +1630,7 @@ function snapPlan(a,b,leftSide){
   const tree=n=>n.type==='node'&&!isLex(n.cat);
   try{
   /* 1: the word joins the tree on the bench, at the deepest phrase along the edge it approaches
-        (a word that comes later in the sentence goes down the right edge: "a" next to "the dog chased" goes into the Command) */
+        (a word that comes later in the sentence goes down the right edge: "a" next to "the dog chased" goes into the Verb Phrase) */
   if(tree(S.nodes[b])){
     const spine=[];let cur=b;
     while(cur&&tree(S.nodes[cur])){spine.push(cur);const ks=S.nodes[cur].children.filter(k=>tree(S.nodes[k]));cur=ks.length?(before?ks[0]:ks[ks.length-1]):null}
@@ -1647,7 +1688,7 @@ function endDrag(){
   if(!t)restore();
   let moved=!!t;
   if(t&&t.kind==='node'){
-    if(t.res.ok){if(t.res.moveTo!==undefined)moveWord(S.nodes[id].wid,t.res.moveTo);if(t.res.wrap)placeWrapped(id,t.res.wrap,t.cid,t.ord);else attach(id,t.cid,t.ord)}
+    if(t.res.ok){if(t.res.moveTo!==undefined)moveWord(S.nodes[id].wid,t.res.moveTo);if(t.res.coord)coordinate(t.cid,id);else if(t.res.wrap)placeWrapped(id,t.res.wrap,t.cid,t.ord);else attach(id,t.cid,t.ord)}
     else{if(t.res.reason)toast(t.res.reason);restore();moved=false}
   }
   else if(t&&t.kind==='snap')applySnap(t.pl);
