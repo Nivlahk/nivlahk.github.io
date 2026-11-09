@@ -263,14 +263,30 @@ button{font:inherit;color:inherit}
 /* bench */
 .work{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0}
 .benchwrap{position:relative;flex:1;display:flex;flex-direction:column;min-height:440px}
-@media (max-width:860px){.benchwrap{min-height:72vh}}
+@media (max-width:860px){.benchwrap{min-height:62vh}}
+.inv-phr.nudge{animation:nudge 1.6s ease-in-out infinite;box-shadow:0 0 0 0 var(--c,#e09f00)}
+@keyframes nudge{0%,100%{transform:scale(1);box-shadow:0 0 0 0 color-mix(in srgb,var(--c,#e09f00) 55%,transparent)}50%{transform:scale(1.08);box-shadow:0 0 0 6px transparent}}
+.sc-goal{font-size:12.5px;color:var(--ink2);border:1px dashed var(--line2);border-radius:999px;padding:2px 10px}
+.sc-goal b{font-size:12.5px!important;color:var(--ink)!important}
+@media (max-width:860px){
+  .top{align-items:center;gap:8px 12px}
+  .legendbar{flex:0 0 100%;order:-1;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px 0 4px;
+    -webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+  .legendbar::-webkit-scrollbar{display:none}
+  .legendbar>*{flex:none}
+  .legendbar .inv-lex{font-size:11px;padding:2px 9px;border-width:1.5px}
+  .scorebar{margin-left:0}
+  /* the history toolbar sits above the bench instead of floating over the first row of words */
+  .benchwrap .benchbar{position:static;align-self:flex-end;background:none;padding:6px 8px 0}
+  .hint-empty{top:16px}
+}
 .benchbar{position:absolute;top:8px;right:10px;z-index:5;display:flex;gap:6px;background:color-mix(in srgb,var(--bench) 85%,transparent);padding:4px;border-radius:10px}
 .benchbar .btn{background:var(--panel)}
 .benchbar .btn:disabled{opacity:.4;cursor:default}
 .bench{position:relative;flex:1;min-height:0;overflow:auto;border:1px solid var(--line);border-radius:14px;
   background-color:var(--bench);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.6px);background-size:22px 22px;background-attachment:local}
 .canvas{position:relative;min-width:100%;min-height:100%}
-.hint-empty{position:absolute;left:24px;top:22px;color:var(--ink2);font-family:var(--mono);font-size:12px;pointer-events:none;max-width:44ch}
+.hint-empty{position:absolute;left:24px;top:56px;color:var(--ink2);font-family:var(--mono);font-size:12px;pointer-events:none;max-width:44ch}
 .rootwrap{position:absolute;pointer-events:none}
 /* only the visible pieces catch the pointer; the empty area of a big node lets clicks through */
 .rootwrap .tlabel,.rootwrap .tword,.rootwrap .slot,.rootwrap .pbox,.rootwrap .lbox,.rootwrap>.word,.rootwrap button{pointer-events:auto}
@@ -413,7 +429,7 @@ details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text
 <header class="top">
   <h1 class="sr-only">Syntax Tree Sandbox</h1>
   <div class="legendbar" id="lexInv" aria-label="Word class colors"></div>
-  <div class="scorebar" id="scoreBar" aria-live="polite"><span class="sc-gain" id="scoreGain"></span><span class="sc"><b id="scorePts">0</b> points</span><span class="sc"><b id="scoreBlocks">0</b> stories completed</span></div>
+  <div class="scorebar" id="scoreBar" aria-live="polite"><span class="sc-gain" id="scoreGain"></span><span class="sc"><b id="scorePts">0</b> points</span><span class="sc"><b id="scoreBlocks">0</b> stories completed</span><span class="sc-goal" id="scoreGoal"></span></div>
   <!-- Save + Storage: saved trees go to a "Syntax Tree Sandbox" folder in the player's own Google Drive
        (tools/syntax-library builds library.js). Hidden unless data-google-client-id is set. -->
   <div class="libbar" id="libraryBar" data-google-client-id="956116332062-gtkuegrrjb54fucnp66v0lt15he1jf3q.apps.googleusercontent.com"></div>
@@ -425,7 +441,7 @@ details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text
     <section class="dock" data-dock id="wordDock">
       <h2><span>Words and containers</span><span id="wordCount"></span></h2>
       <form class="addwords" id="addForm"><input id="addInput" aria-label="Words to add" placeholder="Type words or a sentence" autocomplete="off"><button class="btn" type="submit">Add</button></form>
-      <p class="dock-hint">Drag a container onto the bench, then drop words inside it. Tap a word on the bench to change its class, or drag it back here.</p>
+      <p class="dock-hint">Tap a container (or drag it) to put it on the bench, then drop words into its open slots. Tap a word on the bench to change its class.</p>
       <div class="inv inv-containers" id="phrInv" aria-label="Containers"></div>
       <div class="inv" id="wordInv"></div>
       <div class="wedit" id="wedit" hidden></div>
@@ -435,7 +451,7 @@ details.rules summary{cursor:pointer;font-family:var(--mono);font-size:11px;text
   </aside>
   <section class="work">
     <div class="benchwrap">
-      <div class="benchbar" role="toolbar" aria-label="History">
+<div class="benchbar" role="toolbar" aria-label="History">
         <button class="btn small" type="button" id="undoBtn" title="Undo (Ctrl+Z)">Undo</button>
         <button class="btn small" type="button" id="redoBtn" title="Redo (Ctrl+Shift+Z)">Redo</button>
         <button class="btn small" type="button" id="clearBtn">Clear all</button>
@@ -782,6 +798,23 @@ function wrapOk(did,cid,ord,W){
   const ok=evalNode(w).status!=='invalid'&&tryDirect(w.id,cid,ord).ok;
   detach(did);delete S.nodes[w.id];return ok;
 }
+/* inferred structure: when no phrase of the word's own type fits, try any phrase that can hold the word
+   (a determiner dropped on a Command's object slot becomes the start of an Actor), up to two levels deep */
+const WRAP_ALTS={};
+const altsOf=P=>WRAP_ALTS[P]||(WRAP_ALTS[P]=new Set((RULES[P]||[]).flatMap(r=>expandRule(r,FKEYS)).flatMap(r=>r.els.flatMap(e=>e.alts))));
+function wrapChainOk(did,cid,ord,chain){
+  const made=[];let inner=did,ok=true;
+  for(const W of chain){const w=mkNode(W);attach(inner,w.id);made.push(w);if(evalNode(w).status==='invalid'){ok=false;break}inner=w.id}
+  if(ok)ok=tryDirect(inner,cid,ord).ok;
+  detach(did);made.forEach(w=>{if(w.parent)detach(w.id)});made.forEach(w=>delete S.nodes[w.id]);
+  return ok;
+}
+function inferredWrap(did,cid,ord,cats){
+  const tried=new Set(cats.map(x=>x+'P'));
+  for(const x of cats)for(const P of PHRASES)if(!tried.has(P)&&altsOf(P).has(x)){tried.add(P);if(wrapChainOk(did,cid,ord,[P]))return[P]}
+  for(const x of cats)for(const P of PHRASES)if(altsOf(P).has(x))for(const Q of PHRASES)if(Q!==P&&altsOf(Q).has(P)&&wrapChainOk(did,cid,ord,[P,Q]))return[P,Q];
+  return null;
+}
 function tryAttach(did,cid,ord){
   const direct=tryDirect(did,cid,ord),c=S.nodes[cid],d=S.nodes[did];
   if(!c||c.type!=='node'||isLex(c.cat)||!d||d.type!=='word')return direct;
@@ -791,11 +824,13 @@ function tryAttach(did,cid,ord){
   for(const x of S.words[d.wid].cats){
     if(direct.ok&&dcat===x)return direct;
     const W=RULES[x+'P']?x+'P':null;
-    if(W&&wrapOk(did,cid,ord,W))return{ok:true,wrap:W};
+    if(W&&wrapOk(did,cid,ord,W))return{ok:true,wrap:[W]};
   }
-  return direct;
+  if(direct.ok)return direct;
+  const chain=inferredWrap(did,cid,ord,S.words[d.wid].cats);
+  return chain?{ok:true,wrap:chain}:direct;
 }
-function dropEmptyAuto(pid){const p=S.nodes[pid];if(p&&p.auto&&!p.children.length){detach(pid);delete S.nodes[pid]}}
+function dropEmptyAuto(pid){let p=S.nodes[pid];while(p&&p.auto&&!p.children.length){const up=p.parent;if(up)detach(p.id);else S.roots=S.roots.filter(r=>r!==p.id);delete S.nodes[p.id];p=up?S.nodes[up]:null}}
 function tryDirect(did,cid,ord){
   const c=S.nodes[cid],d=S.nodes[did];
   if(!c||c.type!=='node')return{ok:false};
@@ -921,7 +956,7 @@ function renderCanvas(){
   if(flipFrom&&!before[flipFrom.id])before[flipFrom.id]=flipFrom.rect;flipFrom=null;
   modes={};
   const done=completeRoots();
-  canvas.innerHTML=S.roots.map(r=>rRoot(r,done)).join('')+(S.roots.length?'':`<div class="hint-empty">${S.words.length?'Drag a container onto the bench, then drop words into it.':'Add some words in the inventory, then drag words and containers onto the bench.'}</div>`);
+  canvas.innerHTML=S.roots.map(r=>rRoot(r,done)).join('')+(S.roots.length?'':`<div class="hint-empty">${S.words.length?'Tap or drag a container onto the bench, then drop words into it.':'Type a sentence in the box to put its words on the bench, then build a tree around them.'}</div>`);
   prevMode=modes;
   // size bench
   let mx=0,my=0;canvas.querySelectorAll('.rootwrap').forEach(w=>{mx=Math.max(mx,w.offsetLeft+w.offsetWidth);my=Math.max(my,w.offsetTop+w.offsetHeight)});
@@ -1024,6 +1059,7 @@ function renderAll(){
   const done=renderCanvas();
   commit();
   scoreBench();
+  coach();
   const used=new Set(Object.values(S.nodes).filter(n=>n.type==='word').map(n=>n.wid));
   const live=S.words.filter(w=>!w.gone);
   $('#wordInv').innerHTML=live.length?live.map(w=>`<span class="word inv-word${used.has(w.idx)?' used':''}${S.edit===w.idx?' editing':''}${onWhite(w.cats)}" data-inv="word" data-k="${w.idx}" style="background:${chipBg(w.cats,w.idx)}" title="${w.cats.join(' / ')}${w.cats.includes('V')?' · verb: '+wordFrames(w.idx).map(f=>FRAMES[f].name.toLowerCase()).join(', '):''}">${esc(w.text)}${w.cats.length>1?`<small>${w.cats.join('·')}</small>`:''}</span>`).join(''):`<span class="inv-empty">No words yet.</span>`;
@@ -1201,6 +1237,13 @@ function addWords(text){
   renderAll();reveal(y0);
 }
 
+/* quiet cues only: the Story container pulses while the bench holds nothing but loose words, and the score bar names the next goal */
+function coach(){
+  const onlyWords=S.roots.length>0&&S.roots.every(id=>S.nodes[id].type==='word');
+  const tp=document.querySelector('#phrInv [data-cat="TP"]');if(tp)tp.classList.toggle('nudge',onlyWords&&!reduceMotion);
+  $('#scoreGoal').innerHTML=SCORE.blocks?`Next: a ${esc(shown('CP'))} · <b>+${CLAUSE_PTS}</b>`:`Goal: finish a ${esc(shown('TP'))} · <b>+${BLOCK_PTS}</b>`;
+}
+
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800)}
 
 /* word-class editor buttons act on release, so a swallowed click can't leave them dead */
@@ -1224,6 +1267,7 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#redoBtn')){redo();return}
   if(e.target.closest('#clearBtn')){clearAll();return}
   if(e.target.closest('#exportBtn')){exportSVG();return}
+
   if(e.target.closest('[data-legendedit]')){legendEdit=!legendEdit;if(!legendEdit)classForm=null;renderChrome();if(legendEdit){const lb=$('#lexInv');if(lb.getBoundingClientRect().top<0)lb.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'})}return}
   if(e.target.closest('[data-addclass]')){const used=new Set(Object.values(COLORS));classForm={mode:'add',tag:'',name:'',color:NEW_COLORS.find(c=>!used.has(c))||'#666666',focus:true};renderChrome();return}
   const dc=e.target.closest('[data-delclass]');if(dc){deleteClass(dc.dataset.delclass);return}
@@ -1399,7 +1443,7 @@ function endDrag(){
   if(!t)restore();
   let moved=!!t;
   if(t&&t.kind==='node'){
-    if(t.res.ok){if(t.res.wrap){const w=mkNode(t.res.wrap);w.auto=true;attach(id,w.id);attach(w.id,t.cid,t.ord)}else attach(id,t.cid,t.ord)}
+    if(t.res.ok){if(t.res.wrap){let inner=id;for(const W of t.res.wrap){const w=mkNode(W);w.auto=true;attach(inner,w.id);inner=w.id}attach(inner,t.cid,t.ord)}else attach(id,t.cid,t.ord)}
     else{if(t.res.reason)toast(t.res.reason);restore();moved=false}
   }
   else if(t&&t.kind==='canvas')setRoot(id,t.x,t.y);
