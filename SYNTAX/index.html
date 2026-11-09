@@ -636,7 +636,7 @@ function resetGrammar(){
 const LEXICON={the:['D'],a:['D'],an:['D'],this:['D'],that:['C','D'],these:['D'],those:['D'],his:['D'],her:['D','N'],my:['D'],your:['D'],their:['D'],our:['D'],its:['D'],every:['D'],some:['D'],no:['D'],
  and:['Conj'],or:['Conj'],but:['Conj'],if:['C'],whether:['C'],
  will:['T'],would:['T'],can:['T','N','V'],could:['T'],should:['T'],must:['T'],might:['T'],may:['T'],did:['T','V'],does:['T','V'],do:['T','V'],
- to:['P'],in:['P'],on:['P'],at:['P'],with:['P'],from:['P'],by:['P'],for:['P'],of:['P'],under:['P'],over:['P'],near:['P'],into:['P'],after:['P'],before:['P'],about:['P'],
+ to:['P','T'],in:['P'],on:['P'],at:['P'],with:['P'],from:['P'],by:['P'],for:['P'],of:['P'],under:['P'],over:['P'],near:['P'],into:['P'],after:['P'],before:['P'],about:['P'],
  i:['N'],you:['N'],he:['N'],she:['N'],it:['N'],we:['N'],they:['N'],me:['N'],him:['N'],us:['N'],them:['N'],
  saw:['V','N'],man:['N','V'],old:['Adj','N'],cut:['V','N','Adj'],iron:['N','V','Adj'],fish:['N','V'],duck:['N','V'],watch:['N','V'],watched:['V'],light:['N','V','Adj'],home:['N','Adv'],fast:['Adj','Adv'],well:['Adv','Adj','N'],
  dog:['N','V'],cat:['N'],girl:['N'],boy:['N'],telescope:['N'],park:['N','V'],book:['N','V'],ran:['V'],run:['V','N'],quickly:['Adv'],slowly:['Adv'],very:['Adv'],small:['Adj'],big:['Adj'],happy:['Adj'],red:['Adj','N'],
@@ -809,11 +809,22 @@ function wrapChainOk(did,cid,ord,chain){
   detach(did);made.forEach(w=>{if(w.parent)detach(w.id)});made.forEach(w=>delete S.nodes[w.id]);
   return ok;
 }
-function inferredWrap(did,cid,ord,cats){
-  const tried=new Set(cats.map(x=>x+'P'));
-  for(const x of cats)for(const P of PHRASES)if(!tried.has(P)&&altsOf(P).has(x)){tried.add(P);if(wrapChainOk(did,cid,ord,[P]))return[P]}
-  for(const x of cats)for(const P of PHRASES)if(altsOf(P).has(x))for(const Q of PHRASES)if(Q!==P&&altsOf(Q).has(P)&&wrapChainOk(did,cid,ord,[P,Q]))return[P,Q];
-  return null;
+function inferredChains(did,cid,ord,cats){
+  const out=[],own=new Set(cats.map(x=>x+'P'));
+  for(const x of cats)for(const P of PHRASES)if(!own.has(P)&&altsOf(P).has(x)&&!out.some(c=>c.length===1&&c[0]===P)&&wrapChainOk(did,cid,ord,[P]))out.push([P]);
+  for(const x of cats)for(const P of PHRASES)if(altsOf(P).has(x))for(const Q of PHRASES)
+    if(Q!==P&&altsOf(Q).has(P)&&!out.some(c=>c[0]===P&&c[1]===Q)&&wrapChainOk(did,cid,ord,[P,Q]))out.push([P,Q]);
+  return out;
+}
+/* how many required slots the container still has open after a placement: lower is a better fit,
+   so "to" dropped on need's open complement slot starts a clause there instead of hanging a Position off it */
+function openAfter(did,cid,ord,chain){
+  const c=S.nodes[cid],d=S.nodes[did],o=d.ord,made=[];let inner=did;
+  for(const W of chain||[]){const w=mkNode(W);attach(inner,w.id);made.push(w);inner=w.id}
+  attach(inner,cid,ord);
+  const ev=evalNode(c),n=ev.status==='complete'?0:missing(ev).length;
+  detach(inner);made.forEach(w=>{if(w.children.length)detach(w.children[0])});made.forEach(w=>delete S.nodes[w.id]);d.ord=o;
+  return n;
 }
 function tryAttach(did,cid,ord){
   const direct=tryDirect(did,cid,ord),c=S.nodes[cid],d=S.nodes[did];
@@ -821,14 +832,20 @@ function tryAttach(did,cid,ord){
   let dcat=null;
   if(direct.ok){const o=d.ord;attach(did,cid,ord);dcat=kidCats(c,evalNode(c))[did];detach(did);d.ord=o}
   if(direct.ok&&dcat&&dcat===headOf(c.cat))return direct;
-  for(const x of S.words[d.wid].cats){
-    if(direct.ok&&dcat===x)return direct;
-    const W=RULES[x+'P']?x+'P':null;
-    if(W&&wrapOk(did,cid,ord,W))return{ok:true,wrap:[W]};
-  }
-  if(direct.ok)return direct;
-  const chain=inferredWrap(did,cid,ord,S.words[d.wid].cats);
-  return chain?{ok:true,wrap:chain}:direct;
+  const cats=S.words[d.wid].cats,cands=[];
+  if(direct.ok)cands.push(null);
+  for(const x of cats){const W=RULES[x+'P']?x+'P':null;if(W&&wrapOk(did,cid,ord,W))cands.push([W])}
+  cands.push(...inferredChains(did,cid,ord,cats));
+  if(!cands.length)return direct;
+  /* fewest open required slots first; on a tie, avoid the marked readings: a Tense word sitting in a Clause's
+     C position (that's for fronted auxiliaries in questions) and an ordinary determiner heading an Owner
+     (that's for possessive 's) */
+  const txt=S.words[d.wid].text.toLowerCase();
+  const marked=ch=>!!ch&&((ch[0]==='CP'&&cats.includes('T')&&!cats.includes('C'))||(ch[0]==='DP'&&!/^['’]s?$/.test(txt)));
+  const score=ch=>openAfter(did,cid,ord,ch)*10+(marked(ch)?1:0);
+  let best=cands[0],bestN=cands.length>1?score(best):0;
+  for(const ch of cands.slice(1)){const n=score(ch);if(n<bestN){best=ch;bestN=n}}
+  return best?{ok:true,wrap:best}:direct;
 }
 function dropEmptyAuto(pid){let p=S.nodes[pid];while(p&&p.auto&&!p.children.length){const up=p.parent;if(up)detach(p.id);else S.roots=S.roots.filter(r=>r!==p.id);delete S.nodes[p.id];p=up?S.nodes[up]:null}}
 function tryDirect(did,cid,ord){
