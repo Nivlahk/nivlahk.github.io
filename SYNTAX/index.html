@@ -344,11 +344,16 @@ button{font:inherit;color:inherit}
 .tnode.selected>.tlabel .optbtn{margin-left:18px}
 
 /* drag feedback */
-.can-drop.pbox,.can-drop.lbox{border-color:var(--ok)}
-.tnode.can-drop>.tlabel{box-shadow:0 0 0 2px color-mix(in srgb,var(--ok) 55%,transparent)}
-.drop-ok.pbox,.drop-ok.lbox{outline:3px solid var(--ok);outline-offset:3px}
+/* drag feedback is neutral ink; green is kept for completed Stories and Clauses */
+.can-drop.pbox,.can-drop.lbox{border-color:var(--ink2)}
+.tnode.can-drop>.tlabel{box-shadow:0 0 0 2px color-mix(in srgb,var(--ink2) 45%,transparent)}
+.drop-ok.pbox,.drop-ok.lbox{outline:3px solid var(--ink);outline-offset:3px}
 .drop-no.pbox,.drop-no.lbox{outline:3px solid var(--bad);outline-offset:3px}
-.tnode.drop-ok>.tlabel{background:var(--ok);color:#fff}
+.tnode.drop-ok>.tlabel{background:var(--ink);color:var(--bg)}
+/* snapping: a loose word or tree the dragged piece would join with glows, and a pill names what forms */
+.rootwrap.snap-near>*{filter:drop-shadow(0 0 6px color-mix(in srgb,var(--ink) 45%,transparent));transition:filter .15s}
+.snap-pill{position:fixed;z-index:80;pointer-events:none;transform:translate(-50%,-130%);font:700 12px var(--mono);padding:3px 10px;border-radius:999px;
+  background:var(--panel);color:var(--tc,var(--ink));border:1.5px solid var(--tc,var(--ink2));box-shadow:0 4px 14px rgba(0,0,0,.18);white-space:nowrap}
 .tnode.drop-no>.tlabel{background:var(--bad);color:#fff}
 .ghost-drag{position:fixed;left:0;top:0;z-index:50;pointer-events:none;will-change:transform}
 .ghost-inner{animation:lift .14s ease-out forwards;filter:drop-shadow(0 10px 18px rgba(0,0,0,.3))}
@@ -766,7 +771,7 @@ function opts(id){const n=S.nodes[id];if(n.type==='empty')return['NP','V'];if(n.
 function isUsed(k){return Object.values(S.nodes).some(n=>n.type==='word'&&n.wid===k)}
 function depth(id){const n=S.nodes[id];if(n.type!=='node'||isLex(n.cat))return 0;return 1+Math.max(0,...n.children.map(depth))}
 function subtree(id){const n=S.nodes[id];return[id,...n.children.flatMap(subtree)]}
-function words(id){return yieldIdx(id).map(i=>S.words[i].text).join(' ')}
+function words(id){return yieldIdx(id).map(i=>(S.words[i]&&S.words[i].idx===i?S.words[i]:S.words.find(w=>w.idx===i)).text).join(' ')}
 
 /* ---------- grammar matching ---------- */
 function align(els,kids,partial){
@@ -1313,7 +1318,7 @@ function placeContainer(h){
 function addWords(text){
   /* contractions split into host + clitic the way descriptive grammars (and the tagger) do: it 's, do n't, ca n't, I 'm;
      possessive 's (or a bare ' after plural s) splits off as its own determiner: the man + 's + hat */
-  const parts=[];
+  const parts=[],batch=S.batchSeq=(S.batchSeq||0)+1;
   text.replace(/[.?!,:"“”()]/g,' ').replace(/;/g,' ; ').split(/\s+/).filter(Boolean).forEach(t=>{
     const l=t.toLowerCase().replace(/’/g,"'"),add=(x,k)=>parts.push({t:x,k});let m;
     if(t===';')return add(t,'semi');
@@ -1330,7 +1335,7 @@ function addWords(text){
   let wi=0;const cats=parts.map(x=>x.k==='semi'?['Semi']:x.k==='poss'?['D']:tagged[wi++]);
   const y0=nextRowY(),limit=Math.max(280,bench.clientWidth-40);let x=16,y=y0;
   toks.forEach((t,i)=>{
-    const w={text:t,idx:S.words.length,cats:cats[i]};S.words.push(w);
+    const w={text:t,idx:S.words.length,cats:cats[i],batch};S.words.push(w);
     const wd=t.length*9.5+30+(w.cats.length>1?w.cats.length*14+12:0);
     if(x>16&&x+wd>limit){x=16;y+=46}
     setRoot(mkWord(w.idx).id,x,y);x+=wd+10;
@@ -1510,7 +1515,7 @@ function startDrag(p){
   // mark every container that would accept this piece
   for(const nid of S.roots.flatMap(subtree)){
     const n=S.nodes[nid];if(n.type!=='node')continue;
-    if(candOrds(nid).some(o=>tryAttach(id,nid,o).ok)){const el=canvas.querySelector(`[data-id="${nid}"]`);el&&el.classList.add('can-drop')}
+    if(candOrds(nid).some(o=>tryAttachMove(id,nid,o).ok)){const el=canvas.querySelector(`[data-id="${nid}"]`);el&&el.classList.add('can-drop')}
   }
 }
 function ordAt(cid,x){
@@ -1528,13 +1533,109 @@ function moveDrag(e){
     if(e.clientY>br.bottom-m)bench.scrollTop+=10;else if(e.clientY<br.top+m)bench.scrollTop-=10;
   }
   const hx=e.clientX-drag.grab.x+drag.hot.x,hy=e.clientY-drag.grab.y+drag.hot.y;
-  const el=document.elementFromPoint(hx,hy);drag.target=null;if(!el)return;
+  const el=document.elementFromPoint(hx,hy);drag.target=null;if(!el){clearSnap();return}
   const cont=el.closest('#canvas [data-drop]'),dock=el.closest('[data-dock]');
   if(cont){
-    const cid=cont.dataset.id,ord=ordAt(cid,hx),res=tryAttach(drag.id,cid,ord);
+    clearSnap();
+    const cid=cont.dataset.id,ord=ordAt(cid,hx),res=tryAttachMove(drag.id,cid,ord);
     cont.classList.add(res.ok?'drop-ok':'drop-no');drag.hl=cont;drag.target={kind:'node',cid,ord,res};
-  }else if(dock){dock.classList.add('drop-ok');drag.hl=dock;drag.target={kind:'inv'}}
-  else if(el.closest('#bench')){const cr=canvas.getBoundingClientRect();drag.target={kind:'canvas',x:e.clientX-drag.grab.x-cr.left,y:e.clientY-drag.grab.y-cr.top}}
+  }else if(dock){clearSnap();dock.classList.add('drop-ok');drag.hl=dock;drag.target={kind:'inv'}}
+  else if(el.closest('#bench')){
+    const gr=drag.ghost.querySelector('.ghost-inner').getBoundingClientRect(),near=S.nodes[drag.id]&&S.nodes[drag.id].type==='word'?nearestRoot(gr):null;
+    if(near){
+      const left=(gr.left+gr.right)/2<(near.r.left+near.r.right)/2;
+      if(!snapCache||snapCache.a!==drag.id||snapCache.b!==near.id||snapCache.left!==left)snapCache={a:drag.id,b:near.id,left,pl:snapPlan(drag.id,near.id,left)};
+      if(snapCache.pl){showSnap(near,snapCache.pl,gr);drag.target={kind:'snap',pl:snapCache.pl};return}
+    }
+    const cr=canvas.getBoundingClientRect();drag.target={kind:'canvas',x:e.clientX-drag.grab.x-cr.left,y:e.clientY-drag.grab.y-cr.top}}
+  clearSnap();
+}
+/* ---------- moving words added later: a word can go anywhere in a tree, as long as it keeps its order relative
+   to the other words from the same Add that are already in that tree; the sentence order then follows the tree ---------- */
+function relocatable(did,cid,newIdx){
+  const d=S.nodes[did];if(!d||d.type!=='word')return false;const w=S.words[d.wid];
+  const same=yieldIdx(rootOf(cid)).map(i=>S.words.find(x=>x.idx===i)).filter(x=>x&&x!==w&&x.batch!==undefined&&x.batch===w.batch);
+  return same.every(x=>Math.sign(x.idx-w.idx)===Math.sign(x.idx-newIdx));
+}
+function tryAttachMove(did,cid,ord){
+  const r=tryAttach(did,cid,ord);if(r.ok)return r;
+  const d=S.nodes[did];if(!d||d.type!=='word'||!relocatable(did,cid,ord))return r;
+  const w=S.words[d.wid],old=w.idx;w.idx=ord;let r2;try{r2=tryAttach(did,cid,ord)}finally{w.idx=old}
+  return r2.ok?{...r2,moveTo:ord}:r;
+}
+/* put word wid at sentence position newIdx (can be fractional) and renumber every word in order */
+function moveWord(wid,newIdx){
+  S.words[wid].idx=newIdx;
+  const order=S.words.map((w,i)=>[w,i]).sort((a,b)=>a[0].idx-b[0].idx),perm={};
+  order.forEach(([w,i],j)=>{perm[i]=j;w.idx=j});S.words=order.map(x=>x[0]);
+  Object.values(S.nodes).forEach(n=>{if(n.type==='word')n.wid=perm[n.wid]});
+  if(typeof S.edit==='number'&&S.edit in perm)S.edit=perm[S.edit];
+}
+/* ---------- snapping (like magnetic atoms): bring a word close to a loose word or tree on the bench and
+   the phrase they would form together appears; drop to make it. Word order always comes from the sentence. ---------- */
+const SNAP_GAP=40;let snapCache=null,snapPill=null,snapEl=null;
+function rootRects(){const ws=[...canvas.querySelectorAll(':scope>.rootwrap')];return S.roots.map((id,i)=>{const w=ws[i];if(!w)return null;const r=(w.firstElementChild||w).getBoundingClientRect();return{id,r,el:w}}).filter(Boolean)}
+function nearestRoot(gr){let best=null;for(const x of rootRects()){const dx=Math.max(0,x.r.left-gr.right,gr.left-x.r.right),dy=Math.max(0,x.r.top-gr.bottom,gr.top-x.r.bottom),d=Math.hypot(dx,dy);if(d<=SNAP_GAP&&(!best||d<best.d))best={...x,d}}return best}
+const firstIdx=id=>{const y=yieldIdx(id);return y.length?Math.min(...y):Infinity};
+function place(id,cid,ord,res){S.roots=S.roots.filter(r=>r!==id);if(res.wrap)placeWrapped(id,res.wrap,cid,ord);else attach(id,cid,ord)}
+function snapPlan(a,b,leftSide){
+  const na=S.nodes[a],nb=S.nodes[b];if(!na||na.type!=='word')return null;
+  const w=S.words[na.wid],oldIdx=w.idx,yb=yieldIdx(b);
+  /* a word from a later Add takes the side it approaches from; words from the same Add keep their order */
+  let before=firstIdx(a)<firstIdx(b),moveTo;
+  const edge=leftSide?Math.min(...yb)-.5:Math.max(...yb)+.5;
+  if(yb.length&&(leftSide!==before)&&relocatable(a,b,edge)){before=leftSide;moveTo=edge;w.idx=edge}
+  const save=JSON.stringify({nodes:S.nodes,roots:S.roots,uid}),reset=()=>{const o=JSON.parse(save);S.nodes=o.nodes;S.roots=o.roots;uid=o.uid};
+  const tree=n=>n.type==='node'&&!isLex(n.cat);
+  try{
+  /* 1: the word joins the tree on the bench, at the deepest phrase along the edge it approaches
+        (a word that comes later in the sentence goes down the right edge: "a" next to "the dog chased" goes into the Command) */
+  if(tree(S.nodes[b])){
+    const spine=[];let cur=b;
+    while(cur&&tree(S.nodes[cur])){spine.push(cur);const ks=S.nodes[cur].children.filter(k=>tree(S.nodes[k]));cur=ks.length?(before?ks[0]:ks[ks.length-1]):null}
+    /* an adverb attaches as high as it can (honestly, the dog chased …), any other word as deep as it can */
+    const adv=w.cats[0]==='Adv',order=adv?spine.slice(0,1):spine.reverse();
+    for(const h of order){const os=candOrds(h),ord=before?os[0]:os[os.length-1],res=tryAttach(a,h,ord);reset();
+      if(res.ok)return{type:'into',a,b,host:h,ord,res,moveTo,cat:res.wrap?res.wrap[res.wrap.length-1]:S.nodes[h].cat}}
+    if(adv){const nw=newParent();if(nw)return nw;
+      for(const h of spine.slice(1).reverse()){const os=candOrds(h),ord=before?os[0]:os[os.length-1],res=tryAttach(a,h,ord);reset();
+        if(res.ok)return{type:'into',a,b,host:h,ord,res,moveTo,cat:res.wrap?res.wrap[res.wrap.length-1]:S.nodes[h].cat}}}
+  }
+  return newParent();
+  /* 2: a new phrase forms around both */
+  function newParent(){
+  let best=null;const first=before?a:b,second=before?b:a;
+  for(const P of PHRASES){
+    const p=mkNode(P);let sc=null;
+    const r1=tryAttach(first,p.id,0);
+    if(r1.ok){place(first,p.id,0,r1);const os=candOrds(p.id),o2=os[os.length-1],r2=tryAttach(second,p.id,o2);
+      if(r2.ok){place(second,p.id,o2,r2);const ev=evalNode(p);
+        if(ev.status!=='invalid'&&!treeProblem(p.id)){
+          const txt=x=>{const n=S.nodes[x];return n&&n.type==='word'?S.words[n.wid].text.toLowerCase():''};
+          sc=(ev.status==='complete'?0:missing(ev).length)*10+(r1.wrap?r1.wrap.length:0)+(r2.wrap?r2.wrap.length:0)
+            +(P==='DP'&&!/^['’]s?$/.test(txt(first))&&!/^['’]s?$/.test(txt(second))?15:0)}}}
+    reset();
+    if(sc!==null&&(!best||sc<best.sc))best={type:'new',a,b,P,sc,moveTo,before,cat:P};
+  }
+  return best;
+  }
+  }finally{w.idx=oldIdx}
+}
+function applySnap(pl){
+  const nb=S.nodes[pl.b],x=nb.x,y=nb.y;
+  if(pl.moveTo!==undefined)moveWord(S.nodes[pl.a].wid,pl.moveTo);
+  if(pl.type==='into')place(pl.a,pl.host,pl.ord,pl.res);
+  else{const before=firstIdx(pl.a)<firstIdx(pl.b),first=before?pl.a:pl.b,second=before?pl.b:pl.a;
+    const p=mkNode(pl.P);setRoot(p.id,x,y);S.roots=S.roots.filter(r=>r!==pl.b);
+    place(first,p.id,0,tryAttach(first,p.id,0));const os=candOrds(p.id),o2=os[os.length-1];place(second,p.id,o2,tryAttach(second,p.id,o2))}
+}
+function clearSnap(){if(snapPill){snapPill.remove();snapPill=null}if(snapEl){snapEl.classList.remove('snap-near');snapEl=null}}
+function showSnap(near,pl,gr){
+  clearSnap();snapEl=near.el;snapEl.classList.add('snap-near');
+  const h=headOf(pl.cat),c=h?COLORS[h]:null;
+  snapPill=document.createElement('div');snapPill.className='snap-pill';snapPill.textContent='→ '+shown(pl.cat);if(c)snapPill.style.setProperty('--tc',c);
+  const r=near.r,cx=(Math.min(r.left,gr.left)+Math.max(r.right,gr.right))/2,cy=Math.min(r.top,gr.top);
+  snapPill.style.left=cx+'px';snapPill.style.top=cy+'px';document.body.appendChild(snapPill);
 }
 function restore(){
   const {id,isNew,origin}=drag;
@@ -1546,15 +1647,17 @@ function endDrag(){
   if(!t)restore();
   let moved=!!t;
   if(t&&t.kind==='node'){
-    if(t.res.ok){if(t.res.wrap)placeWrapped(id,t.res.wrap,t.cid,t.ord);else attach(id,t.cid,t.ord)}
+    if(t.res.ok){if(t.res.moveTo!==undefined)moveWord(S.nodes[id].wid,t.res.moveTo);if(t.res.wrap)placeWrapped(id,t.res.wrap,t.cid,t.ord);else attach(id,t.cid,t.ord)}
     else{if(t.res.reason)toast(t.res.reason);restore();moved=false}
   }
+  else if(t&&t.kind==='snap')applySnap(t.pl);
   else if(t&&t.kind==='canvas')setRoot(id,t.x,t.y);
   else if(t&&t.kind==='inv')delTree(id);
   if(moved&&drag.origin&&drag.origin.parent)dropEmptyAuto(drag.origin.parent);
   finish();
 }
 function finish(){
+  clearSnap();snapCache=null;
   if(drag.hl)drag.hl.classList.remove('drop-ok','drop-no');
   const gt=drag.ghost.querySelector('.ghost-tree>.tnode')||drag.ghost.querySelector('.ghost-inner>*');
   if(gt&&S.nodes[drag.id])flipFrom={id:drag.id,rect:gt.getBoundingClientRect()};
