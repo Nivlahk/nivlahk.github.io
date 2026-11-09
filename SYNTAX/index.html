@@ -643,9 +643,10 @@ const LEXICON={the:['D'],a:['D'],an:['D'],this:['D'],that:['C','D'],these:['D'],
  said:['V'],thinks:['V'],know:['V'],chased:['V'],barked:['V'],mouse:['N'],boats:['N','V'],friend:['N'],letter:['N'],wrote:['V'],gave:['V'],owner:['N'],binoculars:['N']};
 /* contextual tagging via compromise; small curated list of genuinely ambiguous words adds extra classes */
 const ALTS={do:['V','T'],does:['V','T'],did:['V','T'],saw:['V','N'],old:['Adj','N'],that:['C','D'],home:['N','Adv'],cut:['V','N','Adj'],iron:['N','V','Adj'],fish:['N','V'],duck:['N','V'],watch:['V','N'],light:['N','V','Adj'],fast:['Adj','Adv'],well:['Adv','Adj'],can:['T','N'],run:['V','N'],down:['P','Adv'],up:['P','Adv'],out:['P','Adv'],like:['P','V'],before:['P'],after:['P'],since:['P'],her:['D','N']};
-const FORCE={who:['N'],whom:['N'],whose:['D'],what:['N','D'],which:['D','N'],forward:['Adv'],forwards:['Adv'],backward:['Adv'],backwards:['Adv'],ahead:['Adv'],away:['Adv'],onward:['Adv'],upward:['Adv'],downward:['Adv'],homeward:['Adv']};
+const FORCE={never:['Adv'],not:['Adv'],no:['D','Adv'],where:['Adv'],when:['Adv','C'],why:['Adv'],how:['Adv'],who:['N'],whom:['N'],whose:['D'],what:['N','D'],which:['D','N'],forward:['Adv'],forwards:['Adv'],backward:['Adv'],backwards:['Adv'],ahead:['Adv'],away:['Adv'],onward:['Adv'],upward:['Adv'],downward:['Adv'],homeward:['Adv']};
 /* place and direction words: the tagger often calls these nouns or adjectives, but after a verb they are adverbs (go there, come inside) */
-const EXTRA={for:['C'],than:['P'],as:['P'],there:['Adv'],here:['Adv'],where:['Adv'],upstairs:['Adv'],downstairs:['Adv'],indoors:['Adv'],outdoors:['Adv'],inside:['P','Adv'],outside:['P','Adv'],downtown:['Adv'],overseas:['Adv']};
+const EXTRA={for:['C'],than:['P'],as:['P'],there:['Adv','P'],here:['Adv','P'],home:['P'],where:['Adv'],upstairs:['Adv','P'],downstairs:['Adv','P'],indoors:['Adv','P'],outdoors:['Adv','P'],inside:['P','Adv'],outside:['P','Adv'],downtown:['Adv','P'],overseas:['Adv','P'],away:['P']};
+/* CGEL: locatives like here, there, home, upstairs are intransitive prepositions, so they can be the complement of be (she is here) */
 const SUBORD=new Set(['if','whether','lest']);   /* CGEL: the true subordinators (with that, for) */
 /* modern descriptive classes (CGEL) */
 const PREP_SUB=new Set(['because','before','after','since','until','till','while','whilst','though','although','unless','whereas','once','like','as','than']);
@@ -682,6 +683,8 @@ function loadNlp(){
 /* clitics and words whose class depends on the clitic next to them */
 const NEG_IRREG={"can't":2,"won't":2,"shan't":3};
 const CLITIC_S_HOSTS=new Set(['it','he','she','that','what','there','here','who','where','how','when','why','let','this','i','you','we','they','everyone','everybody','someone','somebody','nobody','nothing','something','everything']);
+const WH_WORDS=new Set(['who','whom','whose','what','which','where','when','why','how','whether','whoever','whatever','wherever','whenever','however']);
+const DEGREE=new Set(['very','too','so','quite','rather','extremely','really','pretty','fairly','incredibly','highly','completely','totally','absolutely','slightly','somewhat','more','most','less','least','almost','nearly','especially','particularly','unusually','surprisingly','remarkably','terribly','awfully','increasingly']);
 const PARTICLES=new Set(['up','down','out','off','back','away','over','around','along','through','in','on','about','apart','aside']);
 const participle=w=>/ing$|ed$|en$/.test(w)||(IRREG[w]&&!['am','is','are','was','were','has','had','does','did','went','saw','ate','gave','took','made','said','thought','knew','wrote','ran','came','fell'].includes(w));
 function cliticCats(toks,i){
@@ -711,6 +714,18 @@ function tagWords(toks){
     /* for-to clause: "for this country to start" — for is the subordinator when an infinitival to follows its noun phrase */
     if(l==='for'){for(let j=i+2;j<Math.min(toks.length-1,i+7);j++){const w=toks[j].toLowerCase();if(w==='to'){const nt=terms.length===toks.length&&terms[j+1]?mapTags(terms[j+1].tags):null;if(nt==='V')return['C','P'];break}
       const tj=terms.length===toks.length&&terms[j]?mapTags(terms[j].tags):null;if(tj==='V'||tj==='T'||tj==='P')break}}
+    /* that after a verb, before a determiner, pronoun or noun + verb, is the complementizer: said that the dog left / knew that he lied */
+    if(l==='that'&&terms.length===toks.length&&i>0&&i<toks.length-1){
+      const pv=terms[i-1].tags,nt=terms[i+1].tags,n2=terms[i+2]?mapTags(terms[i+2].tags):null;
+      if(mapTags(pv)==='V'&&(nt.includes('Determiner')||nt.includes('Pronoun')||nt.includes('Possessive')||(mapTags(nt)==='N'&&(n2==='V'||n2==='T'))))return['C','D','N'];
+    }
+    /* here is a place adverb; there is the existential subject only right before a form of be (there is a cat) */
+    if(l==='here')return['Adv','P','N'];
+    if(l==='there'){const nx=(toks[i+1]||'').toLowerCase().replace(/’/g,"'");return/^(is|are|was|were|'s|'re|be|been|seems?|seemed|appears?|appeared|remains?|remained|exists?|existed|must|will|would|can|could|should|might|may)$/.test(nx)?['N','Adv','P']:['Adv','P','N']}
+    /* still is an adverb unless it ends the sentence (she is still here / the water is still) */
+    if(l==='still')return i<toks.length-1?['Adv']:['Adj','Adv'];
+    /* like after a noun is a preposition (a table like that), not the verb */
+    if(l==='like'&&i>0){const pv=terms.length===toks.length&&terms[i-1]?terms[i-1].tags:[],pt=mapTags(pv);if((pt==='N'&&!pv.includes('Pronoun'))||pt==='Adj')return['P','V']}
     if(l==='to'){const nx=terms.length===toks.length&&terms[i+1]?mapTags(terms[i+1].tags):null;return nx==='V'?['T','P']:['P','T']}
     const cats=[primary];
     if(iso&&iso!==primary&&['N','V'].includes(iso)&&['N','V'].includes(primary))cats.push(iso);
@@ -875,8 +890,23 @@ function tryAttach(did,cid,ord){
      C position (that's for fronted auxiliaries in questions) and an ordinary determiner heading an Owner
      (that's for possessive 's) */
   const txt=S.words[d.wid].text.toLowerCase();
-  const marked=ch=>!!ch&&((ch[0]==='CP'&&cats.includes('T')&&!cats.includes('C'))||(ch[0]==='DP'&&!/^['’]s?$/.test(txt)));
-  const score=ch=>openAfter(did,cid,ord,ch)*10+(marked(ch)?1:0);
+  const marked=ch=>!!ch&&((ch[0]==='CP'&&cats.includes('T')&&!cats.includes('C'))||(ch[0]==='DP'&&!/^['’]s?$/.test(txt))
+    /* a Clause built only to hold a fronted phrase is right for wh-words (I know where she lives), wrong for anything else */
+    ||(ch.length>1&&ch[1]==='CP'&&ch[0]!=='TP'&&!WH_WORDS.has(txt))
+    /* an adverb wrapped in a phrase built only to hold it (is [still]) is a last resort; after will (will never have) it's the only way.
+       Only degree words start a Description or Changer around themselves (is [very happy]) */
+    ||(cats[0]==='Adv'&&ch[0]==='AdvP'&&ch.length>1&&ch[1]!=='CP'&&!(DEGREE.has(txt)&&['AdjP','AdvP'].includes(ch[1]))));
+  /* adverbs are adjuncts: attached as they are, they never need to fill a slot (she is still here),
+     and a wh-word in a complement position starts a Clause (I know where she lives) */
+  const adjunct=ch=>cats[0]==='Adv'&&ch&&ch.length===1&&ch[0]==='AdvP';
+  const whClause=ch=>WH_WORDS.has(txt)&&ch&&ch.includes('CP');
+  /* which of the word's classes a placement uses: on a tie, the word's first class wins (to: Tense before Preposition) */
+  const classRank=ch=>{if(!ch)return Math.max(0,cats.indexOf(dcat));const i=cats.findIndex(x=>ch[0]===x+'P'||altsOf(ch[0]).has(x));return i<0?cats.length:i};
+  /* a degree word (very, too, quite …) right before an adjective or adverb modifies that word: is [very happy] */
+  const nw=S.words[d.wid+1],nx=nw&&nw.cats[0];
+  const degree=ch=>DEGREE.has(txt)&&(nx==='Adj'||nx==='Adv')&&ch&&ch[0]==='AdvP'&&ch[1]===nx+'P';
+  /* a marked reading costs more than leaving a slot open, so it is only used when nothing else fits */
+  const score=ch=>(adjunct(ch)?3:openAfter(did,cid,ord,ch)*10)+(marked(ch)?15:0)-(whClause(ch)?5:0)-(degree(ch)?5:0)+classRank(ch)*2;
   let best=cands[0],bestN=cands.length>1?score(best):0;
   for(const ch of cands.slice(1)){const n=score(ch);if(n<bestN){best=ch;bestN=n}}
   return best?{ok:true,wrap:best}:direct;
