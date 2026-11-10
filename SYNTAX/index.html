@@ -154,6 +154,7 @@ button{font:inherit;color:inherit}
 /* the legend floats in the sandbox's bottom-right corner, like Clear all in the top-right */
 .legendfoot{position:absolute;right:10px;bottom:8px;max-width:calc(100% - 20px);z-index:5;display:flex;justify-content:flex-end;background:color-mix(in srgb,var(--bench) 85%,transparent);padding:4px;border-radius:10px}
 .legendfoot .btn{background:var(--panel)}
+.typer{position:fixed;transform:translate(-50%,-50%);z-index:60;font:14px var(--mono);padding:5px 12px;min-width:170px;border-radius:999px;border:2px solid var(--ink);background:var(--panel);color:var(--ink);outline:none;box-shadow:0 8px 20px rgba(0,0,0,.35)}
 .scorebar{display:flex;align-items:baseline;gap:6px 16px;flex-wrap:wrap;margin-left:auto;font-size:13px;color:var(--ink2);white-space:nowrap}
 .scorebar .sc b{display:inline-block;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;margin-right:3px}
 .sc-gain{font-weight:700;color:var(--gold);opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s}
@@ -1088,7 +1089,7 @@ function renderCanvas(){
   if(flipFrom&&!before[flipFrom.id])before[flipFrom.id]=flipFrom.rect;flipFrom=null;
   modes={};
   const done=completeRoots();
-  canvas.innerHTML=S.roots.map(r=>rRoot(r,done)).join('')+(S.roots.length?'':`<div class="hint-empty">${S.words.length?'Drag words onto the bench and next to each other to build a tree.':'Type a sentence in the box to put its words on the bench, then build a tree around them.'}</div>`);
+  canvas.innerHTML=S.roots.map(r=>rRoot(r,done)).join('')+(S.roots.length?'':`<div class="hint-empty">${S.words.length?'Drag words onto the bench and next to each other to build a tree.':'Type a sentence in the box, or double-click anywhere here, to put words on the bench. Then drag them together to build a tree.'}</div>`);
   prevMode=modes;
   // size bench
   let mx=0,my=0;canvas.querySelectorAll('.rootwrap').forEach(w=>{mx=Math.max(mx,w.offsetLeft+w.offsetWidth);my=Math.max(my,w.offsetTop+w.offsetHeight)});
@@ -1233,11 +1234,11 @@ function renderChrome(){
     lg+=`<form class="classform" id="classForm"><input id="cfTag" aria-label="Abbreviation" placeholder="Abbreviation, e.g. Pron" value="${esc(f.tag||'')}" ${f.mode==='edit'?'disabled':''} autocomplete="off"><input id="cfName" aria-label="Full name" placeholder="Full name, e.g. Pronoun" value="${esc(f.name||'')}" autocomplete="off"><input id="cfColor" type="color" aria-label="Color" value="${f.color}"><button class="btn small" type="submit">${f.mode==='edit'?'Save':'Add class'}</button><button class="btn small" type="button" data-cfcancel>Cancel</button>${f.err?`<p class="formerr">${esc(f.err)}</p>`:''}</form>`}
   $('#lexInv').innerHTML=lg;
   if(legendEdit)legendShown=true;
-  $('#legendFoot').hidden=!(everTree||legendEdit);$('#legendBtn').hidden=legendShown;$('#lexInv').hidden=!legendShown;
+  $('#legendFoot').hidden=false;$('#legendBtn').hidden=legendShown;$('#lexInv').hidden=!legendShown;
   $('#wordDock h2 span').textContent='Words';
-  $('#wordDock .dock-hint').textContent='Drag words next to each other on the bench to build a tree. Tap a word on the bench to change its class.'+(everTree?' ∅ is a silent word for an understood subject or a verb that moved.':'')+(contShown?' Containers: tap or drag one onto the bench, then drop words into its open slots.':'');
-  $('#contBtn').hidden=!everTree;$('#contBtn').textContent=contShown?'Hide containers':'Show containers';
-  $('#phrInv').hidden=!(everTree&&contShown);
+  $('#wordDock .dock-hint').textContent='Drag words next to each other on the bench to build a tree, or double-click an empty slot or spot to type words in. Tap a word on the bench to change its class.'+(everTree?' ∅ is a silent word for an understood subject or a verb that moved.':'')+(contShown?' Containers: tap or drag one onto the bench, then drop words into its open slots.':'');
+  $('#contBtn').hidden=false;$('#contBtn').textContent=contShown?'Hide containers':'Show containers';
+  $('#phrInv').hidden=!contShown;
   $('#phrInv').innerHTML=[...PHRASES,...COORD].map(c=>{const h=headOf(c);return`<span class="inv-phr${h?' headed':''}" data-inv="class" data-cat="${c}"${h?` style="--c:${COLORS[h]}"`:''}>${esc(shown(c))}</span>`}).join('');
   $('#ruleList').innerHTML=G.rules.map((line,i)=>ruleForm&&ruleForm.index===i?ruleFormHTML()
       :`<div class="rule editable" data-editrule="${i}" title="Click to edit">${ruleChips(line)}<button class="rx" type="button" data-delrule="${i}" aria-label="Delete rule">×</button></div>`).join('')
@@ -1357,7 +1358,7 @@ function placeContainer(h){
   const n=h.dataset.inv==='empty'?mkEmpty():mkNode(h.dataset.cat);
   const y=nextRowY();setRoot(n.id,16,y);renderAll();reveal(y);
 }
-function addWords(text){
+function addWords(text,at,quiet){
   /* contractions split into host + clitic the way descriptive grammars (and the tagger) do: it 's, do n't, ca n't, I 'm;
      possessive 's (or a bare ' after plural s) splits off as its own determiner: the man + 's + hat */
   const parts=[],batch=S.batchSeq=(S.batchSeq||0)+1;
@@ -1375,14 +1376,58 @@ function addWords(text){
   const wordToks=parts.filter(x=>x.k==='word').map(x=>x.t);
   const tagged=tagWords(wordToks).map(cs=>{cs=cs.filter(c=>LEX.includes(c));return cs.length?cs:[LEX.includes('N')?'N':LEX[0]]});
   let wi=0;const cats=parts.map(x=>x.k==='semi'?['Semi']:x.k==='poss'?['D']:tagged[wi++]);
-  const y0=nextRowY(),limit=Math.max(280,bench.clientWidth-40);let x=16,y=y0;
+  const x0=at?at.x:16,y0=at?at.y:nextRowY(),limit=Math.max(x0+280,bench.clientWidth-40),ids=[];let x=x0,y=y0;
   toks.forEach((t,i)=>{
     const w={text:t,idx:S.words.length,cats:cats[i],batch};S.words.push(w);
     const wd=t.length*9.5+30+(w.cats.length>1?w.cats.length*14+12:0);
-    if(x>16&&x+wd>limit){x=16;y+=46}
-    setRoot(mkWord(w.idx).id,x,y);x+=wd+10;
+    if(x>x0&&x+wd>limit){x=x0;y+=46}
+    const nd=mkWord(w.idx);ids.push(nd.id);setRoot(nd.id,x,y);x+=wd+10;
   });
-  renderAll();reveal(y0);
+  if(!quiet){renderAll();reveal(y0)}
+  return ids;
+}
+/* ---------- double-click (or double-tap) an empty slot, or an empty spot on the bench, to type words straight in.
+   In a slot, the words go into that slot one by one, each joining the phrase the previous one made
+   (the + big + dog in an object slot builds the Noun Phrase); anything that doesn't fit stays loose on the bench. ---------- */
+let lastTap=null,typer=null;
+function tapTarget(e){
+  const sl=e.target.closest('#canvas .slot');
+  if(sl){const h=sl.closest('[data-drop]');return h?{kind:'slot',el:sl,host:h.dataset.id}:null}
+  if(e.target.closest('#bench')&&!e.target.closest('[data-id],[data-drag],button'))return{kind:'bench'};
+  return null}
+function openTyper(tt,cx,cy){
+  closeTyper();
+  const inp=document.createElement('input');inp.className='typer';inp.autocomplete='off';
+  inp.placeholder=tt.kind==='slot'?'Type a word or phrase':'Type words';inp.setAttribute('aria-label',inp.placeholder);
+  const r=tt.kind==='slot'?tt.el.getBoundingClientRect():null,cr=canvas.getBoundingClientRect();
+  const px=r?r.left+r.width/2:cx,py=r?r.top+r.height/2:cy;
+  inp.style.left=px+'px';inp.style.top=py+'px';
+  typer={inp,tt,ord:r?ordAt(tt.host,px):null,x:cx-cr.left,y:cy-cr.top-14};
+  document.body.appendChild(inp);inp.focus();
+  inp.addEventListener('keydown',ev=>{ev.stopPropagation();if(ev.key==='Enter'){ev.preventDefault();commitTyper()}else if(ev.key==='Escape'){ev.preventDefault();closeTyper()}});
+  inp.addEventListener('blur',()=>setTimeout(()=>{if(typer&&typer.inp===inp)commitTyper()},0));
+}
+function closeTyper(){if(typer){const i=typer.inp;typer=null;i.remove()}}
+function commitTyper(){
+  if(!typer)return;const {inp,tt,ord,x,y}=typer,v=inp.value.trim();closeTyper();if(!v)return;
+  loadNlp().then(()=>{
+    const ids=addWords(v,tt.kind==='bench'?{x,y}:null,true);
+    if(tt.kind==='slot'&&S.nodes[tt.host]){const n=fillSlot(ids,tt.host,ord);if(n<ids.length)toast(n?`Only the first ${n} word${n>1?'s':''} fit there; the rest are on the bench.`:'That doesn\'t fit there, so it\'s on the bench.')}
+    renderAll();
+  });
+}
+function fillSlot(ids,host,ord){
+  let prev=null,placed=0;
+  for(const id of ids){
+    const d=S.nodes[id];if(!d||d.type!=='word')break;
+    const hosts=[];if(prev){let p=S.nodes[prev].parent;while(p){hosts.push(p);if(p===host)break;p=S.nodes[p].parent}}else hosts.push(host);
+    const o=prev?S.words[S.nodes[prev].wid].idx+.5:ord;let ok=false;
+    /* the phrase that takes the word with the least new structure wins; ties go to the deeper one */
+    let best=null;for(const h of hosts){const r=tryAttachMove(id,h,o);if(r.ok){const c=r.wrap?r.wrap.length:0;if(!best||c<best.c)best={h,r,c}}}
+    if(best){if(best.r.moveTo!==undefined)moveWord(d.wid,best.r.moveTo);place(id,best.h,o,best.r);ok=true}
+    if(!ok)break;prev=id;placed++;
+  }
+  return placed;
 }
 
 /* quiet cue: the score bar names the next goal */
@@ -1460,6 +1505,10 @@ document.addEventListener('submit',e=>{
 /* ---------- drag & drop ---------- */
 let pending=null,drag=null;
 document.addEventListener('pointerdown',e=>{
+  if(e.target.closest('.typer'))return;
+  {const tt=e.button>0?null:tapTarget(e),k=tt&&(tt.host||'bench'),now=Date.now();
+   if(tt&&lastTap&&lastTap.k===k&&now-lastTap.t<400&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<14){lastTap=null;e.preventDefault();openTyper(tt,e.clientX,e.clientY);return}
+   lastTap=tt?{t:now,x:e.clientX,y:e.clientY,k}:null}
   if(e.button>0||e.target.closest('[data-del],[data-opt]'))return;
   const h=e.target.closest('[data-drag],[data-inv]');
   if(!h){if(S.sel&&!e.target.closest('#toast')){S.sel=null;renderAll()}return}
