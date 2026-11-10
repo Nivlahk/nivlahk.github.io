@@ -7,6 +7,7 @@
 - [SPOKEN](https://calvinhancock.com/SPOKEN/): Voice-driven code dictation. You speak a program in Vertex, an English-like programming language, and run it in a built-in console. Includes a voice guide and a reserved-keyword reference.
 - [NEFS](https://calvinhancock.com/NEFS/): Featural script designer for the International Phonetic Alphabet. Assign a radical to each phonetic feature (place, manner, voicing, height, backness, rounding), draw special symbols, and export SVG, PNG, or a .ttf font. Starts from Tessera, Hancock's featural script for the IPA.
 - [Syntax Tree Sandbox](https://calvinhancock.com/SYNTAX/): Drag-and-drop constituency parser. Drop words into phrase-structure containers (NP, VP, PP) and watch nested boxes become a syntax tree. Open-ended, with SVG export.
+- [PhonoTally](https://calvinhancock.com/PHONOTALLY/): Phonological process analysis for speech-language pathologists. Enter target words and a child's productions in IPA; it reports process rates (fronting, stopping, gliding and more), percent consonants correct, the consonant inventory, and a report draft for Word or PDF. Built on NEFS, a one-byte-per-phoneme encoding, and runs entirely in the browser.
 
 ## How each project works
 

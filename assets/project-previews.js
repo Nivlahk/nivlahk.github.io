@@ -1,4 +1,4 @@
-/* Live micro-previews for the three project cards on the home page.
+/* Live micro-previews for the project cards on the home page.
    Each one acts out the app's core move in a ~300x170 SVG, runs only while
    it is on screen, and holds a still final frame for reduced-motion users. */
 (() => {
@@ -30,7 +30,7 @@
   function loop(host, duration, render, finalT) {
     if (reduce) { render(finalT); return; }
     let start = performance.now(), raf = 0, visible = false, pausedAt = 0;
-    const frame = now => { render(((now - start) / 1000) % duration); raf = requestAnimationFrame(frame); };
+    const frame = now => { render((Math.max(0, now - start) / 1000) % duration); raf = requestAnimationFrame(frame); };
     const sync = () => {
       const run = visible && !document.hidden;
       if (run && !raf) { start = performance.now() - pausedAt * 1000; raf = requestAnimationFrame(frame); }
@@ -459,6 +459,139 @@
     }, 3.5);
   }
 
-  const kinds = { spoken, syntax, nefs, seer, vertex, bridge };
+  /* ---------- PHONOTALLY: target and child words line up; each change is tallied ---------- */
+  function phonotally(host) {
+    const svg = svgFor(host), g = el('g', {}, svg);
+    const SERIF = 'Georgia, "Times New Roman", serif', TEAL = '#6cc3cc';
+    // word, target, produced, index of the changed sound, process
+    const W = [
+      ['cat', 'kæt', 'tæt', 0, 'Fronting'],
+      ['sun', 'sʌn', 'tʌn', 0, 'Stopping'],
+      ['go', 'ɡoʊ', 'doʊ', 0, 'Fronting'],
+      ['fish', 'fɪʃ', 'pɪʃ', 0, 'Stopping'],
+      ['duck', 'dʌk', 'dʌt', 2, 'Fronting']
+    ];
+    const PROC = ['Fronting', 'Stopping'], OPP = { Fronting: 4, Stopping: 3 };
+    el('text', { x: 14, y: 20, 'font-family': MONO, 'font-size': 7, fill: C.dim, 'letter-spacing': '.08em' }, g).textContent = 'TARGET → CHILD';
+    el('text', { x: 186, y: 20, 'font-family': MONO, 'font-size': 7, fill: C.dim, 'letter-spacing': '.08em' }, g).textContent = 'PROCESSES';
+    el('line', { x1: 176, y1: 12, x2: 176, y2: 158, stroke: C.line, 'stroke-width': 1 }, g);
+
+    const rows = W.map(([word, tgt, out, k], i) => {
+      const y = 40 + i * 25, row = el('g', { opacity: 0 }, g);
+      el('text', { x: 14, y, 'font-family': SANS, 'font-size': 9, fill: C.muted }, row).textContent = word;
+      const t = el('text', { x: 46, y, 'font-family': SERIF, 'font-size': 12.5, fill: C.ink }, row);
+      t.textContent = '/' + tgt + '/';
+      const arrow = el('text', { x: 92, y, 'font-family': SANS, 'font-size': 10, fill: C.dim, opacity: 0 }, row);
+      arrow.textContent = '→';
+      const o = el('text', { x: 108, y, 'font-family': SERIF, 'font-size': 12.5, opacity: 0 }, row);
+      const chars = [...out];
+      ['[', ...chars, ']'].forEach((ch, j) => {
+        const sp = el('tspan', { fill: j - 1 === k ? C.orange : C.ink }, o);
+        if (j - 1 === k) sp.setAttribute('font-weight', 700);
+        sp.textContent = ch;
+      });
+      return { row, arrow, o };
+    });
+
+    const tally = PROC.map((name, i) => {
+      const y = 44 + i * 40;
+      el('text', { x: 186, y, 'font-family': SANS, 'font-size': 10, fill: C.ink }, g).textContent = name;
+      const n = el('text', { x: 290, y, 'text-anchor': 'end', 'font-family': MONO, 'font-size': 9, fill: C.muted }, g);
+      el('rect', { x: 186, y: y + 7, width: 104, height: 5, rx: 2.5, fill: C.well }, g);
+      const bar = el('rect', { x: 186, y: y + 7, width: 0, height: 5, rx: 2.5, fill: TEAL }, g);
+      return { name, n, bar };
+    });
+    const pcc = el('text', { x: 186, y: 150, 'font-family': MONO, 'font-size': 7.5, fill: C.accent, opacity: 0 }, g);
+    pcc.textContent = 'REPORT READY ✓';
+
+    const T0 = .5, STEP = 1.05, END = T0 + W.length * STEP + 2.6;
+    loop(host, END, t => {
+      g.setAttribute('opacity', Math.min(1, t / .3, (END - t) / .4));
+      const counts = { Fronting: 0, Stopping: 0 };
+      rows.forEach((r, i) => {
+        const at = T0 + i * STEP;
+        r.row.setAttribute('opacity', Math.max(0, Math.min(1, (t - at) / .25)));
+        const shown = Math.max(0, Math.min(1, (t - at - .45) / .2));
+        r.arrow.setAttribute('opacity', shown); r.o.setAttribute('opacity', shown);
+        if (t >= at + .5) counts[W[i][4]]++;
+      });
+      tally.forEach(x => {
+        const c = counts[x.name];
+        x.n.textContent = c + ' of ' + OPP[x.name];
+        x.bar.setAttribute('width', 104 * c / OPP[x.name]);
+      });
+      pcc.setAttribute('opacity', Math.max(0, Math.min(1, (t - (T0 + W.length * STEP + .2)) / .3)));
+    }, END - 1);
+  }
+
+  /* ---------- ICEBOLT: a schema becomes a form; the save lands, locked, in the user's Drive ---------- */
+  function icebolt(host) {
+    const svg = svgFor(host), g = el('g', {}, svg);
+    const ICE = '#8fd3ff';
+    const SCHEMA = [
+      [['Table', C.accent], [' people {', C.ink]],
+      [['  name', '#ffd2b0'], [' text', C.muted]],
+      [['  say_it', '#ffd2b0'], [' text', C.muted]],
+      [['}', C.ink]]
+    ];
+    el('text', { x: 12, y: 20, 'font-family': MONO, 'font-size': 7, fill: C.dim, 'letter-spacing': '.08em' }, g).textContent = 'SCHEMA';
+    const lines = SCHEMA.map((parts, i) => {
+      const tx = el('text', { x: 12, y: 40 + i * 13, 'font-family': MONO, 'font-size': 8, style: 'white-space: pre' }, g);
+      const spans = parts.map(([str, fill]) => { const sp = el('tspan', { fill }, tx); return { sp, str }; });
+      return spans;
+    });
+    const total = lines.flat().reduce((n, x) => n + x.str.length, 0);
+
+    // form
+    const form = el('g', { opacity: 0 }, g);
+    el('text', { x: 108, y: 20, 'font-family': MONO, 'font-size': 7, fill: C.dim, 'letter-spacing': '.08em' }, form).textContent = 'YOUR APP';
+    const field = (y, label) => {
+      el('text', { x: 108, y, 'font-family': SANS, 'font-size': 7, fill: C.muted }, form).textContent = label;
+      el('rect', { x: 108, y: y + 4, width: 82, height: 15, rx: 3, fill: C.well, stroke: C.line }, form);
+      return el('text', { x: 113, y: y + 14.5, 'font-family': SANS, 'font-size': 8.5, fill: C.ink }, form);
+    };
+    const nameVal = field(36, 'Name'), sayVal = field(66, 'Say it like');
+    const btn = el('rect', { x: 108, y: 94, width: 54, height: 15, rx: 3, fill: C.orange }, form);
+    el('text', { x: 135, y: 104, 'text-anchor': 'middle', 'font-family': SANS, 'font-size': 7.5, 'font-weight': 700, fill: '#160b06' }, form).textContent = 'Add person';
+
+    // the user's Drive folder
+    el('text', { x: 208, y: 20, 'font-family': MONO, 'font-size': 7, fill: C.dim, 'letter-spacing': '.08em' }, g).textContent = 'USER’S DRIVE';
+    el('path', { d: 'M208 46 h22 l5 6 h55 v54 h-82 z', fill: '#2a160c', stroke: C.muted, 'stroke-width': 1 }, g);
+    el('text', { x: 249, y: 120, 'text-anchor': 'middle', 'font-family': SANS, 'font-size': 8.5, fill: C.ink }, g).textContent = 'Name Book';
+    const file = el('g', {}, g);
+    el('rect', { x: -9, y: -11, width: 18, height: 22, rx: 2, fill: ICE }, file);
+    el('path', { d: 'M3 -11 v6 h6', fill: 'none', stroke: '#1b0d07', 'stroke-width': 1 }, file);
+    const lock = el('g', { opacity: 0 }, g);
+    el('rect', { x: 243, y: 82, width: 13, height: 10, rx: 2, fill: C.accent }, lock);
+    const shackle = el('path', { d: 'M246 82 v-4 a3.5 3.5 0 0 1 7 0 v4', fill: 'none', stroke: C.accent, 'stroke-width': 1.8 }, lock);
+    const note = el('text', { x: 249, y: 140, 'text-anchor': 'middle', 'font-family': SANS, 'font-size': 8, fill: C.accent, opacity: 0 }, g);
+    note.textContent = 'Only they can open it';
+    const dev = el('text', { x: 249, y: 154, 'text-anchor': 'middle', 'font-family': MONO, 'font-size': 6.5, fill: C.dim, opacity: 0 }, g);
+    dev.textContent = 'bring your own database';
+
+    const type = (node, word, a, b, t) => { node.textContent = word.slice(0, Math.round(word.length * Math.max(0, Math.min(1, (t - a) / (b - a))))); };
+    const END = 8;
+    loop(host, END, t => {
+      g.setAttribute('opacity', Math.min(1, t / .3, (END - t) / .4));
+      let budget = Math.round(total * Math.max(0, Math.min(1, (t - .3) / 1.5)));
+      lines.flat().forEach(x => { const n = Math.min(budget, x.str.length); x.sp.textContent = x.str.slice(0, n); budget -= n; });
+      form.setAttribute('opacity', kf(t, [[1.9, 0], [2.3, 1]]));
+      type(nameVal, 'Aoife Byrne', 2.5, 3.2, t);
+      type(sayVal, 'EE-fa', 3.3, 3.8, t);
+      const press = t > 4.05 && t < 4.25;
+      btn.setAttribute('fill', press ? C.accent : C.orange);
+      const m = kf(t, [[4.2, 0], [5, 1]]);
+      const x = 135 + (249 - 135) * m, y = 101 + (80 - 101) * m - Math.sin(m * Math.PI) * 26;
+      file.setAttribute('transform', `translate(${x} ${y}) scale(${t < 4.2 ? 0 : m < 1 ? .7 + .3 * m : 1})`);
+      file.setAttribute('opacity', t < 4.2 ? 0 : 1);
+      const l = kf(t, [[5.1, 0], [5.4, 1]]);
+      lock.setAttribute('opacity', l);
+      shackle.setAttribute('transform', `translate(0 ${t > 5.5 ? kf(t, [[5.5, -3], [5.8, 0]]) : -3})`);
+      note.setAttribute('opacity', kf(t, [[5.8, 0], [6.1, 1]]));
+      dev.setAttribute('opacity', kf(t, [[6.2, 0], [6.5, 1]]));
+    }, 7.2);
+  }
+
+  const kinds = { spoken, syntax, nefs, seer, vertex, bridge, phonotally, icebolt };
   document.querySelectorAll('[data-preview]').forEach(h => kinds[h.dataset.preview] && kinds[h.dataset.preview](h));
 })();

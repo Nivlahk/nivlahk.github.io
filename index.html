@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Calvin W. Hancock | Voice Coding, Featural Scripts &amp; Syntax Tools</title>
   <!-- SEO + social -->
-  <meta name="description" content="Portfolio of Calvin W. Hancock, a BYU Information Systems student building browser-native language tools: SPOKEN (voice-driven coding), NEFS (featural script designer), and Syntax Tree Sandbox.">
+  <meta name="description" content="Portfolio of Calvin W. Hancock, a BYU Information Systems student building browser-native language tools: SPOKEN (voice-driven coding), NEFS (featural script designer), Syntax Tree Sandbox, and PhonoTally (phonological process analysis for speech-language pathologists).">
   <link rel="canonical" href="https://calvinhancock.com/">
   <meta name="author" content="Calvin W. Hancock">
   <meta name="robots" content="index, follow, max-image-preview:large">
@@ -14,7 +14,7 @@
   <meta property="og:type" content="profile">
   <meta property="og:site_name" content="Calvin W. Hancock">
   <meta property="og:title" content="Calvin W. Hancock | Voice Coding, Featural Scripts &amp; Syntax Tools">
-  <meta property="og:description" content="Portfolio of Calvin W. Hancock, a BYU Information Systems student building browser-native language tools: SPOKEN (voice-driven coding), NEFS (featural script designer), and Syntax Tree Sandbox.">
+  <meta property="og:description" content="Portfolio of Calvin W. Hancock, a BYU Information Systems student building browser-native language tools: SPOKEN (voice-driven coding), NEFS (featural script designer), Syntax Tree Sandbox, and PhonoTally (phonological process analysis for speech-language pathologists).">
   <meta property="og:url" content="https://calvinhancock.com/">
   <meta property="og:image" content="https://calvinhancock.com/assets/og-home.png">
   <meta property="og:image:width" content="1200">
@@ -22,7 +22,7 @@
   <meta property="og:image:alt" content="Calvin W. Hancock | Voice Coding, Featural Scripts &amp; Syntax Tools">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Calvin W. Hancock | Voice Coding, Featural Scripts &amp; Syntax Tools">
-  <meta name="twitter:description" content="Portfolio of Calvin W. Hancock, a BYU Information Systems student building browser-native language tools: SPOKEN (voice-driven coding), NEFS (featural script designer), and Syntax Tree Sandbox.">
+  <meta name="twitter:description" content="Portfolio of Calvin W. Hancock, a BYU Information Systems student building browser-native language tools: SPOKEN (voice-driven coding), NEFS (featural script designer), Syntax Tree Sandbox, and PhonoTally (phonological process analysis for speech-language pathologists).">
   <meta name="twitter:image" content="https://calvinhancock.com/assets/og-home.png">
   <script type="application/ld+json">
 {
@@ -103,6 +103,9 @@
         },
         {
           "@id": "https://calvinhancock.com/SYNTAX/#app"
+        },
+        {
+          "@id": "https://calvinhancock.com/PHONOTALLY/#app"
         }
       ]
     },
@@ -220,6 +223,39 @@
             ],
             "keywords": "syntax tree generator, constituency parser, phrase structure tree, X-bar syntax, linguistics teaching tool",
             "image": "https://calvinhancock.com/assets/og-syntax.png",
+            "inLanguage": "en",
+            "author": {
+              "@id": "https://calvinhancock.com/#person"
+            },
+            "creator": {
+              "@id": "https://calvinhancock.com/#person"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": [
+              "WebApplication"
+            ],
+            "@id": "https://calvinhancock.com/PHONOTALLY/#app",
+            "name": "PhonoTally",
+            "alternateName": "Phonological Process Analysis",
+            "url": "https://calvinhancock.com/PHONOTALLY/",
+            "description": "Phonological process analysis for speech-language pathologists. Enter target words and a child's productions in IPA to get process rates (fronting, stopping, gliding and more), percent consonants correct, the consonant inventory, and a report draft for Word or PDF. Runs entirely in the browser; nothing entered is sent anywhere.",
+            "applicationCategory": "HealthApplication",
+            "operatingSystem": "Any (web browser)",
+            "browserRequirements": "Requires JavaScript.",
+            "featureList": [
+              "Phonological process detection with occurrence rates",
+              "Percent consonants correct with severity bands",
+              "Consonant inventory and stimulability candidates",
+              "Word-by-word alignment of target and production",
+              "Age norms from Bowen (2011) or custom ages",
+              "Report export to Word, PDF or text"
+            ],
+            "keywords": "phonological process analysis, speech-language pathology, SLP evaluation tool, phonological processes, percent consonants correct, IPA transcription analysis",
             "inLanguage": "en",
             "author": {
               "@id": "https://calvinhancock.com/#person"
@@ -357,7 +393,8 @@
     .section-heading h2 { margin-bottom: 0; font-size: clamp(2rem, 4vw, 3.4rem); letter-spacing: -.05em; }
     .section-heading span { color: var(--muted); font: .75rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
-    .projects { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .projects { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    @media (max-width: 1000px) { .projects, .projects.soon { grid-template-columns: repeat(2, 1fr); } }
     .projects.soon { margin-top: 1rem; }
 
     .project {
@@ -415,8 +452,11 @@
     @media (max-width: 800px) {
       .hero, .about-grid { grid-template-columns: 1fr; }
       .hero { min-height: auto; padding: 3.5rem 0; gap: 2rem; }
-      .projects, .projects.soon { grid-template-columns: 1fr; }
       .resume-row { align-items: flex-start; flex-direction: column; gap: 1rem; }
+    }
+
+    @media (max-width: 600px) {
+      .projects, .projects.soon { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 520px) {
@@ -479,7 +519,7 @@
     <section id="projects" aria-labelledby="projects-title">
       <div class="section-heading">
         <h2 id="projects-title">Selected projects</h2>
-        <span>01 — 03 live in your browser · 04 — 06 coming soon</span>
+        <span>01 — 04 live in your browser · 05 — 08 coming soon</span>
       </div>
 
       <div class="projects">
@@ -509,12 +549,21 @@
           <p class="stack">JavaScript · HTML/CSS · Linguistics</p>
           <a class="project-link" href="./SYNTAX/">Open SYNTAX →</a>
         </article>
+
+        <article class="project">
+          <div class="preview" data-preview="phonotally" role="img" aria-label="Animation: five target words line up with a child's productions in IPA. cat is said tat, sun tun, go do, fish pish and duck dut; each changed sound lights up and is tallied as fronting or stopping until the report is ready."></div>
+          <span class="project-number">04 / PHONOTALLY</span>
+          <h3>Speech analysis for SLPs</h3>
+          <p>Enter a child's speech sample in IPA and get the phonological processes, consonant inventory and a report draft. Built on NEFS.</p>
+          <p class="stack">JavaScript · NEFS · Clinical phonology</p>
+          <a class="project-link" href="./PHONOTALLY/">Open PhonoTally →</a>
+        </article>
       </div>
 
       <div class="projects soon">
         <article class="project">
           <div class="preview" data-preview="seer" role="img" aria-label="Animation: a delivery drone running on SEER picks up a heavy package and its controller starts to sink. A tampered fix is refused by the hardware, then the genuine fix is installed while it keeps flying, and controller v2 brings it back to the target altitude."></div>
-          <div class="soon-head"><span class="project-number">04 / SEER</span><span class="soon-tag">Coming soon</span></div>
+          <div class="soon-head"><span class="project-number">05 / SEER</span><span class="soon-tag">Coming soon</span></div>
           <h3>A CPU that checks every jump</h3>
           <p>A custom 64-bit CPU with control-flow integrity in hardware. Runs C on an FPGA through its own LLVM backend.</p>
           <p class="stack">SystemVerilog · LLVM · FPGA</p>
@@ -522,7 +571,7 @@
 
         <article class="project">
           <div class="preview" data-preview="vertex" role="img" aria-label="Animation: a four-line Vertex program and its flowchart run side by side. The current line and the matching flowchart node light up together; with n = 5 it takes the yes branch and prints big then 5, with n = 2 it takes the no branch and prints 2."></div>
-          <div class="soon-head"><span class="project-number">05 / VERTEX</span><span class="soon-tag">Coming soon</span></div>
+          <div class="soon-head"><span class="project-number">06 / VERTEX</span><span class="soon-tag">Coming soon</span></div>
           <h3>Flowcharts that run</h3>
           <p>A visual language where the flowchart, the code and the machine instructions are one program at different zoom levels.</p>
           <p class="stack">JavaScript · Compilers · Visual programming</p>
@@ -530,10 +579,18 @@
 
         <article class="project">
           <div class="preview" data-preview="bridge" role="img" aria-label="Animation: the app's place-of-articulation diagram. For an English speaker learning Spanish, the lit region moves from velar (ŋ) to palatal (ɲ); for one learning Japanese, it moves from labiodental (f) to bilabial (ɸ)."></div>
-          <div class="soon-head"><span class="project-number">06 / BRIDGE</span><span class="soon-tag">Coming soon</span></div>
+          <div class="soon-head"><span class="project-number">07 / BRIDGE</span><span class="soon-tag">Coming soon</span></div>
           <h3>New sounds from ones you have</h3>
           <p>Teaches each new sound in a language you're learning from the closest one you already make, one feature at a time.</p>
           <p class="stack">JavaScript · Graph search · Phonetics</p>
+        </article>
+
+        <article class="project">
+          <div class="preview" data-preview="icebolt" role="img" aria-label="Animation: a four-line schema for a people table becomes an app form. Someone types Aoife Byrne, pronounced EE-fa, and presses Add person; the saved file flies into a Name Book folder in the user's own Google Drive and a lock closes on it. Only they can open it: the user brings their own database."></div>
+          <div class="soon-head"><span class="project-number">08 / ICEBOLT</span><span class="soon-tag">Coming soon</span></div>
+          <h3>Apps where users own the data</h3>
+          <p>Bring-your-own-database apps: each user's data saves to their own Google Drive, encrypted, never to the developer's servers.</p>
+          <p class="stack">TypeScript · SQLite/Wasm · npm</p>
         </article>
       </div>
     </section>
@@ -567,12 +624,13 @@
       <a href="./SPOKEN/">SPOKEN</a>
       <a href="./NEFS/">NEFS</a>
       <a href="./SYNTAX/">Syntax Tree Sandbox</a>
+      <a href="./PHONOTALLY/">PhonoTally</a>
       <a href="https://github.com/Nivlahk" rel="me">GitHub</a>
       <a href="https://linkedin.com/in/calvin-hancock-a1a711342" rel="me">LinkedIn</a>
     </nav>
   </footer>
 
-  <script src="./assets/project-previews.js?v=9" defer></script>
+  <script src="./assets/project-previews.js?v=11" defer></script>
   <script>
     (() => {
       const canvas = document.getElementById('stormCanvas');
