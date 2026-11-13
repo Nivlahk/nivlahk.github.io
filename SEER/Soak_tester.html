@@ -985,22 +985,11 @@ function cfAnalyzeMutability(allBodies) {
 }
 
 function compileCFSource(src, enforceCapabilityDiscipline, enableMetaCF) {
-  // BUGFIX (this pass): prepended here, as SOURCE TEXT, before
-  // parseCFSource ever runs -- not injected into the resolved
-  // instruction stream after codegen. cfGenerateSetup computes absolute
-  // PC values (CN-table registration) from the FINAL assembled layout;
-  // inserting text after that resolution would silently shift every
-  // subsequent address. Going through the exact same parse/codegen/
-  // PC-resolution pipeline as every other instruction in the program
-  // avoids a second, parallel PC-calculation path entirely. Replaces the
-  // RTL's old automatic index-0 bootstrap (removed from
-  // seer_cap_table.sv this pass) with a real, explicit, privileged
-  // install -- see generateStackCapBootPrefix's own header comment for
-  // the full reasoning. (generateStackCapBootPrefix is defined later in
-  // this file, near capMacV1 -- safe to reference here regardless of
-  // declaration order, since both are top-level function declarations
-  // and JS hoists them before any code runs.)
-  src = generateStackCapBootPrefix() + "\n" + src;
+  // 2026-11-12: no capability-table install prefix any more. The old table
+  // (wrctrl 0x0A-0x0D, 0x16 commit, 0x1C key) was removed from the RTL;
+  // a wrctrl to 0x16 or 0x1C now traps (TRAP_ARITH). Memory access goes
+  // through CHERIoT capabilities derived from cgetroot (see
+  // generateStackCapTokenLines).
   const topStmts = parseCFSource(src, enableMetaCF);
 
   const functions = []; // [{name, body}]
@@ -2228,7 +2217,7 @@ function simulateProgram(effectiveSourceText, maxSteps=SIM_MAX_STEPS, regDepth=2
       // to one instruction instead of an li + wrctrl pair.
       const wrctrlVal = (b1 === SIM_ZR) ? BigInt(b3) : RD(b1);
       if (trapOpts && userMode) { doTrap(stepPc, 4); }                 // a system op in user mode: TRAP_PRIV_VIOLATION
-      else if (trapOpts && b2 === 16) { doTrap(stepPc, 4); }          // CORE_COUNT is read-only: TRAP_ARITH
+      else if (trapOpts && b2 >= 0x10 && !WRCTRL_WRITABLE_HI.has(b2)) { doTrap(stepPc, 4); }   // read-only / removed ID: TRAP_ARITH
       else if (trapOpts && b2 === 0) { userMode = (Number(wrctrlVal) & 1) === 1; }   // STATUS
       else if (b2 === 2) { ivtBase = Number(BigInt.asUintN(64, wrctrlVal) & 0xFFFFn); ivtSet = true; }   // REAL-TRAPS
       else if (b2 === 3) { ksp = BigInt.asUintN(64, wrctrlVal); }
@@ -2976,9 +2965,12 @@ const TRAP_CAUSE = {
 const CTRL_ID = {
   STATUS: 0, PTBASE: 1, IVTBASE: 2, KSP: 3, SAVED_PC: 4, SAVED_STATUS: 5,
   FAULT_ADDR: 6, FAULT_CAUSE: 7, TIMER_INTERVAL: 8, IRQ_MASK: 9,
-  CAP_STG_IDX: 0x0A, CAP_STG_BASE: 0x0B, CAP_STG_SIZE: 0x0C, CAP_STG_PERMS_GEN: 0x0D,
-  CN_STAGE: 0x0E, CN_COMMIT: 0x0F, CAP_INSTALL_COMMIT: 0x16, CAP_KEY_SET: 0x1C,
+  // 0x0A-0x0D, 0x16, 0x1C: the removed capability-table install registers.
+  CN_STAGE: 0x0E, CN_COMMIT: 0x0F,
 };
+// IDs >= 0x10 that wrctrl may write (RTL seer_ctrl_regs is_write_exception_id);
+// every other ID >= 0x10 traps with TRAP_ARITH.
+const WRCTRL_WRITABLE_HI = new Set([0x12, 0x13, 0x14, 0x1E, 0x1F, 0x21, 0x22, 0x23]);
 function capMacV1(idx, gen, key) {
   const M32 = 0xFFFFFFFFn;
   idx = BigInt(idx) & 0xFFFFn; gen = BigInt(gen) & 0xFFFFn; key = BigInt(key) & M32;
@@ -3011,43 +3003,6 @@ const STACK_CAP_BASE = 0;
 const STACK_CAP_SIZE = 0x1000;   // 4KB -- matches seer_dmem's real, confirmed size
 const STACK_CAP_PERMS = 0b111;   // RWX
 const STACK_CAP_MAC = capMacV1(STACK_CAP_IDX, STACK_CAP_GEN, STACK_CAP_KEY);
-
-// Returns the SOURCE TEXT (raw assembly lines, mixed directly into the
-// C-like source language this compiler already accepts unrecognized
-// lines as -- see parseCFSource's own {type:'instr', ...} passthrough)
-// for installing the stack capability via the REAL, privileged install
-// path. Deliberately emitted as source text prepended to compileCFSource's
-// own `src` BEFORE parsing, not injected into the already-resolved
-// instruction stream after codegen -- the CN-table registration
-// (cfGenerateSetup) computes absolute PC values from the final assembled
-// layout, so anything inserted after that resolution would silently
-// shift every subsequent address. Going through the same parse/codegen/
-// PC-resolution pipeline as the rest of the program, like any other
-// instruction, avoids a second, parallel PC-calculation path entirely.
-//
-// wrctrl's own immediate field is only 8 bits (seer_ctrl_regs.sv's own
-// decode), so `wrctrl zr, CAP_KEY_SET, <key>` only works for keys under
-// 256 -- fine for this session's earlier test generators, which
-// deliberately kept their keys small, but STACK_CAP_KEY is a full 32-bit
-// value and needs the REGISTER form instead (matching how
-// CAP_STG_BASE/SIZE already work): build the key in a register first,
-// then wrctrl with that register and no immediate at all. Uses r1/r2/r3
-// as scratch -- safe here specifically because this text is prepended
-// BEFORE any variable has been declared or allocated, so nothing else
-// has claimed these registers yet.
-function generateStackCapBootPrefix() {
-  const keyLo = BigInt(STACK_CAP_KEY) & 0xFFFFn, keyHi = (BigInt(STACK_CAP_KEY) >> 16n) & 0xFFFFn;
-  return [
-    `li r1, ${keyLo}`,
-    `li r2, ${keyHi}`, `li r3, 16`, `sll r2, r2, r3`, `or r1, r1, r2`,
-    `wrctrl r1, ${CTRL_ID.CAP_KEY_SET}`,
-    `wrctrl zr, ${CTRL_ID.CAP_STG_IDX}, ${STACK_CAP_IDX}`,
-    `li r1, ${STACK_CAP_BASE}`, `wrctrl r1, ${CTRL_ID.CAP_STG_BASE}`,
-    `li r2, ${STACK_CAP_SIZE}`, `wrctrl r2, ${CTRL_ID.CAP_STG_SIZE}`,
-    `wrctrl zr, ${CTRL_ID.CAP_STG_PERMS_GEN}, ${(STACK_CAP_GEN << 3) | STACK_CAP_PERMS}`,
-    `wrctrl zr, ${CTRL_ID.CAP_INSTALL_COMMIT}, 0`,
-  ].join("\n");
-}
 
 // Builds the full, authenticated stack-capability token into destReg,
 // using ONLY destReg plus the two given scratch registers -- deliberately
@@ -4956,7 +4911,7 @@ function generateUnifiedSoakProgram(seed, targetInstrCount) {
       // The end scenario is spliced in before main's hlt and the program recompiled, because it moves
       // every function that follows it (connector-node landing addresses are absolute).
       const lines = [], MK = UNI.MARKER;
-      if (tail === 'priv') lines.push(`wrctrl zr, ${CTRL_ID.STATUS}, 1`, `wrctrl zr, ${CTRL_ID.CAP_STG_IDX}, 1`);   // enter user mode; the next system op traps
+      if (tail === 'priv') lines.push(`wrctrl zr, ${CTRL_ID.STATUS}, 1`, `wrctrl zr, ${CTRL_ID.KSP}, 1`);   // enter user mode; the next system op traps
       else if (tail === 'ras') lines.push('ret');                                                                   // nothing to return to
       else if (tail === 'cn_miss') {                                                                               // a taken branch to an unregistered slot
         let off = null;
