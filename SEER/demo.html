@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEER live patch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #13202B;
+    --panel: #1B2C39;
+    --line: #2A3F50;
+    --ink: #E8EEF2;
+    --muted: #8DA2B2;
+    --v1: #EF6F8A;
+    --v2: #7DD3E8;
+    --gold: #E9B949;
+    --fail: #FF8B6B;
+    --r: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--night);
+    color: var(--ink);
+    font-family: "Familjen Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+  }
+  button, input { font: inherit; }
+  .app {
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 16px;
+    height: 100vh;
+    padding: 20px 24px 18px;
+  }
+  header {
+    grid-column: 1 / -1;
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+  }
+  .title h1 { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; }
+  .title p { margin: 4px 0 0; color: var(--muted); font-size: 18px; max-width: 62ch; }
+  .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .conn { color: var(--muted); font-size: 15px; margin-right: 6px; display: flex; align-items: center; gap: 8px; }
+  .conn .dot { width: 9px; height: 9px; border-radius: 50%; background: #5A6E7D; }
+  .conn.on .dot { background: var(--v2); }
+  .conn.sim .dot { background: var(--gold); }
+  button {
+    background: transparent; color: var(--ink);
+    border: 1.5px solid var(--line); border-radius: 999px;
+    padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 15px;
+  }
+  button:hover { border-color: var(--muted); }
+  button.primary { background: var(--ink); color: var(--night); border-color: var(--ink); }
+  button:disabled { opacity: .45; cursor: default; }
+  button:focus-visible, label.file:focus-within { outline: 2px solid var(--gold); outline-offset: 2px; }
+  label.file { position: relative; }
+  label.file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  /* left: the shaft the drone flies in */
+  .shaft {
+    grid-row: 2 / 4;
+    background: var(--panel); border-radius: var(--r);
+    position: relative; overflow: hidden;
+  }
+  .shaft .scale { position: absolute; left: 0; right: 0; top: 40px; bottom: 60px; z-index: 1; }
+  .shaft .tick { position: absolute; left: 0; width: 16px; border-top: 2px solid var(--line); }
+  .shaft .tick.major { width: 30px; }
+  .shaft .tick span { position: absolute; left: 36px; top: -11px; font-size: 13px; color: var(--muted); }
+  .shaft .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: #16242F; }
+  .shaft .low { position: absolute; left: 0; right: 0; bottom: 0; height: 20%; background: rgba(255,139,107,.10); border-top: 1px solid rgba(255,139,107,.45); }
+  .shaft .low span { position: absolute; left: 36px; bottom: 8px; font-size: 13px; color: var(--fail); }
+  .shaft .tgt { position: absolute; left: 36px; right: 0; border-top: 2px dashed var(--muted); transition: top .25s; }
+  .shaft .drone { position: absolute; left: 50%; width: 132px; height: 60px; margin-left: -50px; margin-top: -22px; transition: top 60ms linear; z-index: 2; }
+  .shaft .drone svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+  .main { display: grid; grid-template-rows: 1fr auto; gap: 16px; min-height: 0; }
+  .chart { background: var(--panel); border-radius: var(--r); position: relative; min-height: 0; padding: 14px 16px 8px; display: flex; flex-direction: column; }
+  .chart h2, .now h2, .steps h2 { margin: 0; font-size: 15px; font-weight: 500; color: var(--muted); }
+  .chart svg { flex: 1; width: 100%; min-height: 0; display: block; }
+  .legend { display: flex; gap: 6px 18px; font-size: 15px; color: var(--muted); flex-wrap: wrap; }
+  .legend span { white-space: nowrap; }
+  .legend span::before { content: ""; display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 7px; background: currentColor; }
+  .legend .l1 { color: var(--v1); } .legend .l2 { color: var(--v2); }
+  .legend .lt::before { background: none; border-top: 2px dashed var(--muted); height: 0; }
+  .chart-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+
+  .bottom { display: grid; grid-template-columns: minmax(260px, 1fr) 2fr; gap: 16px; }
+  .now, .steps { background: var(--panel); border-radius: var(--r); padding: 14px 18px 16px; }
+  .now .ctl { font-size: 40px; font-weight: 700; line-height: 1.05; margin-top: 4px; transition: color .4s; }
+  .now .ctl.v1 { color: var(--v1); } .now .ctl.v2 { color: var(--v2); }
+  .now .how { color: var(--muted); margin-top: 4px; font-size: 16px; }
+
+  .steps ol { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; counter-reset: s; }
+  .steps li { border-top: 3px solid var(--line); padding-top: 8px; color: var(--muted); counter-increment: s; transition: color .3s, border-color .3s; }
+  .steps li b { display: block; font-size: 18px; font-weight: 600; color: inherit; }
+  .steps li b::before { content: counter(s) "  "; color: var(--muted); font-weight: 500; }
+  .steps li small { font-size: 14px; display: block; }
+  .steps li.done { border-color: var(--gold); color: var(--ink); }
+  .steps li.done b::before { color: var(--gold); }
+  .steps li.refused { border-color: var(--fail); color: var(--ink); }
+  .steps li.refused b, .steps li.refused b::before { color: var(--fail); }
+  .steps .note { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+
+  .readout { grid-column: 2; display: flex; gap: 28px; color: var(--muted); font-size: 15px; flex-wrap: wrap; }
+  .readout b { color: var(--ink); font-weight: 600; font-size: 17px; margin-left: 6px; }
+  .readout .msg { margin-left: auto; color: var(--ink); }
+  .readout .msg.err { color: var(--fail); }
+
+  .simtag { position: absolute; top: 12px; right: 14px; color: var(--gold); font-size: 14px; font-weight: 600; display: none; }
+  .simmode .simtag { display: block; }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: auto 260px auto auto; height: auto; }
+    .shaft { grid-row: auto; }
+    .readout { grid-column: 1; }
+    .bottom { grid-template-columns: 1fr; }
+    .steps ol { grid-template-columns: repeat(2, 1fr); }
+    .chart { min-height: 320px; }
+    .main { grid-template-rows: auto auto; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <div class="title">
+      <h1>Fixing a drone's flight code in mid-air</h1>
+      <p>A delivery drone flies on the SEER processor. When it picks up a heavy package, its controller can't cope and it sinks toward the ground. A fix is sent while it keeps flying: the hardware refuses a tampered copy and installs the genuine one.</p>
+    </div>
+    <div class="controls">
+      <span class="conn" id="conn"><span class="dot"></span><span id="connText">Board not connected</span></span>
+      <button id="btnConnect" class="primary">Connect board</button>
+      <button id="btnStart" disabled hidden>Start flight</button>
+      <label class="file" id="fileLabel"><button id="btnLoad" tabindex="-1" disabled>Load program</button><input id="fileIn" type="file" accept=".bin" disabled aria-label="Load program (.bin from the Soak tester)"></label>
+      <button id="btnSim">Run simulation</button>
+    </div>
+  </header>
+
+  <section class="shaft" aria-label="Drone altitude">
+    <div class="scale" id="scale">
+      <div class="low"><span>Too low</span></div>
+      <div class="tgt" id="shaftTgt"></div>
+      <div class="drone" id="drone">
+        <svg viewBox="-66 -22 132 60" aria-hidden="true">
+          <path id="flame" fill="#E9B949" d="M-30,8 L-24,8 L-18,8 Z M18,8 L24,8 L30,8 Z"/>
+          <g id="pkg" visibility="hidden"><line x1="0" y1="8" x2="0" y2="18" stroke="#8DA2B2" stroke-width="2"/><rect x="-13" y="18" width="26" height="20" rx="3" fill="#C9A26B"/><line x1="-13" y1="25" x2="13" y2="25" stroke="#8E6E44" stroke-width="2"/></g>
+          <rect x="-46" y="-6" width="92" height="14" rx="7" fill="#E8EEF2"/>
+          <rect x="-44" y="-13" width="4" height="9" fill="#E8EEF2"/>
+          <rect x="40" y="-13" width="4" height="9" fill="#E8EEF2"/>
+          <rect class="rotor" x="-62" y="-17" width="40" height="5" rx="2.5" fill="#EF6F8A"/>
+          <rect class="rotor" x="22" y="-17" width="40" height="5" rx="2.5" fill="#EF6F8A"/>
+        </svg>
+      </div>
+    </div>
+    <div class="ground"></div>
+    <span class="simtag">Simulation</span>
+  </section>
+
+  <div class="main">
+    <section class="chart" aria-label="Altitude over time">
+      <div class="chart-head">
+        <h2>Altitude over the flight</h2>
+        <div class="legend"><span class="l1">Controller v1</span><span class="l2">Controller v2</span><span class="lt">Target</span></div>
+      </div>
+      <svg id="chart" viewBox="0 0 1000 420" preserveAspectRatio="none"></svg>
+    </section>
+
+    <div class="bottom">
+      <section class="now" aria-live="polite">
+        <h2>Running now</h2>
+        <div class="ctl v1" id="ctlName">Controller v1</div>
+        <div class="how" id="ctlHow">Tuned for an empty drone.</div>
+      </section>
+      <section class="steps">
+        <h2>Installing the update</h2>
+        <ol id="steps">
+          <li data-ev="1"><b>Arrived</b><small>New code, compiled separately, loaded into free memory</small></li>
+          <li data-ev="4"><b id="s4b">Switched</b><small id="s4s">One commit; hardware checks the entry</small></li>
+        </ol>
+        <p class="note">The drone keeps flying throughout: the install runs between two control ticks. Arrival and switch are spread out so you can follow them; back to back they take microseconds.</p>
+      </section>
+    </div>
+  </div>
+
+  <div class="readout">
+    <span>Tick<b id="rTick">–</b></span>
+    <span>Altitude<b id="rAlt">–</b></span>
+    <span>Target<b id="rTgt">–</b></span>
+    <span>Thrust<b id="rU">–</b></span>
+    <span class="msg" id="msg">Connect the board and start the flight, or run the simulation.</span>
+  </div>
+</div>
+
+<script>
+(() => {
+  const TICKS = 330, ALT_MAX = 1000, LOW = 200;
+  const COLORS = { v1: "#EF6F8A", v2: "#7DD3E8", gold: "#E9B949", fail: "#FF8B6B", muted: "#8DA2B2", line: "#2A3F50", ink: "#E8EEF2" };
+  const SOFT_RESET = new Uint8Array([0x53,0x45,0x45,0x52,0x52,0x53,0x54,0x21]);
+  // The flight program, built in by embed_program.py (base64 of the .bin the
+  // Soak tester downloads). Empty: the page asks for a .bin file instead.
+  const EMBEDDED_PROGRAM = "AAADpwj/DgEjCwujCAsPABr//wEQAwMDAwMDAwMINwMABzcEAEs3NwQINwQABzcDAAIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD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";
+  const EMBEDDED_NAME = "seer_program.bin";
+  const hasEmbedded = !EMBEDDED_PROGRAM.startsWith("/*");
+  const embeddedBytes = () => Uint8Array.from(atob(EMBEDDED_PROGRAM), c => c.charCodeAt(0));
+  const $ = id => document.getElementById(id);
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------------------------------------------------------------- state
+  let samples = [];          // {t, tgt, alt, u, ver, step, pkg}
+  let marks = [];            // {t, kind: "ok" | "refused" | "pkg"}
+  let lastStep = 0, hadPkg = false;
+  let simTimer = null;
+
+  // ---------------------------------------------------------------- chart
+  const chart = $("chart");
+  const CW = 1000, CH = 420, PADL = 44, PADB = 22, PADT = 8;
+  const cx = t => PADL + (t / (TICKS - 1)) * (CW - PADL - 6);
+  const cy = a => PADT + (1 - a / ALT_MAX) * (CH - PADT - PADB);
+  function drawAxes() {
+    chart.innerHTML = "";
+    for (const a of [0, 250, 500, 750, 1000]) {
+      el("line", { x1: PADL, x2: CW - 6, y1: cy(a), y2: cy(a), stroke: COLORS.line, "stroke-width": 1, "vector-effect": "non-scaling-stroke" }, chart);
+      const tx = el("text", { x: PADL - 8, y: cy(a) + 5, fill: COLORS.muted, "font-size": 15, "text-anchor": "end" }, chart);
+      tx.textContent = a;
+    }
+    el("rect", { x: PADL, y: cy(LOW), width: CW - 6 - PADL, height: cy(0) - cy(LOW), fill: "rgba(255,139,107,.08)" }, chart);
+    const lowLab = el("text", { x: CW - 12, y: cy(LOW) + 18, fill: COLORS.fail, "font-size": 14, "text-anchor": "end" }, chart);
+    lowLab.textContent = "Too low";
+    chart._tgt = el("path", { fill: "none", stroke: COLORS.muted, "stroke-width": 2, "stroke-dasharray": "6 6", "vector-effect": "non-scaling-stroke" }, chart);
+    chart._upd = el("g", { opacity: 0 }, chart);
+    chart._p1 = el("path", { fill: "none", stroke: COLORS.v1, "stroke-width": 3.5, "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke" }, chart);
+    chart._p2 = el("path", { fill: "none", stroke: COLORS.v2, "stroke-width": 3.5, "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke" }, chart);
+  }
+  function drawChart() {
+    let tgt = "", p1 = "", p2 = "", prev = null;
+    for (const s of samples) {
+      tgt += (tgt ? "L" : "M") + cx(s.t) + "," + cy(s.tgt);
+      const pt = cx(s.t) + "," + cy(Math.max(0, Math.min(ALT_MAX, s.alt)));
+      if (s.ver === 1) p1 += (p1 ? "L" : "M") + pt;
+      else {
+        if (!p2) p2 = prev ? "M" + cx(prev.t) + "," + cy(Math.max(0, Math.min(ALT_MAX, prev.alt))) + "L" + pt : "M" + pt;
+        else p2 += "L" + pt;
+      }
+      prev = s;
+    }
+    chart._tgt.setAttribute("d", tgt);
+    chart._p1.setAttribute("d", p1);
+    chart._p2.setAttribute("d", p2);
+    if (chart._upd.childNodes.length !== marks.length * 2) {
+      chart._upd.innerHTML = "";
+      const LOOK = {
+        pkg:     { c: COLORS.muted, dash: "2 5", text: "Package picked up", side: "start", row: 0 },
+        refused: { c: COLORS.fail,  dash: "5 5", text: "Tampered fix refused", side: "end", row: 1 },
+        ok:      { c: COLORS.gold,  dash: "",    text: "Fix installed", side: "start", row: 2 },
+      };
+      marks.forEach(m => { const L = LOOK[m.kind], x = cx(m.t);
+        el("line", { x1: x, x2: x, y1: PADT, y2: CH - PADB, stroke: L.c, "stroke-width": 2, "stroke-dasharray": L.dash, "vector-effect": "non-scaling-stroke" }, chart._upd); });
+      marks.forEach(m => {
+        const L = LOOK[m.kind], x = cx(m.t);
+        const lab = el("text", { x: L.side === "start" ? x + 8 : x - 8, y: PADT + 18 + L.row * 22, fill: L.c, "font-size": 16, "font-weight": 600, "text-anchor": L.side,
+                                 stroke: "#1B2C39", "stroke-width": 6, "paint-order": "stroke", "stroke-linejoin": "round" }, chart._upd);
+        lab.textContent = L.text;
+      });
+      chart._upd.setAttribute("opacity", 1);
+    }
+  }
+
+  // ---------------------------------------------------------------- shaft
+  const pct = a => (1 - Math.max(0, Math.min(ALT_MAX, a)) / ALT_MAX) * 100 + "%";
+  function drawShaft() {
+    const sc = $("scale");
+    for (let a = 0; a <= ALT_MAX; a += 100) {
+      const t = document.createElement("div");
+      t.className = "tick" + (a % 500 === 0 ? " major" : "");
+      t.style.top = pct(a);
+      if (a % 500 === 0) { const l = document.createElement("span"); l.textContent = a; t.appendChild(l); }
+      sc.insertBefore(t, sc.firstChild);
+    }
+    placeDrone(0, 500, 0, 1, 0);
+  }
+  function placeDrone(alt, tgt, u, ver, pkg) {
+    $("drone").style.top = pct(alt);
+    $("shaftTgt").style.top = pct(tgt);
+    $("pkg").setAttribute("visibility", pkg ? "visible" : "hidden");
+    const f = Math.max(0, Math.min(1, u / 250)) * 30;          // thrust/16; loaded hover is 120
+    $("flame").setAttribute("d", `M-30,8 L-24,${8 + f} L-18,8 Z M18,8 L24,${8 + f} L30,8 Z`);
+    for (const r of document.querySelectorAll(".rotor")) r.setAttribute("fill", ver === 2 ? COLORS.v2 : COLORS.v1);
+  }
+
+  // ---------------------------------------------------------------- status words from r55
+  const s12 = v => (v & 0x800) ? v - 0x1000 : v;
+  function onStatus(word) {             // word: BigInt
+    if ((word >> 60n) !== 0xAn) return;
+    const ev  = Number((word >> 56n) & 0xFn);
+    const ver = Number((word >> 52n) & 0xFn);
+    const t   = Number((word >> 40n) & 0xFFFn);
+    const tgt = s12(Number((word >> 28n) & 0xFFFn));
+    const alt = s12(Number((word >> 16n) & 0xFFFn));
+    const u   = s12(Number((word >> 4n) & 0xFFFn));
+    const pkg = Number(word & 1n);
+    apply({ step: ev, ver, t, tgt, alt, u, pkg });
+  }
+  function apply(s) {
+    const last = samples[samples.length - 1];
+    if (last && s.t < last.t) reset(false);                  // a new flight started
+    if (!samples.length || s.t > samples[samples.length - 1].t) samples.push(s);
+    $("rTick").textContent = s.t;
+    $("rAlt").textContent = s.alt;
+    $("rTgt").textContent = s.tgt;
+    $("rU").textContent = s.u * 16;
+    placeDrone(s.alt, s.tgt, s.u, s.ver, s.pkg);
+    if (s.pkg && !hadPkg) {
+      hadPkg = true; marks.push({ t: s.t, kind: "pkg" });
+      msg("Package picked up. Controller v1 was tuned for an empty drone.");
+    }
+    if (s.step !== lastStep) {
+      if (s.step === 1) {
+        for (const li of $("steps").children) li.classList.remove("done", "refused");
+        $("s4b").textContent = "Switched"; $("s4s").textContent = "One commit; hardware checks the entry";
+        msg(marks.some(m => m.kind === "refused") ? "The genuine fix is arriving." : "A fix is arriving while the drone flies.");
+      }
+      for (const li of $("steps").children) { const e = Number(li.dataset.ev); if (s.step >= 1 && e <= Math.min(s.step, 4) && !(s.step === 5 && e === 4)) li.classList.add("done"); }
+      if (s.step === 4) {
+        if (!marks.some(m => m.kind === "ok")) marks.push({ t: s.t, kind: "ok" });
+        msg("Switched. The drone now flies on the fix.");
+      }
+      if (s.step === 5) {
+        $("steps").children[1].classList.add("refused");
+        $("s4b").textContent = "Refused"; $("s4s").textContent = "The entry isn't a connector, so the hardware said no";
+        if (!marks.some(m => m.kind === "refused")) marks.push({ t: s.t, kind: "refused" });
+        msg("The hardware refused the tampered fix. The drone kept flying on v1.");
+      }
+      lastStep = s.step;
+    } else if (s.ver === 1 && s.pkg && s.alt < LOW && !s.step) {
+      msg("Too low. Controller v1 can't carry the package.", true);
+    }
+    setController(s.ver);
+    drawChart();
+  }
+  function setController(ver) {
+    const n = $("ctlName"), h = $("ctlHow");
+    if (ver === 2 && !n.classList.contains("v2")) {
+      n.className = "ctl v2"; n.textContent = "Controller v2";
+      h.textContent = "Tuned for the package: more lift for its weight, and it brakes against the swing.";
+    } else if (ver === 1 && !n.classList.contains("v1")) {
+      n.className = "ctl v1"; n.textContent = "Controller v1";
+      h.textContent = "Tuned for an empty drone. With the package it sinks and swings.";
+    }
+  }
+  function msg(text, err) { const m = $("msg"); m.textContent = text; m.className = "msg" + (err ? " err" : ""); }
+  function reset(keepMsg) {
+    samples = []; marks = []; lastStep = 0; hadPkg = false;
+    for (const li of $("steps").children) li.classList.remove("done", "refused");
+    $("s4b").textContent = "Switched"; $("s4s").textContent = "One commit; hardware checks the entry";
+    drawAxes(); setController(1);
+    if (!keepMsg) msg("Flying.");
+  }
+
+  // ---------------------------------------------------------------- board (Web Serial)
+  let port = null, writer = null, reader = null, buf = new Uint8Array(0);
+  function setConn(state, text) {
+    const c = $("conn"); c.className = "conn" + (state ? " " + state : "");
+    $("connText").textContent = text;
+    document.getElementById("app").classList.toggle("simmode", state === "sim");
+  }
+  async function connect() {
+    if (!("serial" in navigator)) { msg("This browser has no Web Serial. Open the page in Chrome or Edge.", true); return; }
+    try {
+      port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 115200, flowControl: "none" });
+      writer = port.writable.getWriter();
+      readLoop();
+      setConn("on", "Board connected");
+      $("btnLoad").disabled = false; $("fileIn").disabled = false; $("btnStart").disabled = false;
+      $("btnConnect").textContent = "Disconnect"; $("btnConnect").classList.remove("primary");
+      $("btnStart").classList.add("primary");
+      msg(hasEmbedded ? "Board connected. Press Start flight." : "Board connected. Load live_patch_show (.bin from the Soak tester).");
+    } catch (e) { msg("Couldn't open the board: " + e.message, true); port = null; }
+  }
+  async function disconnect() {
+    try { if (reader) await reader.cancel(); } catch (e) {}
+    try { if (writer) { writer.releaseLock(); } } catch (e) {}
+    try { if (port) await port.close(); } catch (e) {}
+    port = writer = reader = null;
+    setConn("", "Board not connected");
+    $("btnLoad").disabled = true; $("fileIn").disabled = true; $("btnStart").disabled = true;
+    $("btnConnect").textContent = "Connect board"; $("btnConnect").classList.add("primary");
+    $("btnStart").classList.remove("primary");
+  }
+  async function readLoop() {
+    while (port && port.readable) {
+      reader = port.readable.getReader();
+      try {
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          const nb = new Uint8Array(buf.length + value.length); nb.set(buf); nb.set(value, buf.length); buf = nb;
+          frames();
+        }
+      } catch (e) { /* port closed */ } finally { try { reader.releaseLock(); } catch (e) {} }
+      if (!port) break;
+    }
+  }
+  function frames() {                     // trace_packetizer: 14-byte frames, 0xAA data / 0xBB halted
+    const L = 14;
+    if (buf.length > 8192) buf = new Uint8Array(0);
+    while (buf.length >= L) {
+      if (buf[0] !== 0xAA && buf[0] !== 0xBB) {
+        let n = buf.indexOf(0xAA); const m = buf.indexOf(0xBB);
+        if (n === -1 || (m !== -1 && m < n)) n = m;
+        if (n === -1) { buf = new Uint8Array(0); break; }
+        buf = buf.slice(n); continue;
+      }
+      const f = buf.slice(0, L); buf = buf.slice(L);
+      if (f[0] === 0xBB) { msg("Flight finished. The program has halted."); continue; }
+      const v = new DataView(f.buffer, f.byteOffset, f.byteLength);
+      if (v.getUint8(1) === 55) onStatus(v.getBigUint64(5, false));   // the status register (live_patch_show.c)
+    }
+  }
+  async function load(file) { send(new Uint8Array(await file.arrayBuffer()), file.name); }
+  async function send(bytes, name) {
+    if (!writer) return;
+    stopSim();
+    if (bytes.length < 8) { msg("That file is too short to be a program.", true); return; }
+    reset(true);
+    setConn("on", "Board connected");
+    msg("Sending " + name + "…");
+    await writer.write(SOFT_RESET);
+    await new Promise(r => setTimeout(r, 60));
+    await writer.write(bytes);
+    msg("Program sent. Waiting for the drone to take off…");
+  }
+
+  // ---------------------------------------------------------------- simulation (same arithmetic as live_patch_show.c)
+  function stopSim() { if (simTimer) { clearTimeout(simTimer); simTimer = null; } }
+  function runSim() {
+    stopSim(); reset(true);
+    setConn("sim", "Simulation (no board)");
+    msg("Simulating the same program in the browser.");
+    // Same integer arithmetic and schedule as live_patch_show.c.
+    const tdiv = (a, b) => Math.trunc(a / b);
+    let t = 0, altq = 0, vel = 0, ver = 1, step = 0;
+    const tick = () => {
+      if (t >= TICKS) { msg("Simulation finished."); simTimer = null; return; }
+      const tgt = t < 220 ? 500 : t < 270 ? 700 : 350;
+      const mass = t < 60 ? 1 : 4;
+      if (t === 100) step = 1;
+      if (t === 112) step = 5;
+      if (t === 140) step = 1;
+      if (t === 152) { step = 4; ver = 2; }
+      const err = tgt * 256 - altq;
+      let u = ver === 1 ? 480 + tdiv(err * 23, 1024) - tdiv(vel * 102, 1024)
+                        : 1920 + tdiv(err * 92, 1024) - tdiv(vel * 947, 1024);
+      u = Math.max(0, Math.min(10240, u));
+      vel += tdiv(u - 480 * mass - tdiv(vel * 36, 1024), mass);
+      altq += vel;
+      if (altq < 0) { altq = 0; vel = 0; }
+      apply({ step, ver, t, tgt, alt: altq >> 8, u: u >> 4, pkg: t >= 60 ? 1 : 0 });
+      t++;
+      simTimer = setTimeout(tick, 60);
+    };
+    tick();
+  }
+
+  // ---------------------------------------------------------------- wiring
+  $("btnConnect").addEventListener("click", () => port ? disconnect() : connect());
+  $("fileIn").addEventListener("change", e => { const f = e.target.files[0]; if (f) load(f); e.target.value = ""; });
+  $("btnSim").addEventListener("click", runSim);
+  $("btnStart").addEventListener("click", () => send(embeddedBytes(), EMBEDDED_NAME));
+  if (hasEmbedded) { $("btnStart").hidden = false; $("fileLabel").hidden = true; }
+  drawAxes(); drawShaft();
+})();
+</script>
+</body>
+</html>
