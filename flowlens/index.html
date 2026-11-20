@@ -46,7 +46,7 @@
   .seg .k { color: var(--faint); font: 10px var(--mono); margin-left: 4px; }
   .crumb { display: inline-flex; align-items: center; gap: 6px; color: var(--faint); font: 11px var(--mono); }
   .crumb[hidden] { display: none; }
-  .crumb select { font: 12px var(--mono); color: var(--text); max-width: 150px; }
+  .crumb select { font: 12px var(--mono); color: var(--text); max-width: 130px; }
   .lbl { color: var(--faint); font: 11px var(--mono); text-transform: uppercase; letter-spacing: .6px; }
   .iconbtn { background: var(--panel); border: 1px solid var(--line2); border-radius: 6px; padding: 4px 9px; cursor: pointer; color: var(--dim); font-size: 12px; white-space: nowrap; }
   .iconbtn:hover { color: var(--text); border-color: #3d444d; }
@@ -72,7 +72,8 @@
   #stage { position: absolute; inset: 0; overflow: hidden; cursor: grab; background:
       radial-gradient(circle at 1px 1px, #1d1d29 1px, transparent 0) 0 0 / 22px 22px, var(--bg); touch-action: none; }
   #stage.panning { cursor: grabbing; }
-  #viewport { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  #viewport { position: absolute; left: 0; top: 0; transform-origin: 0 0; user-select: none; -webkit-user-select: none; }
+  #stage { user-select: none; -webkit-user-select: none; }
   #viewport svg { display: block; }
   #viewport svg > svg > rect.fill-N7, #viewport rect[class*="fill-N7"]:first-child { fill: transparent; }
   #viewport g[data-fl] { cursor: pointer; }
@@ -190,7 +191,7 @@
         </div>
         <span class="crumb" id="scopeCrumb" title="The function you have zoomed into. At Module altitude, double-click a function header to zoom in.">in <select id="scope"></select></span>
         <div class="spacer"></div>
-        <button class="iconbtn" id="tabD2" title="Show the D2 this view emits">D2 source</button>
+        <button class="iconbtn" id="tabD2" title="Show the D2 this view emits">D2</button>
         <button class="iconbtn" id="optsBtn">Options ▾</button>
       </div>
       <div class="legend" id="legend"></div>
