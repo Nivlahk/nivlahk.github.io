@@ -106,6 +106,9 @@
         },
         {
           "@id": "https://calvinhancock.com/PHONOTALLY/#app"
+        },
+        {
+          "@id": "https://calvinhancock.com/VERTEX/#app"
         }
       ]
     },
@@ -264,6 +267,34 @@
               "@id": "https://calvinhancock.com/#person"
             }
           }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": [
+              "WebApplication"
+            ],
+            "@id": "https://calvinhancock.com/VERTEX/#app",
+            "name": "VERTEX",
+            "alternateName": "Vertex flowchart editor",
+            "url": "https://calvinhancock.com/VERTEX/",
+            "description": "VERTEX turns code into flowcharts. Write Vertex, Python or JavaScript and see control flow, data flow and call graphs with movable nodes and blocks, likely-bug findings, and D2 export. Vertex programs run in the page with a console. No install.",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "Any (web browser)",
+            "browserRequirements": "Requires JavaScript.",
+            "featureList": [
+              "Control-flow, data-flow and call-graph diagrams from code",
+              "Run Vertex programs with a console and on-screen elements",
+              "Click a node to trace what it depends on and what it affects",
+              "Findings: typos, maybe-unset names, unused values, unreachable code",
+              "D2 export"
+            ],
+            "keywords": "code to flowchart, control flow graph, data flow diagram, visual programming, English-like programming language, Vertex",
+            "creator": {
+              "@id": "https://calvinhancock.com/#person"
+            }
+          }
         }
       ]
     }
@@ -394,8 +425,7 @@
     .section-heading span { color: var(--muted); font: .75rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
     .projects { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
-    @media (max-width: 1000px) { .projects, .projects.soon { grid-template-columns: repeat(2, 1fr); } }
-    .projects.soon { margin-top: 1rem; }
+    @media (max-width: 1000px) { .projects { grid-template-columns: repeat(2, 1fr); } }
 
     .project {
       display: flex;
@@ -405,8 +435,8 @@
       border-radius: .8rem;
       background: var(--panel);
     }
-    .soon .project { border-style: dashed; background: rgba(36, 18, 11, .55); }
-    .soon .project .stack { margin-bottom: 0; }
+    .project.soon { border-style: dashed; background: rgba(36, 18, 11, .55); }
+    .project.soon .stack { margin-bottom: 0; }
     .soon-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
 
     .preview { margin: -.25rem -.25rem .8rem; border: 1px solid var(--line); border-radius: .6rem; background: #1b0d07; aspect-ratio: 300 / 170; overflow: hidden; }
@@ -456,7 +486,7 @@
     }
 
     @media (max-width: 600px) {
-      .projects, .projects.soon { grid-template-columns: 1fr; }
+      .projects { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 520px) {
@@ -519,7 +549,7 @@
     <section id="projects" aria-labelledby="projects-title">
       <div class="section-heading">
         <h2 id="projects-title">Selected projects</h2>
-        <span>01 — 04 live in your browser · 05 — 08 coming soon</span>
+        <span>01 — 05 live in your browser · 06 — 08 coming soon</span>
       </div>
 
       <div class="projects">
@@ -558,26 +588,25 @@
           <p class="stack">JavaScript · NEFS · Clinical phonology</p>
           <a class="project-link" href="./PHONOTALLY/">Open PhonoTally →</a>
         </article>
-      </div>
 
-      <div class="projects soon">
         <article class="project">
+          <div class="preview" data-preview="vertex" role="img" aria-label="Animation: a four-line Vertex program and its flowchart run side by side. The current line and the matching flowchart node light up together; with n = 5 it takes the yes branch and prints big then 5, with n = 2 it takes the no branch and prints 2."></div>
+          <span class="project-number">05 / VERTEX</span>
+          <h3>Flowcharts that run</h3>
+          <p>Write Vertex, Python or JavaScript and see it as a flowchart you can drag apart. Vertex programs run right in the page.</p>
+          <p class="stack">JavaScript · tree-sitter · Monaco</p>
+          <a class="project-link" href="./VERTEX/">Open VERTEX →</a>
+        </article>
+
+        <article class="project soon">
           <div class="preview" data-preview="seer" role="img" aria-label="Animation: a delivery drone running on SEER picks up a heavy package and its controller starts to sink. A tampered fix is refused by the hardware, then the genuine fix is installed while it keeps flying, and controller v2 brings it back to the target altitude."></div>
-          <div class="soon-head"><span class="project-number">05 / SEER</span><span class="soon-tag">Coming soon</span></div>
+          <div class="soon-head"><span class="project-number">06 / SEER</span><span class="soon-tag">Coming soon</span></div>
           <h3>A CPU that checks every jump</h3>
           <p>A custom 64-bit CPU with control-flow integrity in hardware. Runs C on an FPGA through its own LLVM backend.</p>
           <p class="stack">SystemVerilog · LLVM · FPGA</p>
         </article>
 
-        <article class="project">
-          <div class="preview" data-preview="vertex" role="img" aria-label="Animation: a four-line Vertex program and its flowchart run side by side. The current line and the matching flowchart node light up together; with n = 5 it takes the yes branch and prints big then 5, with n = 2 it takes the no branch and prints 2."></div>
-          <div class="soon-head"><span class="project-number">06 / VERTEX</span><span class="soon-tag">Coming soon</span></div>
-          <h3>Flowcharts that run</h3>
-          <p>A visual language where the flowchart, the code and the machine instructions are one program at different zoom levels.</p>
-          <p class="stack">JavaScript · Compilers · Visual programming</p>
-        </article>
-
-        <article class="project">
+        <article class="project soon">
           <div class="preview" data-preview="bridge" role="img" aria-label="Animation: the app's place-of-articulation diagram. For an English speaker learning Spanish, the lit region moves from velar (ŋ) to palatal (ɲ); for one learning Japanese, it moves from labiodental (f) to bilabial (ɸ)."></div>
           <div class="soon-head"><span class="project-number">07 / BRIDGE</span><span class="soon-tag">Coming soon</span></div>
           <h3>New sounds from ones you have</h3>
@@ -585,7 +614,7 @@
           <p class="stack">JavaScript · Graph search · Phonetics</p>
         </article>
 
-        <article class="project">
+        <article class="project soon">
           <div class="preview" data-preview="icebolt" role="img" aria-label="Animation: a four-line schema for a people table becomes an app form. Someone types Aoife Byrne, pronounced EE-fa, and presses Add person; the saved file flies into a Name Book folder in the user's own Google Drive and a lock closes on it. Only they can open it: the user brings their own database."></div>
           <div class="soon-head"><span class="project-number">08 / ICEBOLT</span><span class="soon-tag">Coming soon</span></div>
           <h3>Apps where users own the data</h3>
@@ -625,6 +654,7 @@
       <a href="./NEFS/">NEFS</a>
       <a href="./SYNTAX/">Syntax Tree Sandbox</a>
       <a href="./PHONOTALLY/">PhonoTally</a>
+      <a href="./VERTEX/">VERTEX</a>
       <a href="https://github.com/Nivlahk" rel="me">GitHub</a>
       <a href="https://linkedin.com/in/calvin-hancock-a1a711342" rel="me">LinkedIn</a>
     </nav>
