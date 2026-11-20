@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlowLens — code to D2 control &amp; data flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+  :root {
+    --bg: #0f0f14; --bg2: #1c1c28; --panel: #1e1e2e; --line: #2a2a3e; --line2: #3a3a5c;
+    --text: #cdd6f4; --dim: #9399b2; --faint: #6c7086;
+    --blue: #58a6ff; --green: #3fb950; --red: #f85149; --amber: #d29922; --violet: #bc8cff; --gold: #e3b341; --orange: #f0883e;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 13px/1.4 var(--sans); overflow: hidden; }
+  button, select { font: inherit; color: inherit; }
+  #app { display: grid; grid-template-rows: auto 1fr auto; height: 100%; }
+
+  header { display: flex; align-items: center; gap: 14px; padding: 8px 14px; border-bottom: 1px solid var(--line); background: var(--bg2); min-width: 0; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 9px; margin-right: 6px; }
+  .brand b { font: 600 15px var(--sans); letter-spacing: .2px; }
+  .brand small { color: var(--faint); font: 11px var(--mono); }
+  .field { display: flex; align-items: center; gap: 6px; color: var(--dim); font-size: 12px; }
+  select { background: var(--panel); border: 1px solid var(--line2); border-radius: 6px; padding: 4px 8px; min-width: 0; max-width: 220px; cursor: pointer; }
+  select:focus-visible, button:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+  .spacer { flex: 1; }
+  label.check { display: flex; align-items: center; gap: 5px; color: var(--dim); font-size: 12px; cursor: pointer; user-select: none; }
+  label.check input { accent-color: var(--blue); margin: 0; }
+
+  main { display: grid; grid-template-columns: var(--split, 44%) 6px 1fr; min-height: 0; }
+  #editor { min-width: 0; min-height: 0; }
+  .splitter { background: var(--bg2); border-left: 1px solid var(--line); border-right: 1px solid var(--line); cursor: col-resize; }
+  .splitter:hover, .splitter.drag { background: #1f2630; }
+
+  #right { display: grid; grid-template-rows: auto auto 1fr; min-width: 0; min-height: 0; }
+  .toolbar { display: flex; align-items: center; gap: 12px; padding: 7px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--line2); border-radius: 7px; padding: 2px; gap: 2px; }
+  .seg button { border: 0; background: transparent; padding: 4px 10px; border-radius: 5px; cursor: pointer; color: var(--dim); font-size: 12px; white-space: nowrap; }
+  .seg button:hover { color: var(--text); }
+  .seg button.on { background: #313150; color: #f5e0dc; box-shadow: inset 0 0 0 1px #4a4a78; }
+  .seg button:disabled { opacity: .35; cursor: default; }
+  .seg .k { color: var(--faint); font: 10px var(--mono); margin-left: 4px; }
+  .lbl { color: var(--faint); font: 11px var(--mono); text-transform: uppercase; letter-spacing: .6px; }
+  .iconbtn { background: var(--panel); border: 1px solid var(--line2); border-radius: 6px; padding: 4px 9px; cursor: pointer; color: var(--dim); font-size: 12px; white-space: nowrap; }
+  .iconbtn:hover { color: var(--text); border-color: #3d444d; }
+  .iconbtn.on { color: #e6edf3; border-color: #34507a; background: #1a2638; }
+
+  .legend { display: flex; gap: 12px; padding: 5px 10px; border-bottom: 1px solid var(--line); color: var(--dim); font-size: 11px; flex-wrap: wrap; min-height: 27px; align-items: center; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .legend i { display: inline-block; width: 16px; height: 10px; background: var(--c); border: 1px solid #ccc; border-radius: 2px; }
+  .legend i.round { border-radius: 50%; width: 18px; background: linear-gradient(90deg, var(--c) 50%, var(--c2) 50%); }
+  .legend i.dia { width: 10px; height: 10px; transform: rotate(45deg) scale(.9); }
+  .legend i.dot { width: 9px; height: 9px; border-radius: 50%; }
+  .legend i.para { transform: skewX(-18deg); }
+  .legend i.badge { height: 11px; background: linear-gradient(var(--c) 45%, #333 45%); border-color: var(--c); }
+  .legend i.dash { background: transparent; border: 1.5px dashed var(--c); }
+  .legend i.ln { height: 0; width: 18px; border: 0; border-top: 2px solid var(--c); border-radius: 0; background: none; }
+  .legend i.ln.dash { border-top-style: dashed; }
+  .legend i.ln.dot { border-top-style: dotted; width: 18px; height: 0; border-radius: 0; }
+  .legend .sep { flex: 1; }
+  .legend .ty { gap: 4px; color: var(--faint); }
+  .legend .ty b { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+  #stageWrap { position: relative; min-height: 0; min-width: 0; overflow: hidden; }
+  #stage { position: absolute; inset: 0; overflow: hidden; cursor: grab; background:
+      radial-gradient(circle at 1px 1px, #1d1d29 1px, transparent 0) 0 0 / 22px 22px, var(--bg); touch-action: none; }
+  #stage.panning { cursor: grabbing; }
+  #viewport { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  #viewport svg { display: block; }
+  #viewport svg > svg > rect.fill-N7, #viewport rect[class*="fill-N7"]:first-child { fill: transparent; }
+  #viewport g[data-fl] { cursor: pointer; }
+  #viewport g[data-fl]:hover > .shape > * { stroke: #e6edf3 !important; }
+  #viewport g.hl > .shape > * { stroke: #00bfff !important; stroke-width: 3px !important; filter: drop-shadow(0 0 6px rgba(0,191,255,.6)); }
+  #viewport g.dim { opacity: .22; transition: opacity .15s; }
+  #d2pane { position: absolute; inset: 0; z-index: 5; display: none; grid-template-rows: auto 1fr; background: var(--bg); }
+  #d2pane.show { display: grid; }
+  #d2pane .bar { display: flex; gap: 8px; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--line); color: var(--dim); font-size: 12px; flex-wrap: wrap; }
+  .d2split { display: grid; grid-template-columns: 1fr 1fr; min-height: 0; }
+  #d2editor { min-height: 0; min-width: 0; }
+  #d2preview { position: relative; min-height: 0; min-width: 0; border-left: 1px solid var(--line); background: #0f0f14; overflow: hidden; }
+  .blockedit { position: absolute; z-index: 8; background: #1e1e2e; color: #e5e7eb; border: 1px solid #89b4fa; border-radius: 4px; font: 12px system-ui; padding: 3px 6px; min-width: 160px; outline: none; }
+  .colorpop { position: absolute; z-index: 9; display: grid; grid-template-columns: repeat(3, 22px); gap: 6px; padding: 8px; background: var(--panel); border: 1px solid var(--line2); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+  .colorpop[hidden] { display: none; }
+  .colorpop button { width: 22px; height: 22px; border-radius: 5px; border: 1px solid rgba(255,255,255,.25); cursor: pointer; padding: 0; }
+  .colorpop button.none { background: transparent; color: var(--dim); }
+  #viewport g[data-fl] { cursor: grab; }
+  #viewport .blockhdr, #viewport .blocklbl { cursor: grab; }
+  #viewport .blockchev { cursor: pointer; }
+  #viewport g.hl > .shape { stroke: #00bfff !important; stroke-width: 3px !important; filter: drop-shadow(0 0 6px rgba(0,191,255,.6)); }
+  #viewport g[data-group].hl > rect:first-child { stroke: #00bfff !important; stroke-opacity: .8 !important; }
+  .floatctl { position: absolute; right: 10px; bottom: 10px; display: flex; gap: 6px; z-index: 3; }
+  .overlay { position: absolute; left: 12px; top: 10px; right: 12px; z-index: 4; pointer-events: none; display: flex; justify-content: center; }
+  .overlay[hidden] { display: none; }
+  .overlay div { background: #2a1215; border: 1px solid #6e2b2b; color: #ffa198; padding: 6px 10px; border-radius: 6px; font: 12px var(--mono); max-width: 90%; white-space: pre-wrap; pointer-events: auto; }
+  .busy { position: absolute; right: 12px; top: 10px; z-index: 4; color: var(--faint); font: 11px var(--mono); display: flex; align-items: center; gap: 6px; opacity: 0; transition: opacity .2s; }
+  .busy.on { opacity: 1; }
+  .busy::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); animation: pulse 1s infinite ease-in-out; }
+  @keyframes pulse { 50% { opacity: .25; transform: scale(.7); } }
+  .empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--faint); font: 12px var(--mono); text-align: center; padding: 20px; }
+
+  footer { display: flex; gap: 16px; padding: 4px 12px; border-top: 1px solid var(--line); background: var(--bg2); color: var(--faint); font: 11px var(--mono); white-space: nowrap; overflow: hidden; }
+  footer .stats { color: var(--dim); overflow: hidden; text-overflow: ellipsis; }
+  footer .err { color: var(--red); }
+
+  .pop { position: absolute; z-index: 20; background: var(--panel); border: 1px solid var(--line2); border-radius: 8px; padding: 10px 12px; box-shadow: 0 10px 30px rgba(0,0,0,.5); display: none; min-width: 240px; }
+  .pop.show { display: grid; gap: 9px; }
+  .pop .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: var(--dim); font-size: 12px; }
+  .pop h4 { margin: 0; font: 600 11px var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: .6px; }
+  .pop p { margin: 0; color: var(--faint); font-size: 11px; max-width: 280px; }
+
+  .fl-hover { background: rgba(88,166,255,.16); border-radius: 2px; }
+  .fl-hover-line { background: rgba(88,166,255,.07); }
+  .fl-glyph { background: var(--blue); width: 3px !important; margin-left: 3px; }
+  .toast { position: fixed; bottom: 34px; left: 50%; transform: translateX(-50%); background: #1f2630; border: 1px solid var(--line2); padding: 6px 12px; border-radius: 6px; font-size: 12px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 30; }
+  .toast.show { opacity: 1; }
+  #boot { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); color: var(--faint); font: 12px var(--mono); z-index: 50; }
+
+  @media (max-width: 820px) {
+    main { grid-template-columns: 1fr; grid-template-rows: 40% 6px 1fr; }
+    .splitter { cursor: row-resize; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .brand small { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="boot">loading editor and parsers…</div>
+<script>
+  // Never hang silently: a missing file or a startup error replaces the loading text with the reason.
+  (function () {
+    var NEED = 'index.html, app.js, app.css, grammars.js, d2.js and editor.worker.js';
+    function fail(html) {
+      var b = document.getElementById('boot');
+      if (!b) return;
+      b.innerHTML = '<div style="max-width:620px;text-align:left;line-height:1.7;padding:24px"><b style="color:#f87171">FlowLens could not start</b><br>' + html + '</div>';
+    }
+    window.__bootFail = fail;
+    window.addEventListener('error', function (e) {
+      var t = e.target;
+      if (t && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) {
+        var f = t.getAttribute('src') || t.getAttribute('href');
+        fail('Could not load <code>' + f + '</code>.<br>This page needs the built files in the same folder: ' + NEED +
+          '.<br>They come from <code>node build.mjs</code> (the <code>dist/</code> folder), not from <code>src/</code>.');
+      } else if (e.message) fail('Script error: <code>' + e.message + '</code>');
+    }, true);
+    window.addEventListener('unhandledrejection', function (e) {
+      fail('Startup error: <code>' + ((e.reason && e.reason.message) || e.reason) + '</code>');
+    });
+    setTimeout(function () {
+      if (document.getElementById('boot')) fail('Still loading after 30 seconds. Check that ' + NEED + ' are all in this folder, then open the browser console (F12) for the error.');
+    }, 30000);
+  })();
+</script>
+<div id="app">
+  <header>
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="2.5" y="2.5" width="8" height="5" rx="1.5" stroke="#58a6ff" stroke-width="1.6"/>
+        <path d="M12 12.5 16.5 16 12 19.5 7.5 16Z" stroke="#d29922" stroke-width="1.6"/>
+        <rect x="14" y="3.5" width="7" height="3" rx="1.5" stroke="#3fb950" stroke-width="1.6"/>
+        <path d="M6.5 7.5v3.2c0 .7.5 1.3 1.3 1.3H12M17.5 6.5v4.2c0 .7-.5 1.3-1.3 1.3H12M12 12v.5" stroke="#8b949e" stroke-width="1.4"/>
+      </svg>
+      <b>FlowLens</b><small>code → D2 · control &amp; data flow</small>
+    </div>
+    <div class="field">lang <select id="lang"></select></div>
+    <div class="field">example <select id="sample"></select></div>
+    <div class="spacer"></div>
+    <div class="field">scope <select id="scope"></select></div>
+    <label class="check" title="Show whichever function the cursor is in"><input type="checkbox" id="follow"> follow cursor</label>
+  </header>
+  <main id="main">
+    <div id="editor"></div>
+    <div class="splitter" id="splitter" title="drag to resize"></div>
+    <section id="right">
+      <div class="toolbar">
+        <span class="lbl">view</span>
+        <div class="seg" id="viewSeg">
+          <button data-v="control">Control</button>
+          <button data-v="data">Data</button>
+          <button data-v="both" title="Control flow with def→use data edges laid over it">Both</button>
+        </div>
+        <span class="lbl">altitude</span>
+        <div class="seg" id="altSeg">
+          <button data-a="module" title="Who calls whom (Alt+1)">Module<span class="k">1</span></button>
+          <button data-a="block" title="Basic blocks (Alt+2)">Block<span class="k">2</span></button>
+          <button data-a="statement" title="One node per statement (Alt+3)">Statement<span class="k">3</span></button>
+          <button data-a="expression" title="SSA-style value graph (Alt+4)">Expression<span class="k">4</span></button>
+        </div>
+        <div class="spacer"></div>
+        <button class="iconbtn" id="tabD2" title="Show the D2 this view emits">D2 source</button>
+        <button class="iconbtn" id="optsBtn">Options ▾</button>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div id="stageWrap">
+        <div id="stage"><div id="viewport"></div></div>
+        <div class="busy" id="busy">rendering</div>
+        <div class="overlay" id="overlay" hidden><div id="overlayMsg"></div></div>
+        <div class="floatctl">
+          <button class="iconbtn" id="resetLayout" title="Forget where you dragged things">Reset layout</button>
+          <button class="iconbtn" id="fitBtn" title="Fit (double-click empty canvas)">Fit</button>
+          <button class="iconbtn" id="copySvg">Copy SVG</button>
+          <button class="iconbtn" id="copyD2b">Copy D2</button>
+        </div>
+        <div id="d2pane">
+          <div class="bar"><span>D2 export of this view — same graph, blocks and colours included. Edit it freely.</span><div class="spacer"></div>
+            <label class="check"><input type="checkbox" id="d2live"> live D2 preview</label>
+            <button class="iconbtn" id="d2Render">Render with D2</button><button class="iconbtn" id="d2Reset">Reset</button><button class="iconbtn" id="copyD2">Copy D2</button></div>
+          <div class="d2split"><div id="d2editor"></div><div id="d2preview"><div class="empty">press “Render with D2” to lay this out with D2</div></div></div>
+        </div>
+        <div id="colorPop" class="colorpop" hidden></div>
+      </div>
+    </section>
+  </main>
+  <footer><span id="timing">—</span><span class="stats" id="stats"></span><span class="err" id="errs"></span><span class="spacer"></span><span>drag nodes &amp; block headers · ▾ collapses · double-click a block title to rename · right-click it for colour · 2 blank lines start a block</span></footer>
+</div>
+<div class="pop" id="opts">
+  <h4>D2 export</h4>
+  <div class="row">engine <select id="optLayout"><option value="auto">dagre</option><option value="elk">ELK</option></select></div>
+  <div class="row">direction <select id="optDir"><option value="down">top → down</option><option value="right">left → right</option></select></div>
+  <label class="check"><input type="checkbox" id="optSketch"> hand-drawn (D2 sketch)</label>
+  <h4>Content</h4>
+  <label class="check"><input type="checkbox" id="optGroup"> group values by statement</label>
+  <label class="check"><input type="checkbox" id="optSelf"> show self / this receiver edges</label>
+  <label class="check"><input type="checkbox" id="optExt"> external &amp; builtin calls (Module)</label>
+  <p>The canvas uses Vertex's own layout. These settings only apply to the D2 export and its preview.</p>
+</div>
+<div class="toast" id="toast"></div>
+<script src="grammars.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
