@@ -44,6 +44,9 @@
   .seg button.on { background: #313150; color: #f5e0dc; box-shadow: inset 0 0 0 1px #4a4a78; }
   .seg button:disabled { opacity: .35; cursor: default; }
   .seg .k { color: var(--faint); font: 10px var(--mono); margin-left: 4px; }
+  .crumb { display: inline-flex; align-items: center; gap: 6px; color: var(--faint); font: 11px var(--mono); }
+  .crumb[hidden] { display: none; }
+  .crumb select { font: 12px var(--mono); color: var(--text); max-width: 150px; }
   .lbl { color: var(--faint); font: 11px var(--mono); text-transform: uppercase; letter-spacing: .6px; }
   .iconbtn { background: var(--panel); border: 1px solid var(--line2); border-radius: 6px; padding: 4px 9px; cursor: pointer; color: var(--dim); font-size: 12px; white-space: nowrap; }
   .iconbtn:hover { color: var(--text); border-color: #3d444d; }
@@ -168,27 +171,24 @@
     <div class="field">lang <select id="lang"></select></div>
     <div class="field">example <select id="sample"></select></div>
     <div class="spacer"></div>
-    <div class="field">scope <select id="scope"></select></div>
-    <label class="check" title="Show whichever function the cursor is in"><input type="checkbox" id="follow"> follow cursor</label>
   </header>
   <main id="main">
     <div id="editor"></div>
     <div class="splitter" id="splitter" title="drag to resize"></div>
     <section id="right">
       <div class="toolbar">
-        <span class="lbl">view</span>
-        <div class="seg" id="viewSeg">
+                <div class="seg" id="viewSeg" title="View: control flow, data flow, or both">
           <button data-v="control">Control</button>
           <button data-v="data">Data</button>
           <button data-v="both" title="Control flow with def→use data edges laid over it">Both</button>
         </div>
-        <span class="lbl">altitude</span>
-        <div class="seg" id="altSeg">
-          <button data-a="module" title="Who calls whom (Alt+1)">Module<span class="k">1</span></button>
-          <button data-a="block" title="Basic blocks (Alt+2)">Block<span class="k">2</span></button>
-          <button data-a="statement" title="One node per statement (Alt+3)">Statement<span class="k">3</span></button>
-          <button data-a="expression" title="SSA-style value graph (Alt+4)">Expression<span class="k">4</span></button>
+                <div class="seg" id="altSeg" title="Altitude — Alt+1 Module · Alt+2 Block · Alt+3 Statement · Alt+4 Expression">
+          <button data-a="module" title="Who calls whom (Alt+1)">Module</button>
+          <button data-a="block" title="Basic blocks (Alt+2)">Block</button>
+          <button data-a="statement" title="One node per statement (Alt+3)">Statement</button>
+          <button data-a="expression" title="SSA-style value graph (Alt+4)">Expression</button>
         </div>
+        <span class="crumb" id="scopeCrumb" title="The function you have zoomed into. At Module altitude, double-click a function header to zoom in.">in <select id="scope"></select></span>
         <div class="spacer"></div>
         <button class="iconbtn" id="tabD2" title="Show the D2 this view emits">D2 source</button>
         <button class="iconbtn" id="optsBtn">Options ▾</button>
@@ -214,9 +214,11 @@
       </div>
     </section>
   </main>
-  <footer><span id="timing">—</span><span class="stats" id="stats"></span><span class="err" id="errs"></span><span class="spacer"></span><span>drag nodes &amp; block headers · ▾ collapses · double-click a block title to rename · right-click it for colour · 2 blank lines start a block</span></footer>
+  <footer><span id="timing">—</span><span class="stats" id="stats"></span><span class="err" id="errs"></span><span class="spacer"></span><span>drag nodes &amp; block headers · ▾ collapses · double-click a block title to rename · right-click it for colour · 2 blank lines start a block · Module: double-click a function to zoom in</span></footer>
 </div>
 <div class="pop" id="opts">
+  <h4>Canvas</h4>
+  <label class="check" title="Zoom into whichever function the cursor is in"><input type="checkbox" id="follow"> follow the cursor into functions</label>
   <h4>D2 export</h4>
   <div class="row">engine <select id="optLayout"><option value="auto">dagre</option><option value="elk">ELK</option></select></div>
   <div class="row">direction <select id="optDir"><option value="down">top → down</option><option value="right">left → right</option></select></div>
