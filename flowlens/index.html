@@ -118,10 +118,37 @@
 
   .fl-hover { background: rgba(88,166,255,.16); border-radius: 2px; }
   .fl-hover-line { background: rgba(88,166,255,.07); }
+  .fl-slice-b { background: rgba(34,211,238,.10); } .fl-slice-f { background: rgba(245,158,11,.10); }
   .fl-glyph { background: var(--blue); width: 3px !important; margin-left: 3px; }
   .toast { position: fixed; bottom: 34px; left: 50%; transform: translateX(-50%); background: #1f2630; border: 1px solid var(--line2); padding: 6px 12px; border-radius: 6px; font-size: 12px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 30; }
   .toast.show { opacity: 1; }
   #boot { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); color: var(--faint); font: 12px var(--mono); z-index: 50; }
+
+  [hidden] { display: none !important; }
+  /* click-to-trace */
+  #viewport.sliced g[data-fl]:not(.s-on), #viewport.sliced g[data-e]:not(.s-on) { opacity: .16; }
+  #viewport.sliced g[data-group] { opacity: .5; }
+  #viewport g.s-back[data-fl] > .shape, #viewport g.s-back[data-fl] > .shape > * { stroke: #22d3ee !important; stroke-width: 2.5px !important; }
+  #viewport g.s-fwd[data-fl] > .shape, #viewport g.s-fwd[data-fl] > .shape > * { stroke: #f59e0b !important; stroke-width: 2.5px !important; }
+  #viewport g.s-center[data-fl] > .shape, #viewport g.s-center[data-fl] > .shape > * { stroke: #ffffff !important; stroke-width: 3px !important; filter: drop-shadow(0 0 6px rgba(255,255,255,.5)); }
+  #viewport g.s-back[data-e] path { stroke: #22d3ee !important; stroke-width: 2.4px; } #viewport g.s-back[data-e] polygon { fill: #22d3ee !important; }
+  #viewport g.s-fwd[data-e] path { stroke: #f59e0b !important; stroke-width: 2.4px; } #viewport g.s-fwd[data-e] polygon { fill: #f59e0b !important; }
+  .slicechip { position: absolute; top: 8px; left: 10px; z-index: 6; display: flex; gap: 8px; align-items: center; background: #161b22ee; border: 1px solid var(--line2); border-radius: 14px; padding: 3px 4px 3px 10px; font-size: 12px; }
+  .slicechip b.b { color: #22d3ee; font-weight: 600; } .slicechip b.f { color: #f59e0b; font-weight: 600; }
+  .slicechip button { background: none; border: 0; color: var(--faint); cursor: pointer; font-size: 13px; padding: 0 6px; }
+  .slicechip button:hover { color: var(--fg, #fff); }
+  /* findings */
+  #findBtn.has-err { border-color: #f8717188; color: #fca5a5; } #findBtn.has-warn { border-color: #f59e0b88; color: #fcd34d; }
+  .findpanel { position: absolute; top: 8px; right: 10px; z-index: 7; width: min(420px, 90%); max-height: 60%; overflow: auto; background: #161b22f2; border: 1px solid var(--line2); border-radius: 8px; font-size: 12px; box-shadow: 0 8px 24px #0008; }
+  .findpanel .hd { display: flex; align-items: center; padding: 7px 10px; border-bottom: 1px solid var(--line); color: var(--faint); position: sticky; top: 0; background: #161b22; }
+  .findpanel .hd button { margin-left: auto; background: none; border: 0; color: var(--faint); cursor: pointer; font-size: 14px; }
+  .findpanel .it { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; padding: 6px 10px; cursor: pointer; border-bottom: 1px solid #ffffff08; align-items: start; }
+  .findpanel .it:hover { background: #ffffff0a; }
+  .findpanel .it i { width: 9px; height: 9px; border-radius: 50%; margin-top: 3px; }
+  .findpanel .it i.error { background: #f87171; } .findpanel .it i.warning { background: #f59e0b; } .findpanel .it i.info { background: #60a5fa; }
+  .findpanel .it small { color: var(--faint); white-space: nowrap; font-family: var(--mono); }
+  .findpanel .none { padding: 14px 10px; color: var(--faint); }
+  .findpanel code { background: #ffffff10; padding: 0 3px; border-radius: 3px; }
 
   @media (max-width: 820px) {
     main { grid-template-columns: 1fr; grid-template-rows: 40% 6px 1fr; }
@@ -191,6 +218,7 @@
         </div>
         <span class="crumb" id="scopeCrumb" title="The function you have zoomed into. At Module altitude, double-click a function header to zoom in.">in <select id="scope"></select></span>
         <div class="spacer"></div>
+        <button class="iconbtn" id="findBtn" title="Likely bugs the data flow reveals">Findings</button>
         <button class="iconbtn" id="tabD2" title="Show the D2 this view emits">D2</button>
         <button class="iconbtn" id="optsBtn">Options ▾</button>
       </div>
@@ -212,10 +240,12 @@
           <div class="d2split"><div id="d2editor"></div><div id="d2preview"><div class="empty">press “Render with D2” to lay this out with D2</div></div></div>
         </div>
         <div id="colorPop" class="colorpop" hidden></div>
+        <div id="sliceChip" class="slicechip" hidden></div>
+        <div id="findPanel" class="findpanel" hidden></div>
       </div>
     </section>
   </main>
-  <footer><span id="timing">—</span><span class="stats" id="stats"></span><span class="err" id="errs"></span><span class="spacer"></span><span>drag nodes &amp; block headers · ▾ collapses · double-click a block title to rename · right-click it for colour · 2 blank lines start a block · Module: double-click a function to zoom in</span></footer>
+  <footer><span id="timing">—</span><span class="stats" id="stats"></span><span class="err" id="errs"></span><span class="spacer"></span><span>drag nodes &amp; block headers · ▾ collapses · double-click a block title to rename · right-click it for colour · click a node to trace what it depends on and affects (Esc clears) · 2 blank lines start a block · Module: double-click a function to zoom in</span></footer>
 </div>
 <div class="pop" id="opts">
   <h4>Canvas</h4>
