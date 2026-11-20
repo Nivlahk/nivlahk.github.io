@@ -95,6 +95,8 @@ td.num { font-variant-numeric: tabular-nums; white-space: nowrap; font-family: v
 .seg.sub { border-color: var(--sub); } .seg.sub span { background: var(--sub-bg); color: var(--sub); }
 .seg.del { border-color: var(--del); } .seg.del span { background: var(--del-bg); color: var(--del); }
 .seg.ins { border-color: var(--ins); } .seg.ins span { background: var(--ins-bg); color: var(--ins); }
+.seg.met { border: 1px dashed var(--sub); } .seg.met span { background: var(--sub-bg); color: var(--sub); }
+.tie { font-size: 12px; color: var(--muted); }
 .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
 .legend b { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 4px; }
 .change { font-size: 12.5px; }
@@ -308,7 +310,7 @@ footer { margin-top: 28px; font-size: 12.5px; color: var(--muted); max-width: 90
       </div>
       <div class="panel">
         <h2>Word by word</h2>
-        <div class="legend"><span><b style="background:var(--ok-bg)"></b>correct</span><span><b style="background:var(--sub-bg)"></b>substituted</span><span><b style="background:var(--del-bg)"></b>omitted</span><span><b style="background:var(--ins-bg)"></b>added</span><span>Top row target, bottom row produced</span></div>
+        <div class="legend"><span><b style="background:var(--ok-bg)"></b>correct</span><span><b style="background:var(--sub-bg)"></b>substituted</span><span><b style="background:var(--del-bg)"></b>omitted</span><span><b style="background:var(--ins-bg)"></b>added</span><span><b style="background:var(--sub-bg);border:1px dashed var(--sub)"></b>swapped</span><span>Top row target, bottom row produced</span></div>
         <div class="filter" id="filter" hidden></div>
         <div class="words" id="words"></div>
       </div>
@@ -333,10 +335,18 @@ IPA2B["g"] = 0x82;
 const B2IPA = {};
 for (const [b, s] of Object.entries(NEFS_TABLE)) B2IPA[+b] = s;
 
+const VOWEL_CHARS = "iyɨʉɯuɪʏʊeøɘɵɤoəɛœɜɞʌɔæɐaɶäɑɒ";
 function canonicalize(s) {
   s = s.normalize("NFD");
   for (const [k, v] of Object.entries(NEFS_CANON)) s = s.split(k).join(v);
-  return s.normalize("NFD");
+  s = s.normalize("NFD");
+  // Spellings that mean the same thing in broad transcription of English:
+  // /r/ is the approximant ɹ; a syllabic consonant is schwa plus the consonant ([ˈbʌtn̩] = /ˈbʌtən/);
+  // əɹ and ɜɹ with no vowel after them are the r-coloured vowels ɚ and ɝ.
+  s = s.replace(/r/g, "ɹ");
+  s = s.replace(/([nmlɹŋ])[\u0329\u030D]/g, "ə$1");
+  s = s.replace(new RegExp(`([əɜ])ɹ(?![.ˈˌ]*[${VOWEL_CHARS}])`, "g"), "$1˞");
+  return s;
 }
 
 function classify(b) {
@@ -375,13 +385,24 @@ const SIBILANTS = new Set([0x40, 0x41, 0x50, 0x51]);                   // z s ʒ
 const VELARS = new Set([8, 9]);
 
 // ---- vowel features ----------------------------------------------------------
-function vowelFeats(b) {
+// Rows 4–7 are the cardinal heights; row 8 holds the non-cardinal vowels, so each gets its real position.
+const HEIGHT_NAME = { 1: "close", 1.5: "near-close", 2: "close-mid", 2.5: "mid", 3: "open-mid", 3.5: "near-open", 4: "open" };
+const LAX_VOWEL = {                      // byte: [height 1–4, backness 0 front / 1 central / 2 back, rounded]
+  0xA8: [1.5, 0, false],   // ɪ
+  0xB8: [1.5, 0, true],    // ʏ
+  0xC8: [3.5, 0, false],   // æ
+  0xD8: [3.5, 1, false],   // ɐ
+  0xE8: [1.5, 2, true],    // ʊ
+  0xF8: [2.5, 1, false],   // ə
+};
+function vowelPos(b) {
+  if (LAX_VOWEL[b]) { const [h, bk, r] = LAX_VOWEL[b]; return { h, bk, r }; }
   const hi = b >> 4, lo = b & 15;
-  return {
-    front: ["front", "front", "central", "central", "back", "back"][hi - 0xA],
-    round: (hi - 0xA) % 2 === 1,
-    height: { 4: "close", 5: "close-mid", 6: "open-mid", 7: "open", 8: "lax" }[lo],
-  };
+  return { h: lo - 3, bk: [0, 0, 1, 1, 2, 2][hi - 0xA], r: (hi - 0xA) % 2 === 1 };
+}
+function vowelFeats(b) {
+  const v = vowelPos(b);
+  return { front: ["front", "central", "back"][v.bk], round: v.r, height: HEIGHT_NAME[v.h] || "?" };
 }
 
 // ---- parsing IPA into segments ---------------------------------------------
@@ -429,41 +450,131 @@ function segments(ipa) {
     s.kind = classify(s.base) === "vowel" ? "V" : "C";
     s.ipa = (s.stress === "primary" ? "ˈ" : s.stress === "secondary" ? "ˌ" : "") + B2IPA[s.base] + (s.second != null ? B2IPA[s.second] : "") + s.mods.map(m => B2IPA[m]).join("");
   }
+  syllabify(segs, marked);
   return { segs, unknown };
+}
+
+// ---- syllables ------------------------------------------------------------------
+// Every segment gets the index of its syllable (s.syl), its role in it (onset, nucleus, coda)
+// and that syllable's stress (s.sstress). Stress is null when the word carries no stress marks,
+// except that a word with a single syllable is stressed by definition.
+const isNucleus = (arr, i) => arr[i].kind === "V" && !(i > 0 && arr[i - 1].kind === "V");
+const ONSET_2ND = new Set([0x49, 0x4A, 0x19, 0x79]);          // ɹ l w j may follow an onset obstruent
+const goodOnset = (a, b) => (a.base === 0x41 && b.kind === "C" && b.second == null) ||
+  ((a.base & 15) <= 3 && a.second == null && ONSET_2ND.has(b.base));
+function syllabify(segs, marked) {
+  const nuc = segs.map((s, i) => isNucleus(segs, i) ? i : -1).filter(i => i >= 0);
+  segs.forEach(s => { s.syl = null; s.role = null; s.sstress = null; });
+  if (!nuc.length) return;
+  nuc.forEach((n, k) => {
+    segs[n].syl = k; segs[n].role = "nucleus";
+    for (let j = n + 1; j < segs.length && segs[j].kind === "V"; j++) { segs[j].syl = k; segs[j].role = "nucleus"; }
+  });
+  for (let i = 0; i < nuc[0]; i++) { segs[i].syl = 0; segs[i].role = "onset"; }
+  let end = segs.length - 1;
+  for (let i = end; i >= 0 && segs[i].kind === "C"; i--) { segs[i].syl = nuc.length - 1; segs[i].role = "coda"; }
+  for (let k = 0; k + 1 < nuc.length; k++) {
+    const run = [];
+    for (let i = nuc[k] + 1; i < nuc[k + 1]; i++) if (segs[i].kind === "C") run.push(i);
+    // the last consonant always starts the next syllable; a second one joins it if the pair is a legal onset
+    let split = run.length - 1;
+    if (run.length >= 2 && goodOnset(segs[run[run.length - 2]], segs[run[run.length - 1]])) split--;
+    run.forEach((i, r) => { segs[i].syl = r >= split ? k + 1 : k; segs[i].role = r >= split ? "onset" : "coda"; });
+  }
+  const sylStress = nuc.map(n => segs[n].stress || (marked ? "unstressed" : nuc.length === 1 ? "primary" : null));
+  for (const s of segs) if (s.syl != null) s.sstress = sylStress[s.syl];
 }
 // aspiration and non-release on a consonant are English allophones, not errors, so they are left out of the comparison
 const ALLOPHONIC = new Set(Object.keys(B2IPA).filter(k => B2IPA[k] === "ʰ" || B2IPA[k] === "̚").map(Number));
-const modKey = s => (s.kind === "C" ? s.mods.filter(m => !ALLOPHONIC.has(m)) : s.mods).join();
-const same = (a, b) => a.base === b.base && a.second === b.second && modKey(a) === modKey(b);
+// dark l (lˠ, ɫ) is the ordinary English l in syllable codas, so velarization on l is ignored too
+const modKey = s => (s.kind === "C" ? s.mods.filter(m => !ALLOPHONIC.has(m) && !(m === 0xD1 && s.base === 0x4A)) : s.mods).join();
+// ɝ (stressed) and ɚ (unstressed) are the same r-coloured vowel
+const rhoticV = s => s.kind === "V" && (s.base === 0xF8 || s.base === 0xC6) && s.mods.includes(0x08);
+const same = (a, b) => (a.base === b.base || (rhoticV(a) && rhoticV(b))) && a.second === b.second && modKey(a) === modKey(b);
 
 // ---- featural alignment -------------------------------------------------------
-const pop = x => { let n = 0; while (x) { n += x & 1; x >>= 1; } return n; };
-function subCost(a, b) {
-  if (same(a, b)) return 0;
-  if (a.kind !== b.kind) return 1.5;
-  let c = 0.15 + 0.15 * pop(a.base ^ b.base);
-  if ((a.second == null) !== (b.second == null)) c += 0.15;
-  if (a.mods.join() !== b.mods.join()) c += 0.1;
-  return Math.min(c, 0.95);
+// Costs are in hundredths so that ties are exact. Deleting or inserting a sound costs 100.
+// A substitution costs 10 plus the phonetic distance between the two sounds, capped at 95,
+// so swapping two sounds of the same kind is always cheaper than deleting one and adding the other.
+// A consonant and a vowel trading places is rarer than two consonants doing so, so it costs more.
+const DEL = 100, INS = 100, CV = 150, SWAP = 40, SWAP_CV = 60;
+const MAJOR = [0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4];          // place column → labial, coronal, dorsal, laryngeal
+const placeIdx = s => (s.second != null ? s.second : s.base) >> 4;
+const SONORANT = new Set(["nasal", "approximant", "lateral", "trill", "tap", "lateral flap"]);
+const segManner = s => s.second != null ? "affricate" : manner(s.base);
+function placeCost(a, b) {
+  const x = placeIdx(a), y = placeIdx(b);
+  if (x === y && place(a.second != null ? a.second : a.base) === place(b.second != null ? b.second : b.base)) return 0;
+  return MAJOR[x] === MAJOR[y] ? 15 : 30;
 }
+function mannerCost(a, b) {
+  const x = segManner(a), y = segManner(b);
+  if (x === y) return 0;
+  if (x === "affricate" || y === "affricate") { const o = x === "affricate" ? y : x; return o === "stop" || o === "fricative" ? 10 : 30; }
+  return SONORANT.has(x) === SONORANT.has(y) ? 15 : 30;
+}
+function featureCost(a, b) {
+  if (a.kind !== b.kind) return CV;
+  let c = 10;
+  if (a.kind === "C") c += placeCost(a, b) + mannerCost(a, b) + (voiced(a.base) !== voiced(b.base) ? 15 : 0);
+  else { const x = vowelPos(a.base), y = vowelPos(b.base); c += Math.round(12 * Math.abs(x.h - y.h)) + 15 * Math.abs(x.bk - y.bk) + (x.r !== y.r ? 10 : 0); }
+  if (modKey(a) !== modKey(b)) c += 10;
+  return Math.min(c, 95);
+}
+// Position in the syllable: a sound in the stressed syllable should line up with a sound in the
+// stressed syllable, and an onset with an onset. Only applied when both words carry stress.
+function positionCost(a, b, identical) {
+  let c = 0;
+  if (a.sstress && b.sstress && (a.sstress === "primary") !== (b.sstress === "primary")) c += identical ? 15 : 35;
+  if (!identical && a.kind === "C" && b.kind === "C" && a.role && b.role && a.role !== b.role) c += 10;
+  return c;
+}
+function subCost(a, b) {
+  const id = same(a, b);
+  return (id ? 0 : featureCost(a, b)) + positionCost(a, b, id);
+}
+// Operations: sub (pair two sounds), del, ins, and swap for metathesis, either two neighbours trading
+// places (/æsk/ → [æks]) or two consonants trading places across one sound (/ænɪməl/ → [æmɪnəl]).
 function align(T, P) {
-  const n = T.length, m = P.length, D = [], B = [];
-  for (let i = 0; i <= n; i++) { D.push(new Array(m + 1).fill(0)); B.push(new Array(m + 1).fill(null)); }
-  for (let i = 1; i <= n; i++) { D[i][0] = i; B[i][0] = "del"; }
-  for (let j = 1; j <= m; j++) { D[0][j] = j; B[0][j] = "ins"; }
-  for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) {
-    const s = D[i - 1][j - 1] + subCost(T[i - 1], P[j - 1]), d = D[i - 1][j] + 1, a = D[i][j - 1] + 1;
-    const best = Math.min(s, d, a);
-    D[i][j] = best; B[i][j] = best === s ? "sub" : best === d ? "del" : "ins";
+  const n = T.length, m = P.length;
+  const D = [], B = [], N = [];
+  for (let i = 0; i <= n; i++) { D.push(new Array(m + 1).fill(Infinity)); B.push(new Array(m + 1).fill(null)); N.push(new Array(m + 1).fill(0)); }
+  D[0][0] = 0; N[0][0] = 1;
+  for (let i = 0; i <= n; i++) for (let j = 0; j <= m; j++) {
+    if (i === 0 && j === 0) continue;
+    const cand = [];
+    if (i > 0 && j > 0) cand.push(["sub", D[i - 1][j - 1] + subCost(T[i - 1], P[j - 1]), i - 1, j - 1]);
+    if (i > 1 && j > 1) {
+      const a = T[i - 2], b = T[i - 1];
+      if (!same(a, b) && same(a, P[j - 1]) && same(b, P[j - 2])) cand.push(["swap2", D[i - 2][j - 2] + (a.kind === b.kind ? SWAP : SWAP_CV), i - 2, j - 2]);
+    }
+    if (i > 2 && j > 2) {
+      const a = T[i - 3], b = T[i - 1];
+      if (a.kind === "C" && b.kind === "C" && !same(a, b) && same(a, P[j - 1]) && same(b, P[j - 3]))
+        cand.push(["swap3", D[i - 3][j - 3] + SWAP + subCost(T[i - 2], P[j - 2]), i - 3, j - 3]);
+    }
+    if (i > 0) cand.push(["del", D[i - 1][j] + DEL, i - 1, j]);
+    if (j > 0) cand.push(["ins", D[i][j - 1] + INS, i, j - 1]);
+    let best = Infinity;
+    for (const c of cand) if (c[1] < best) best = c[1];
+    D[i][j] = best;
+    // the first candidate at the best cost is kept (sub, then swap, then del, then ins); every
+    // candidate at that cost adds its paths, so N counts the equally good alignments
+    for (const c of cand) if (c[1] === best) { if (!B[i][j]) B[i][j] = c[0]; N[i][j] = Math.min(N[i][j] + N[c[2]][c[3]], 1e6); }
   }
   const ops = []; let i = n, j = m;
   while (i > 0 || j > 0) {
     const op = B[i][j];
-    if (op === "sub") { ops.push({ t: i - 1, p: j - 1 }); i--; j--; }
+    if (op === "swap2") { ops.push({ t: i - 1, p: j - 1, swap: 2 }, { t: i - 2, p: j - 2, swap: 1 }); i -= 2; j -= 2; }
+    else if (op === "swap3") { ops.push({ t: i - 1, p: j - 1, swap: 2 }, { t: i - 2, p: j - 2 }, { t: i - 3, p: j - 3, swap: 1 }); i -= 3; j -= 3; }
+    else if (op === "sub") { ops.push({ t: i - 1, p: j - 1 }); i--; j--; }
     else if (op === "del") { ops.push({ t: i - 1, p: null }); i--; }
     else { ops.push({ t: null, p: j - 1 }); j--; }
   }
-  return ops.reverse();
+  ops.reverse();
+  ops.cost = D[n][m] / 100;
+  ops.ties = N[n][m];
+  return ops;
 }
 
 // ---- what changed, in feature terms --------------------------------------------
@@ -493,6 +604,9 @@ const PROCESSES = [
   ["gliding", "Gliding", "liquids produced as glides w or j"],
   ["vocalization", "Vocalization", "liquids produced as vowels"],
   ["deaffrication", "Deaffrication", "affricates produced as fricatives"],
+  ["affrication", "Affrication", "fricatives produced as affricates"],
+  ["th_fronting", "TH fronting", "θ ð produced as f v"],
+  ["denasalization", "Denasalization", "nasals produced as oral stops"],
   ["final_devoicing", "Final devoicing", "voiced obstruents devoiced word-finally"],
   ["prevocalic_voicing", "Prevocalic voicing", "voiceless obstruents voiced before a vowel"],
   ["fcd", "Final consonant deletion", "word-final consonant omitted"],
@@ -504,10 +618,44 @@ const PROCESSES = [
   ["lateral_lisp", "Lateralized sibilant", "s z ʃ ʒ produced as ɬ ɮ"],
   ["interdental_lisp", "Interdental lisp", "s z produced as θ ð"],
   ["weak_syllable_deletion", "Weak syllable deletion", "an unstressed syllable omitted"],
+  ["metathesis", "Metathesis or migration", "sounds trade places, or a sound moves elsewhere in the word"],
+  ["coalescence", "Coalescence", "two sounds of a cluster merge into one with features of both"],
+  ["reduplication", "Reduplication", "a syllable repeated in place of another"],
+  ["epenthesis", "Epenthesis", "a sound added to the word"],
+  ["derhotacization", "Derhotacization", "ɚ ɝ produced without r-colouring"],
+  ["vowel_error", "Vowel error", "a vowel produced as a different vowel"],
+  ["diphthong_reduction", "Diphthong reduction", "aɪ aʊ ɔɪ produced as a single vowel"],
   ["distortion", "Distortion", "right sound, different diacritic"],
   ["other_sub", "Other substitution", "substitution not matching a named process"],
 ];
 const isObstruent = b => (b & 15) <= 7;
+// eɪ and oʊ are often written e and o; either spelling is the same English vowel
+const isLongVowelGlide = (arr, i) => i > 0 && ((arr[i].base === 0xE8 && arr[i - 1].base === 0xF5) || (arr[i].base === 0xA8 && arr[i - 1].base === 0xA5));
+const D_ = 0x42, FLAP = 0x4C, GLOTTAL = 0xC2, SCHWA = 0xF8, RHO = 0x49;
+// Pronunciations that are normal in American English, so they count as correct. Returns a label or null.
+function variantOf(op, k, ops, t, p) {
+  const ts = op.t != null ? t[op.t] : null, ps = op.p != null ? p[op.p] : null;
+  if (ts && ps && same(ts, ps)) return null;
+  if (ts && ps && ts.kind === "C" && ps.kind === "C" && ts.second == null) {
+    const prev = t[op.t - 1], next = t[op.t + 1];
+    // flapping: t or d between vowels when the next vowel is not the stressed one (water, ladder)
+    if ((ts.base === 0x43 || ts.base === D_) && ps.base === FLAP && prev && next && next.kind === "V"
+        && (prev.kind === "V" || prev.base === RHO) && next.sstress !== "primary") return "flap";
+    // glottal stop for t before syllabic n (button, kitten)
+    if (ts.base === 0x43 && ps.base === GLOTTAL && next && next.base === SCHWA && next.stress !== "primary"
+        && t[op.t + 2] && t[op.t + 2].base === 0x48 && (op.t + 3 >= t.length || t[op.t + 3].kind === "C")) return "glottal stop before syllabic n";
+  }
+  // r after a vowel can be written as a consonant or as r-colouring: [kɑɹ] = [kɑɚ]
+  if (ts && ps && ((ts.base === RHO && ts.role === "coda" && rhoticV(ps)) || (ps.base === RHO && ps.role === "coda" && rhoticV(ts)))) return "r-coloured offglide";
+  // low-back merger: cot and caught rhyme for most western US speakers
+  if (ts && ps && ts.kind === "V" && ps.kind === "V" && [0xE7, 0xF6, 0xF7].includes(ts.base) && [0xE7, 0xF6, 0xF7].includes(ps.base)
+      && modKey(ts) === modKey(ps)) return "low-back merger";
+  // e for eɪ and o for oʊ, in either direction
+  const pr = ops[k - 1];
+  if (ts && !ps && isLongVowelGlide(t, op.t) && pr && pr.t === op.t - 1 && pr.p != null && p[pr.p].base === t[op.t - 1].base) return "monophthong";
+  if (!ts && ps && isLongVowelGlide(p, op.p) && pr && pr.p === op.p - 1 && pr.t != null && t[pr.t].base === p[op.p - 1].base) return "monophthong";
+  return null;
+}
 
 function analyzeWord(gloss, tIPA, pIPA) {
   const T = segments(tIPA), P = segments(pIPA);
@@ -527,6 +675,9 @@ function analyzeWord(gloss, tIPA, pIPA) {
     if ((b >> 4) === 5 && s.second == null && SIBILANTS.has(b) || (s.second != null && (s.second >> 4) === 5)) bump("palatal_fronting");
     if ([3, 4].includes(b >> 4)) bump("backing");
     if (manner(b) === "fricative" || s.second != null) bump("stopping");
+    if (manner(b) === "fricative" && s.second == null) bump("affrication");
+    if (b === 0x31 || b === 0x30) bump("th_fronting");
+    if (manner(b) === "nasal") bump("denasalization");
     if (LIQUIDS.has(b)) { bump("gliding"); bump("vocalization"); }
     if (s.second != null) bump("deaffrication");
     if (i === lastC && isObstruent(b) && voiced(b)) bump("final_devoicing");
@@ -541,35 +692,60 @@ function analyzeWord(gloss, tIPA, pIPA) {
     bump("distortion");
   }
   if (tc.length >= 2) bump("assimilation");
+  if (t.length >= 2) bump("metathesis");
+  if (t.length) bump("epenthesis");
+  for (let i = 0; i < t.length; i++) {
+    if (t[i].kind === "C" && i + 1 < t.length && t[i + 1].kind === "C" && !(i > 0 && t[i - 1].kind === "C")) bump("coalescence");
+    if (t[i].kind === "V") bump("vowel_error");
+    if (rhoticV(t[i])) bump("derhotacization");
+    if (t[i].kind === "V" && !nuc(t, i) && !isLongVowelGlide(t, i)) bump("diphthong_reduction");
+  }
   const tV = t.filter((s, i) => nuc(t, i)).length, pV = p.filter((s, i) => nuc(p, i)).length;
   const stressKnown = t.some(s => s.kind === "V" && s.stress);
+  if (tV >= 2) bump("reduplication");
   if (tV >= 2) {
     if (stressKnown) t.filter((s, i) => nuc(t, i) && s.stress === "unstressed").forEach(() => bump("weak_syllable_deletion"));
     else bump("weak_syllable_deletion");
   }
 
+  // syllables whose nucleus was omitted; their consonants go with the syllable, not to other processes
+  const deletedWeak = new Set();
+  if (tV >= 2) for (const op of ops) if (op.p == null && op.t != null && nuc(t, op.t)
+    && (stressKnown ? t[op.t].stress === "unstressed" : pV < tV)) deletedWeak.add(t[op.t].syl);
+  const finalRun = [];
+  for (let i = t.length - 1; i >= 0 && t[i].kind === "C"; i--) finalRun.push(i);
+  const delT = new Set(ops.filter(o => o.p == null && o.t != null).map(o => o.t));
   const rows = [];
   let correct = 0;
   for (const op of ops) {
     const ts = op.t != null ? t[op.t] : null, ps = op.p != null ? p[op.p] : null;
-    const row = { t: ts, p: ps, status: "", chips: [], procs: [] };
-    if (ts && ps && same(ts, ps)) { row.status = "ok"; if (ts.kind === "C") correct++; }
+    const row = { t: ts, p: ps, ti: op.t, pi: op.p, status: "", chips: [], procs: [] };
+    const variant = variantOf(op, ops.indexOf(op), ops, t, p);
+    if (variant) { row.status = "ok"; row.variant = variant; if (ts && ts.kind === "C") correct++; }
+    else if (op.swap) {
+      // metathesis: the two sounds are both present but in each other's place, so neither is correct
+      row.status = "met"; row.chips = [`${ts.ipa} and ${ps.ipa} trade places`];
+      if (op.swap === 1) row.procs.push("metathesis");
+    }
+    else if (ts && ps && same(ts, ps)) { row.status = "ok"; if (ts.kind === "C") correct++; }
     else if (ts && !ps) {
       row.status = "del";
-      const k_ = ops.indexOf(op);
-      const nextToDeletedV = [ops[k_ - 1], ops[k_ + 1]].some(o => o && o.p == null && o.t != null && nuc(t, o.t)
-        && (!stressKnown || t[o.t].stress === "unstressed"));
-      if (ts.kind === "C" && nextToDeletedV && tV >= 2 && pV < tV) row.syllable = true;
+      if (ts.kind === "C" && ts.syl != null && deletedWeak.has(ts.syl)) row.syllable = true;
       else if (ts.kind === "C") {
-        const k = op.t === lastC ? "fcd" : inCluster(op.t) ? "cluster_reduction" : op.t === 0 ? "initial_deletion" : "medial_deletion";
-        row.procs.push(k);
+        // a final cluster that loses some of its consonants is reduced; losing all of them is final consonant deletion
+        let k;
+        if (finalRun.length >= 2 && finalRun.includes(op.t)) k = finalRun.every(i => delT.has(i)) ? (op.t === lastC ? "fcd" : null) : "cluster_reduction";
+        else k = op.t === lastC ? "fcd" : inCluster(op.t) ? "cluster_reduction" : op.t === 0 ? "initial_deletion" : "medial_deletion";
+        if (k) row.procs.push(k);
       }
-    } else if (!ts && ps) row.status = "ins";
+      else if (!nuc(t, op.t) && !delT.has(op.t - 1)) row.procs.push("diphthong_reduction");
+    } else if (!ts && ps) { row.status = "ins"; row.procs.push("epenthesis"); }
     else {
       row.status = "sub"; row.chips = changes(ts, ps);
       if (ts.kind === "C" && ps.kind === "C") {
         const tb = ts.base, pb = ps.base;
-        const others = t.filter((s, k) => k !== op.t && s.kind === "C");
+        // a consonant can copy another consonant of the target word or of the child's own production
+        const others = [...t.filter((s, k) => k !== op.t && s.kind === "C"), ...p.filter((s, k) => k !== op.p && s.kind === "C")];
         const procs = [];
         if (ts.base === ps.base && ts.second === ps.second) procs.push("distortion");
         else if (pb === 0xC2) procs.push("glottal_replacement");
@@ -580,48 +756,105 @@ function analyzeWord(gloss, tIPA, pIPA) {
           const cognate = sameManner && segPlace(ts) === segPlace(ps);   // differs only in voicing
           if (VELARS.has(tb >> 4) && sameManner && (pb >> 4) < (tb >> 4) && (pb >> 4) >= 3) procs.push("velar_fronting");
           const tPal = ((tb >> 4) === 5 && SIBILANTS.has(tb)) || (ts.second != null && (ts.second >> 4) === 5);
-          const pAlv = (pb >> 4) === 4 || (ps.second != null && (ps.second >> 4) === 4);
+          const pAlv = ps.second != null ? (ps.second >> 4) === 4 : (pb >> 4) === 4;
           const pFricLike = manner(pb) === "fricative" || ps.second != null;
           if (tPal && pAlv && pFricLike) procs.push("palatal_fronting");
           if ([3, 4].includes(tb >> 4) && VELARS.has(pb >> 4)) procs.push("backing");
           const tFric = manner(tb) === "fricative" || ts.second != null;
           if (tFric && manner(pb) === "stop" && ps.second == null) procs.push("stopping");
           if (ts.second != null && ps.second == null && manner(pb) === "fricative") procs.push("deaffrication");
+          if (manner(tb) === "fricative" && ts.second == null && ps.second != null) procs.push("affrication");
+          if ((tb === 0x31 || tb === 0x30) && (pb === 0x21 || pb === 0x20)) procs.push("th_fronting");
+          if (manner(tb) === "nasal" && manner(pb) === "stop" && ps.second == null && MAJOR[tb >> 4] === MAJOR[pb >> 4]) procs.push("denasalization");
           if (LIQUIDS.has(tb) && GLIDES.has(pb)) procs.push("gliding");
           if (op.t === lastC && isObstruent(tb) && voiced(tb) && !voiced(pb) && cognate) procs.push("final_devoicing");
           if (isObstruent(tb) && !voiced(tb) && voiced(pb) && cognate && op.t + 1 < t.length && t[op.t + 1].kind === "V") procs.push("prevocalic_voicing");
           // assimilation: the new place is copied from another consonant in the same word
           // alveolars are the default place, so copying one only counts when the copy is the same sound
           const alv = ["alveolar", "dental"].includes(segPlace(ps));
-          const copies = segPlace(ps) !== segPlace(ts) && others.some(o => segPlace(o) === segPlace(ps)
+          // bilabial and labiodental count as one labial place for copying (/naɪf/ → [maɪf])
+          const samePl = (x, y) => segPlace(x) === segPlace(y) || (MAJOR[placeIdx(x)] === 1 && MAJOR[placeIdx(y)] === 1);
+          const copies = segPlace(ps) !== segPlace(ts) && others.some(o => samePl(o, ps)
             && (!alv || (o.base === ps.base && o.second === ps.second)));
           const bi = procs.indexOf("backing");
           if (copies && bi >= 0) procs.splice(bi, 1, "assimilation");
           else if (copies && !procs.length) procs.push("assimilation");
+          // full copy: the substitute is exactly another consonant of the production (/ˈtɛləˌvɪʒən/ → [ˈdɛdɪn])
+          else if (!procs.length && p.some((s, k) => k !== op.p && s.kind === "C" && s.base === ps.base && s.second === ps.second)) procs.push("assimilation");
           if (!procs.length) procs.push("other_sub");
         }
         row.procs = procs;
       } else if (ts.kind === "C" && ps.kind === "V" && LIQUIDS.has(ts.base)) row.procs = ["vocalization"];
+      else if (ts.kind === "V" && ps.kind === "V")
+        row.procs = [rhoticV(ts) && !ps.mods.includes(0x08) ? "derhotacization" : ts.base === ps.base ? "distortion" : "vowel_error"];
     }
-    for (const k of row.procs) found.push(k);
     rows.push(row);
   }
+
+  // ---- patterns that span more than one sound ----
+  // migration: a sound missing from its place turns up somewhere else in the word (/sneɪk/ → [neɪks])
+  for (const d of rows) {
+    if (d.status !== "del" || d.t.kind !== "C") continue;
+    const a = rows.find(r => r.status === "ins" && r.p.kind === "C" && same(r.p, d.t));
+    if (!a) continue;
+    d.status = a.status = "met"; d.moved = true; a.moved = true;
+    d.procs = ["metathesis"]; a.procs = []; d.chips = [`${d.t.ipa} moved`]; a.chips = [`${a.p.ipa} moved here`];
+  }
+  // coalescence: one cluster consonant is lost and the other is replaced by a sound that takes its
+  // manner from one and its place from the other (/spun/ → [fun])
+  for (const d of rows) {
+    if (d.status !== "del" || d.t.kind !== "C") continue;
+    // only when no single-sound process already explains the substitute (/kɹɪsməs/ → [tɪtə] is fronting, not coalescence)
+    const sb = rows.find(r => r.status === "sub" && r.t.kind === "C" && r.p.kind === "C" && Math.abs(r.ti - d.ti) === 1
+      && r.procs.length === 1 && r.procs[0] === "other_sub");
+    if (!sb) continue;
+    const X = sb.p, keep = sb.t, lost = d.t, maj = s => MAJOR[placeIdx(s)];
+    const fromLost = segManner(X) === segManner(lost) && segManner(X) !== segManner(keep) && maj(X) === maj(keep) && maj(X) !== maj(lost);
+    const fromKeep = segManner(X) === segManner(keep) && segManner(X) !== segManner(lost) && maj(X) === maj(lost) && maj(X) !== maj(keep);
+    if (fromLost || fromKeep) { sb.procs = ["coalescence"]; d.procs = []; d.coalesced = true; sb.chips.push(`merges ${keep.ipa} and ${lost.ipa}`); }
+  }
+  // reduplication: a production syllable repeats the one before it, though the target's syllables differ
+  let redup = false;
+  const sylStr = (arr, k) => arr.filter(s => s.syl === k).map(s => s.base + "." + (s.second ?? "")).join(" ");
+  const pSyl = Math.max(-1, ...p.map(s => s.syl ?? -1)), tSyl = Math.max(-1, ...t.map(s => s.syl ?? -1));
+  for (let k = 1; k <= pSyl && !redup; k++) {
+    if (sylStr(p, k) !== sylStr(p, k - 1) || !sylStr(p, k).includes(" ")) continue;
+    let targetRepeats = false;
+    for (let j = 1; j <= tSyl; j++) if (sylStr(t, j) === sylStr(t, j - 1)) targetRepeats = true;
+    if (targetRepeats) continue;
+    redup = true;
+    for (const r of rows) if ((r.p && r.p.syl >= k) || (!r.p && r.t && r.t.syl >= k)) { r.procs = []; r.redup = true; }
+  }
+  for (const r of rows) for (const k of r.procs) found.push(k);
+  if (redup) found.push("reduplication");
   let wsdEstimated = false;
   if (tV >= 2) {
     if (stressKnown) {
       for (const op of ops) if (op.p == null && op.t != null && nuc(t, op.t) && t[op.t].stress === "unstressed") found.push("weak_syllable_deletion");
     } else if (pV < tV) { found.push("weak_syllable_deletion"); wsdEstimated = true; }
   }
-  return { gloss, tIPA, pIPA, rows, found, opp, consonants: tc.length, correct, wsdEstimated, stressKnown,
+  // percent vowels correct: a vowel and its offglide count as one vowel, correct only if both are
+  let vowels = 0, vowelsOk = 0;
+  t.forEach((s, i) => {
+    if (!nuc(t, i)) return;
+    vowels++;
+    const parts = rows.filter(r => r.t && r.t.kind === "V" && r.t.syl === s.syl);
+    if (parts.every(r => r.status === "ok")) vowelsOk++;
+  });
+  return { gloss, tIPA, pIPA, rows, found, opp, consonants: tc.length, correct, wsdEstimated, stressKnown, vowels, vowelsOk,
+           distance: ops.cost, ties: ops.ties,
            unknown: [...T.unknown, ...P.unknown], produced: p, target: t };
 }
 
+// a production written as NR, ∅, a dash or 0, or left empty, is a no-response item and is not scored
+const NO_RESPONSE = /^(nr|n\/r|no response|∅|ø|-|–|—|0|\?)?$/i;
 function analyzeSample(lines) {
-  const words = lines.map(l => analyzeWord(l.gloss, l.target, l.produced));
+  const noResponse = lines.filter(l => NO_RESPONSE.test((l.produced || "").trim()));
+  const words = lines.filter(l => !NO_RESPONSE.test((l.produced || "").trim())).map(l => analyzeWord(l.gloss, l.target, l.produced));
   const occ = {}, opp = {}, where = {};
-  let C = 0, OK = 0;
+  let C = 0, OK = 0, V = 0, VOK = 0;
   for (const [w, wi] of words.map((w, i) => [w, i])) {
-    C += w.consonants; OK += w.correct;
+    C += w.consonants; OK += w.correct; V += w.vowels; VOK += w.vowelsOk;
     for (const [k, v] of Object.entries(w.opp)) opp[k] = (opp[k] || 0) + v;
     for (const k of w.found) { occ[k] = (occ[k] || 0) + 1; (where[k] = where[k] || new Set()).add(wi); }
   }
@@ -642,7 +875,7 @@ function analyzeSample(lines) {
   words.forEach((w, wi) => {
     const lastC = w.target.length && w.target[w.target.length - 1].kind === "C" ? w.target.length - 1 : -1;
     for (const r of w.rows) {
-      if (!r.t || r.t.kind !== "C" || r.status === "ok" || r.status === "ins") continue;
+      if (!r.t || r.t.kind !== "C" || r.status === "ok" || r.status === "ins" || r.status === "met") continue;
       const tk = B2IPA[r.t.base] + (r.t.second != null ? B2IPA[r.t.second] : "");
       const pk = r.p ? (r.p.kind === "C" ? B2IPA[r.p.base] + (r.p.second != null ? B2IPA[r.p.second] : "") : "vowel") : "omitted";
       if (tk === pk) continue;
@@ -658,7 +891,11 @@ function analyzeSample(lines) {
     .slice(0, 3).map(q => ({ p: q.p, n: q.n, targets: [...q.targets] }));
   const unread = new Map(); let unreadWords = 0;
   for (const w of words) { if (w.unknown.length) unreadWords++; for (const u of w.unknown) unread.set(u, (unread.get(u) || 0) + 1); }
-  return { words, pcc, severity, consonants: C, correct: OK, procs, produced: [...produced], missing, topSubs, preferred,
+  const ambiguous = words.map((w, i) => w.ties > 1 ? i : -1).filter(i => i >= 0);
+  const variants = new Map();
+  for (const w of words) for (const r of w.rows) if (r.variant) variants.set(r.variant, (variants.get(r.variant) || 0) + 1);
+  return { words, pcc, severity, consonants: C, correct: OK, vowels: V, vowelsOk: VOK, pvc: V ? 100 * VOK / V : 0,
+           noResponse, variants: [...variants], procs, produced: [...produced], missing, topSubs, preferred, ambiguous,
            unreadWords, unread: [...unread].sort((a, b) => b[1] - a[1]).map(([s]) => s) };
 }
 
@@ -738,11 +975,18 @@ function render() {
       const top = r.t ? r.t.ipa : "–", bot = r.p ? r.p.ipa : "–";
       return `<div class="seg ${r.status}" title="${esc(r.chips.join("; "))}"><span>${esc(top)}</span><span>${esc(bot)}</span></div>`;
     }).join("");
-    const notes = w.rows.filter(r => r.status === "sub" || (r.status === "del" && r.procs.length)).map(r => {
+    const notes = w.rows.filter(r => r.status === "sub" || r.procs.length || r.variant || r.moved).map(r => {
       const tags = r.procs.map(k => `<span class="tag">${esc(PNAME[k])}</span>`).join("");
+      if (r.variant) return `<div class="tie">${esc(r.t ? r.t.ipa : "")} ${r.p ? "→ " + esc(r.p.ipa) : "not written"}: accepted English variant (${esc(r.variant)})</div>`;
+      if (r.moved && r.t) return `<div class="change"><span class="from">${esc(r.t.ipa)}</span> moved to another place in the word ${tags}</div>`;
+      if (r.moved) return "";
       if (r.status === "del") return `<div class="change"><span class="from">${esc(r.t.ipa)}</span> omitted ${tags}</div>`;
+      if (r.status === "ins") return `<div class="change"><span class="from">${esc(r.p.ipa)}</span> added ${tags}</div>`;
+      if (r.status === "met") return `<div class="change"><span class="from">${esc(r.t.ipa)} ↔ ${esc(r.p.ipa)}</span> trade places ${tags}</div>`;
       return `<div class="change"><span class="from">${esc(r.t.ipa)} → ${esc(r.p.ipa)}</span> <span class="feat">${esc(r.chips.join(" · "))}</span> ${tags}</div>`;
     });
+    if (w.found.includes("reduplication")) notes.push(`<div class="change">a syllable is repeated in place of the target syllable <span class="tag">Reduplication</span></div>`);
+    if (w.ties > 1) notes.push(`<div class="tie">${w.ties > 99 ? "Many" : w.ties} equally good alignments; one is shown. Check this word by hand.</div>`);
     if (w.found.includes("weak_syllable_deletion")) notes.push(`<div class="change">${w.wsdEstimated ? "syllable omitted (estimated: no stress marked)" : "unstressed syllable omitted"} <span class="tag">Weak syllable deletion</span></div>`);
     const allOk = !w.found.length && w.rows.every(r => r.status === "ok");
     const cls = sel ? (sel.has(i) ? " hit" : " dim") : "";
@@ -825,9 +1069,12 @@ function wordChanges(w) {
     const names = r.procs.filter(k => k !== "other_sub").map(k => PNAME[k].toLowerCase());
     if (r.status === "sub") out.push(`${ns(r.t.ipa)} → ${ns(r.p.ipa)}${names.length ? " (" + names.join(", ") + ")" : ""}`);
     else if (r.status === "del" && r.t) out.push(`${ns(r.t.ipa)} omitted${names.length ? " (" + names.join(", ") + ")" : ""}`);
-    else if (r.status === "ins" && r.p) out.push(`${ns(r.p.ipa)} added`);
+    else if (r.status === "ins" && r.p) out.push(`${ns(r.p.ipa)} added (epenthesis)`);
+    else if (r.status === "met" && r.moved && r.t) out.push(`${ns(r.t.ipa)} moved (migration)`);
+    else if (r.status === "met" && r.procs.length) out.push(`${ns(r.t.ipa)} and ${ns(r.p.ipa)} trade places (metathesis)`);
   }
   if (w.found.includes("weak_syllable_deletion")) out.push("weak syllable deleted");
+  if (w.found.includes("reduplication")) out.push("syllable reduplicated");
   return out;
 }
 
@@ -881,9 +1128,9 @@ function buildReport(S, I) {
 
   h.push(`<h2>Reason for referral</h2><p>${F(H, "ref")}</p>`);
 
-  h.push(`<h2>Assessment procedures</h2><p>A ${esc(I.type)} sample of ${N} word${N === 1 ? "" : "s"} was transcribed in broad IPA and analyzed with an automated phonological analysis. Each production was aligned with its adult target sound by sound, and every substitution is described by the features that changed (place, manner and voicing). Percent Consonants Correct (PCC) was calculated over all target consonants (Shriberg &amp; Kwiatkowski, 1982); aspiration and unreleased stops were treated as normal English variants, not errors. Each phonological process is reported as occurrences out of opportunities, the number of targets where the process could have applied. ${(() => { const NS = activeNorms(); return NS ? `Typical ages of elimination are from ${esc(NS.name)}; a dash means no age is given for the pattern.` : "Patterns were not compared with age norms."; })()}</p>${S.unreadWords ? `<p>${S.unreadWords} of ${N} productions contain narrow-transcription marks this analysis does not interpret (${ipa(S.unread.slice(0, 10).join(" "))}${S.unread.length > 10 ? " …" : ""}). Those sounds were scored on their base symbol, so a distortion shown only by one of these marks is counted as correct.</p>` : ""}`);
+  h.push(`<h2>Assessment procedures</h2><p>A ${esc(I.type)} sample of ${N} word${N === 1 ? "" : "s"} was transcribed in broad IPA and analyzed with an automated phonological analysis. Each production was aligned with its adult target sound by sound, weighting each pairing by the features the two sounds share and by their position in the syllable, and every substitution is described by the features that changed (place, manner and voicing). Sounds that trade places are scored as metathesis and added sounds as epenthesis. Percent Consonants Correct (PCC) was calculated over all target consonants (Shriberg &amp; Kwiatkowski, 1982); aspiration, unreleased stops and these normal American English pronunciations were counted as correct: flapped t and d, a glottal stop for t before syllabic n, dark l, r-coloured offglides, e and o for eɪ and oʊ, and the merger of ɑ and ɔ. Sounds that trade places were counted as incorrect. Percent Vowels Correct (PVC) counts a vowel and its offglide as one vowel. Each phonological process is reported as occurrences out of opportunities, the number of targets where the process could have applied. ${(() => { const NS = activeNorms(); return NS ? `Typical ages of elimination are from ${esc(NS.name)}; a dash means no age is given for the pattern.` : "Patterns were not compared with age norms."; })()}</p>${S.unreadWords ? `<p>${S.unreadWords} of ${N} productions contain narrow-transcription marks this analysis does not interpret (${ipa(S.unread.slice(0, 10).join(" "))}${S.unread.length > 10 ? " …" : ""}). Those sounds were scored on their base symbol, so a distortion shown only by one of these marks is counted as correct.</p>` : ""}${S.ambiguous.length ? `<p>For ${S.ambiguous.length} of ${N} words (${esc(S.ambiguous.slice(0, 8).map(i => S.words[i].gloss || S.words[i].tIPA).join(", "))}${S.ambiguous.length > 8 ? " …" : ""}) more than one alignment of target and production scored equally well; one was chosen automatically, and these words should be checked by hand.</p>` : ""}`);
 
-  h.push(`<h2>Results</h2><h3>Consonant accuracy</h3><p>${F(H, "who")} produced ${S.correct} of ${S.consonants} target consonants correctly, a PCC of ${S.pcc.toFixed(1)}%. This falls in the <strong>${esc(S.severity)}</strong> range (Shriberg &amp; Kwiatkowski, 1982: mild 85% or above, mild–moderate 65–84%, moderate–severe 50–64%, severe below 50%). ${okWords} of ${N} words ${okWords === 1 ? "was" : "were"} produced fully correctly.</p>`);
+  h.push(`<h2>Results</h2><h3>Consonant accuracy</h3><p>${F(H, "who")} produced ${S.correct} of ${S.consonants} target consonants correctly, a PCC of ${S.pcc.toFixed(1)}%. This falls in the <strong>${esc(S.severity)}</strong> range (Shriberg &amp; Kwiatkowski, 1982: mild 85% or above, mild–moderate 65–84%, moderate–severe 50–64%, severe below 50%). ${okWords} of ${N} words ${okWords === 1 ? "was" : "were"} produced fully correctly.</p>${S.vowels ? `<p>${F(H, "who")} produced ${S.vowelsOk} of ${S.vowels} target vowels correctly (PVC ${S.pvc.toFixed(1)}%).</p>` : ""}${S.noResponse.length ? `<p>${S.noResponse.length} item${S.noResponse.length === 1 ? " had" : "s had"} no response and ${S.noResponse.length === 1 ? "was" : "were"} not scored: ${esc(S.noResponse.map(l => l.gloss || l.target).join(", "))}.</p>` : ""}`);
 
   h.push(`<h3>Phonological processes</h3>`);
   if (rows.length) {
