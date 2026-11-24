@@ -271,6 +271,46 @@
   footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--line);color:var(--faint);font-size:13px;}
   a{color:var(--gold);}
 
+  /* ---------- Draw mode: handwrite the script, it snaps to clean glyphs ---------- */
+  #dw{position:fixed;inset:0;z-index:60;background:var(--ink);display:none;flex-direction:column;
+      user-select:none;-webkit-user-select:none;}
+  #dw.open{display:flex;}
+  #dwLine{flex:0 0 auto;min-height:150px;max-height:36vh;overflow-y:auto;padding:26px 44px 14px;
+      display:flex;flex-wrap:wrap;align-items:flex-end;align-content:flex-start;gap:4px;
+      border-bottom:1px solid var(--line);background:var(--ink2);}
+  #dwLine:empty::before{content:'Your writing appears here';color:var(--faint);font-size:15px;align-self:center;}
+  .dwG{display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .dwG.pend{visibility:hidden;}
+  .dwG small{font-size:15px;color:var(--faint);min-height:18px;line-height:18px;}
+  #dw:not(.labels) .dwG small{display:none;}
+  .dwSp{width:34px;}
+  .dwNl{flex-basis:100%;height:6px;}
+  #dwMain{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;}
+  #dwPad{width:min(56vh,80vw);height:min(56vh,80vw);touch-action:none;cursor:crosshair;
+      background:var(--ink2);border:1px solid var(--line);border-radius:18px;display:block;overflow:visible;}
+  #dwPad .ink path,#dwPad .ink circle{color:var(--paper);}
+  #dwFade{transition:opacity .32s ease,filter .32s ease;}
+  #dwFade.out{opacity:0;filter:blur(2px);}
+  #dwSnap{color:var(--verm);opacity:0;transform:scale(.94);transform-box:fill-box;transform-origin:center;
+      transition:opacity .2s ease,transform .32s cubic-bezier(.2,.9,.3,1.3),color .45s ease .12s;}
+  #dwSnap.in{opacity:1;transform:scale(1);color:var(--paper);}
+  .dwFly{position:fixed;z-index:61;pointer-events:none;transform-origin:0 0;color:var(--paper);
+      transition:transform .52s cubic-bezier(.2,.8,.2,1);}
+  .dwFly svg{display:block;width:100%;height:100%;}
+  #dwAlts{height:62px;display:flex;gap:8px;align-items:center;transition:opacity .5s ease;}
+  #dwAlts.faded{opacity:0;pointer-events:none;}
+  .dwAlt{display:flex;align-items:center;gap:6px;background:var(--cell);border:1px solid var(--line);
+      border-radius:12px;padding:4px 10px 4px 4px;color:var(--dim);cursor:pointer;font:inherit;font-size:14px;}
+  .dwAlt:hover{border-color:var(--gold);color:var(--paper);}
+  .dwAlt b{color:var(--gold);font-weight:600;font-size:12px;}
+  .dwAlt.cur{border-color:var(--verm);color:var(--paper);}
+  #dwBar{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 24px 16px;
+      border-top:1px solid var(--line);transition:opacity .3s ease;}
+  #dwBar label{display:flex;align-items:center;gap:8px;color:var(--faint);font-size:13px;}
+  #dwBar .keys{color:var(--faint);font-size:12px;}
+  #dw.clean #dwBar{opacity:0;pointer-events:none;}
+  #dw.clean #dwBar:hover{opacity:1;pointer-events:auto;}
+  #dw.clean #dwPad{border-color:transparent;}
 </style>
 </head>
 <body>
@@ -339,6 +379,7 @@
   <input id="ipain" class="txt" value="t&#x0259;s&#x0259;&#x027E;&#x0259; &#x02C8;w&#x0259;&#x0279;ld" spellcheck="false" autocomplete="off" aria-label="IPA text">
   <div class="toolbar">
     <button class="btn" id="bLabels">Show IPA labels</button>
+    <button class="btn acc" id="bDraw" type="button">Draw mode</button>
     <label style="display:flex;align-items:center;gap:9px;color:var(--faint);font-size:13px">small <input type="range" id="size" min="40" max="120" value="72" aria-label="Glyph size"> large</label>
     <span style="flex:1"></span>
     <button class="btn" id="bSvg">Download SVG</button>
@@ -365,6 +406,32 @@
 </section>
 
 
+</div>
+
+<div id="dw" role="dialog" aria-label="Draw mode" aria-modal="true">
+  <div id="dwLine" aria-live="polite"></div>
+  <div id="dwMain">
+    <svg id="dwPad" viewBox="-6 -6 112 112" aria-label="Drawing pad">
+      <g id="dwGuide"></g>
+      <g id="dwFade" class="ink"></g>
+      <g id="dwInk" class="ink"></g>
+      <g id="dwLive" class="ink"></g>
+      <g id="dwSnap" filter="url(#g)"></g>
+    </svg>
+    <div id="dwAlts" class="faded"></div>
+  </div>
+  <div id="dwBar">
+    <button class="btn" id="dwLabels" type="button">IPA labels (L)</button>
+    <label>Snap after <input type="range" id="dwDelay" min="250" max="1600" step="50" aria-label="Pause before snapping"> <span id="dwDelayV"></span></label>
+    <label>Line size <input type="range" id="dwSize" min="40" max="140" aria-label="Line glyph size"></label>
+    <button class="btn" id="dwUndo" type="button">Undo</button>
+    <button class="btn" id="dwClear" type="button">Clear</button>
+    <span style="flex:1"></span>
+    <span class="keys">Space snap/gap · Enter line · ⌫ undo · 1–4 swap · H hide · F full · Esc exit</span>
+    <button class="btn" id="dwCopy" type="button">Copy IPA</button>
+    <button class="btn" id="dwSend" type="button">Send to Write with it</button>
+    <button class="btn acc" id="dwClose" type="button">Done</button>
+  </div>
 </div>
 
 <dialog id="ed" aria-labelledby="edTitle">
@@ -1277,6 +1344,313 @@ document.getElementById('bPng').onclick = () => {
 renderPicks();
 toSketch();
 renderAll();
+
+/* ======================================================================
+   Draw mode · handwrite the script with the mouse or a pen. When you
+   pause, the ink is matched against every glyph of YOUR current script
+   (built live from glyphOf, so edits to radicals are picked up) and
+   snaps into the clean glyph, which then flies into the line above.
+   Matching is done in the glyph square itself, because where a stroke
+   sits (left, middle, right) is part of what it means.
+   ====================================================================== */
+const DW = {
+  open: false, ink: [], live: null, items: [], timer: null, tpl: [], last: null, altT: null,
+  prefs: { delay: 650, size: 84, labels: false }
+};
+const DW_PREF = 'tessera-draw-prefs';
+try { Object.assign(DW.prefs, JSON.parse(localStorage.getItem(DW_PREF) || '{}')); } catch(e){}
+const dwSavePrefs = () => { try { localStorage.setItem(DW_PREF, JSON.stringify(DW.prefs)); } catch(e){} };
+const dwEl = id => document.getElementById(id);
+const DW_STEP = 2.5;          // sample spacing, in glyph units (the square is 100)
+const DW_INK_W = 12;          // ink weight on the pad, close to Tessera's strokes
+
+/* ---------- turning strokes into evenly spaced points ---------- */
+function dwResample(poly, step = DW_STEP){
+  if (poly.length < 2) return poly.map(p => [p[0], p[1]]);
+  const out = [[poly[0][0], poly[0][1]]];
+  let carry = 0;
+  for (let i = 1; i < poly.length; i++){
+    const [ax, ay] = poly[i - 1], [bx, by] = poly[i];
+    const seg = Math.hypot(bx - ax, by - ay);
+    let t = step - carry;
+    while (t <= seg){ out.push([ax + (bx - ax) * t / seg, ay + (by - ay) * t / seg]); t += step; }
+    carry = seg - (t - step);
+  }
+  const L = poly[poly.length - 1], E = out[out.length - 1];
+  if (Math.hypot(L[0] - E[0], L[1] - E[1]) > step * 0.4) out.push([L[0], L[1]]);
+  return out;
+}
+let dwProbe = null;
+function dwPathPoints(d){
+  if (!dwProbe){
+    const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('width', '0'); svg.setAttribute('height', '0');
+    svg.style.cssText = 'position:absolute;left:-9999px;top:0';
+    dwProbe = document.createElementNS(ns, 'path'); svg.appendChild(dwProbe); document.body.appendChild(svg);
+  }
+  dwProbe.setAttribute('d', d);
+  const L = dwProbe.getTotalLength(), n = Math.max(2, Math.ceil(L / DW_STEP)), out = [];
+  for (let i = 0; i <= n; i++){ const q = dwProbe.getPointAtLength(L * i / n); out.push([q.x, q.y]); }
+  return out;
+}
+const dwStrokeCache = new Map();
+function dwStrokePoints(s){
+  const key = strokeKey(s);
+  if (dwStrokeCache.has(key)) return dwStrokeCache.get(key);
+  let pts;
+  if (s.k === 's'){
+    const c = CEN[s.id];
+    if (c && c.solid){
+      // a filled dot: its centre plus a small ring, so a tap or a little scribble both match
+      const b = dwPathPoints(c.d); let cx = 0, cy = 0; b.forEach(p => { cx += p[0]; cy += p[1]; }); cx /= b.length; cy /= b.length;
+      const r = Math.max(...b.map(p => Math.hypot(p[0] - cx, p[1] - cy))) * 0.5;
+      pts = [[cx, cy]]; for (let i = 0; i < 8; i++) pts.push([cx + r * Math.cos(i * Math.PI / 4), cy + r * Math.sin(i * Math.PI / 4)]);
+    } else pts = dwPathPoints(c ? c.d : S[s.id]);
+  } else pts = s.p.length === 1 ? [[s.p[0][0], s.p[0][1]]] : dwResample(s.p);
+  dwStrokeCache.set(key, pts);
+  return pts;
+}
+
+/* ---------- templates: one per sound, from the script as it is now ---------- */
+function dwBuildTemplates(){
+  const chars = Object.keys(DATA.symbols).concat(Object.keys(SCRIPT.special).filter(k => !DATA.symbols[k]));
+  const bySig = new Map();
+  for (const ch of chars){
+    const strokes = glyphOf(ch); if (!strokes.length) continue;
+    const sig = sigOf(strokes);
+    if (!bySig.has(sig)) bySig.set(sig, { strokes, chs: [], pts: strokes.flatMap(dwStrokePoints), n: strokes.length });
+    bySig.get(sig).chs.push(ch);
+  }
+  DW.tpl = [...bySig.values()];
+}
+
+/* ---------- matching ---------- */
+// mean distance from each point of A to its nearest point in B
+function dwChamfer(A, B){
+  let s = 0;
+  for (const a of A){
+    let m = Infinity;
+    for (const b of B){ const dx = a[0] - b[0], dy = a[1] - b[1], d = dx * dx + dy * dy; if (d < m) m = d; }
+    s += Math.sqrt(m);
+  }
+  return s / A.length;
+}
+const dwCost = (ink, t, nInk) => (dwChamfer(ink, t.pts) + dwChamfer(t.pts, ink)) / 2 + 0.4 * Math.abs(nInk - t.n);
+function dwRecognize(strokes){
+  const ink = strokes.flatMap(s => s.length === 1 ? [s[0]] : dwResample(s));
+  if (!ink.length || !DW.tpl.length) return [];
+  const n = strokes.length;
+  // quick pass where you drew it, then let the best few slide and scale a little
+  // to forgive drawing a bit off-centre or a bit small
+  const first = DW.tpl.map(t => ({ t, c: dwCost(ink, t, n) })).sort((a, b) => a.c - b.c).slice(0, 14);
+  for (const r of first){
+    for (const sc of [0.88, 1, 1.12]) for (const tx of [-7, 0, 7]) for (const ty of [-7, 0, 7]){
+      if (sc === 1 && !tx && !ty) continue;
+      const moved = ink.map(p => [50 + sc * (p[0] - 50) + tx, 50 + sc * (p[1] - 50) + ty]);
+      const c = dwCost(moved, r.t, n) + 0.04 * (Math.abs(tx) + Math.abs(ty)) + 3 * Math.abs(sc - 1);
+      if (c < r.c) r.c = c;
+    }
+  }
+  first.sort((a, b) => a.c - b.c);
+  // a template shared by several sounds (a clash) offers each of them
+  const out = [];
+  for (const r of first) for (const ch of r.t.chs) out.push({ ch, strokes: r.t.strokes, cost: r.c });
+  return out;
+}
+
+/* ---------- the pad ---------- */
+const dwPad = dwEl('dwPad');
+const dwInkSVG = st => strokeSVG(st, 'currentColor');
+const dwAsStroke = pts => ({ k: 'p', w: DW_INK_W, sm: pts.length > 2 ? 1 : 0, p: pts });
+function dwDrawInk(){
+  dwEl('dwInk').innerHTML = DW.ink.map(p => dwInkSVG(dwAsStroke(p))).join('');
+  dwEl('dwLive').innerHTML = DW.live ? dwInkSVG(dwAsStroke(DW.live)) : '';
+}
+function dwPt(e){
+  const pt = dwPad.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  const m = dwPad.getScreenCTM(); if (!m) return [0, 0];
+  const q = pt.matrixTransform(m.inverse());
+  return [r2(q.x), r2(q.y)];
+}
+dwEl('dwGuide').innerHTML =
+  `<rect x="0" y="0" width="100" height="100" rx="3" fill="none" stroke="var(--line)" stroke-width=".5" stroke-dasharray="2 2.5"/>
+   <path d="M50,2 V98 M2,50 H98" stroke="var(--line)" stroke-width=".35" stroke-dasharray="1 3"/>`;
+dwPad.addEventListener('pointerdown', e => {
+  if (e.button !== 0 && e.pointerType === 'mouse') return;
+  e.preventDefault(); dwPad.setPointerCapture(e.pointerId);
+  clearTimeout(DW.timer);
+  DW.live = [dwPt(e)]; dwDrawInk();
+});
+dwPad.addEventListener('pointermove', e => {
+  if (!DW.live) return;
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  for (const ev of (evs.length ? evs : [e])){
+    const p = dwPt(ev), last = DW.live[DW.live.length - 1];
+    if (Math.hypot(p[0] - last[0], p[1] - last[1]) >= 0.7) DW.live.push(p);
+  }
+  dwDrawInk();
+});
+function dwEndStroke(){
+  if (!DW.live) return;
+  let pts = simplify(DW.live, 0.45).map(q => [r2(q[0]), r2(q[1])]);
+  if (pts.length === 2 && Math.hypot(pts[0][0] - pts[1][0], pts[0][1] - pts[1][1]) < 1.5) pts = [pts[0]];
+  DW.ink.push(pts); DW.live = null; dwDrawInk();
+  clearTimeout(DW.timer); DW.timer = setTimeout(dwCommit, DW.prefs.delay);
+}
+dwPad.addEventListener('pointerup', dwEndStroke);
+dwPad.addEventListener('pointercancel', () => { DW.live = null; dwDrawInk(); });
+
+/* ---------- the line ---------- */
+function dwItemHTML(it){
+  if (it.sp) return '<div class="dwSp"></div>';
+  if (it.nl) return '<div class="dwNl"></div>';
+  return `<div class="dwG">${glyphSVG(it.strokes, { size: DW.prefs.size })}<small>${esc(it.ch)}</small></div>`;
+}
+function dwRenderLine(){
+  const L = dwEl('dwLine');
+  L.innerHTML = DW.items.map(dwItemHTML).join('');
+  L.scrollTop = L.scrollHeight;
+}
+function dwAppend(it){
+  DW.items.push(it);
+  const L = dwEl('dwLine'); L.insertAdjacentHTML('beforeend', dwItemHTML(it));
+  L.scrollTop = L.scrollHeight;
+  return L.lastElementChild;
+}
+
+/* ---------- snapping ---------- */
+function dwCommit(){
+  clearTimeout(DW.timer);
+  if (!DW.ink.length) return;
+  const strokes = DW.ink; DW.ink = []; dwDrawInk();
+  const cands = dwRecognize(strokes);
+  // the ink fades where you drew it...
+  const fade = dwEl('dwFade');
+  fade.classList.remove('out'); fade.innerHTML = strokes.map(p => dwInkSVG(dwAsStroke(p))).join('');
+  requestAnimationFrame(() => fade.classList.add('out'));
+  if (!cands.length) return;
+  const best = cands[0];
+  // ...while the clean glyph appears in the same place
+  const snap = dwEl('dwSnap');
+  snap.classList.remove('in');
+  snap.innerHTML = best.strokes.map(s => strokeSVG(s, 'currentColor')).join('');
+  void snap.getBoundingClientRect();
+  snap.classList.add('in');
+  const el = dwAppend({ ch: best.ch, strokes: best.strokes });
+  el.classList.add('pend');
+  DW.last = { idx: DW.items.length - 1, el, cands: cands.slice(0, 5), pick: 0 };
+  dwShowAlts();
+  setTimeout(() => dwFly(el, best.strokes, snap), 430);
+}
+function dwFly(el, strokes, snap){
+  const from = dwPad.getBoundingClientRect(), tsvg = el.querySelector('svg');
+  if (!tsvg || !DW.open){ el.classList.remove('pend'); snap.classList.remove('in'); return; }
+  const to = tsvg.getBoundingClientRect();
+  const fly = document.createElement('div');
+  fly.className = 'dwFly';
+  fly.style.cssText = `left:${from.left}px;top:${from.top}px;width:${from.width}px;height:${from.height}px`;
+  fly.innerHTML = `<svg viewBox="-6 -6 112 112">${strokes.map(s => strokeSVG(s, 'currentColor')).join('')}</svg>`;
+  document.body.appendChild(fly);
+  snap.classList.remove('in'); snap.style.transition = 'none'; snap.style.opacity = '0';
+  requestAnimationFrame(() => {
+    snap.style.transition = ''; snap.style.opacity = '';
+    const k = to.width / from.width;
+    fly.style.transform = `translate(${to.left - from.left}px,${to.top - from.top}px) scale(${k})`;
+  });
+  let done = false;
+  const finish = () => { if (done) return; done = true; el.classList.remove('pend'); fly.remove(); };
+  fly.addEventListener('transitionend', finish);
+  setTimeout(finish, 800);
+}
+
+/* ---------- second guesses ---------- */
+function dwShowAlts(){
+  const A = dwEl('dwAlts'), L = DW.last;
+  clearTimeout(DW.altT);
+  if (!L || L.cands.length < 2){ A.classList.add('faded'); return; }
+  A.innerHTML = L.cands.slice(0, 5).map((c, i) =>
+    `<button class="dwAlt${i === L.pick ? ' cur' : ''}" type="button" data-i="${i}" title="${esc(DATA.symbols[c.ch] ? DATA.symbols[c.ch].desc : c.ch)}">
+      ${glyphSVG(c.strokes, { size: 44 })}<span>${esc(c.ch)}</span>${i ? `<b>${i}</b>` : ''}</button>`).join('');
+  A.classList.remove('faded');
+  DW.altT = setTimeout(() => A.classList.add('faded'), 4500);
+}
+function dwPickAlt(i){
+  const L = DW.last; if (!L || !L.cands[i] || DW.items[L.idx] == null) return;
+  const c = L.cands[i]; L.pick = i;
+  DW.items[L.idx] = { ch: c.ch, strokes: c.strokes };
+  const old = dwEl('dwLine').children[L.idx];
+  if (old){ old.insertAdjacentHTML('afterend', dwItemHTML(DW.items[L.idx])); L.el = old.nextElementSibling; old.remove(); }
+  dwShowAlts();
+}
+dwEl('dwAlts').addEventListener('click', e => { const b = e.target.closest('.dwAlt'); if (b) dwPickAlt(+b.dataset.i); });
+
+/* ---------- editing the line ---------- */
+function dwUndo(){
+  if (DW.live) return;
+  if (DW.ink.length){ DW.ink.pop(); dwDrawInk(); clearTimeout(DW.timer); if (DW.ink.length) DW.timer = setTimeout(dwCommit, DW.prefs.delay); return; }
+  if (!DW.items.length) return;
+  DW.items.pop(); DW.last = null; dwEl('dwAlts').classList.add('faded');
+  const L = dwEl('dwLine'); if (L.lastElementChild) L.lastElementChild.remove();
+}
+function dwClear(){
+  clearTimeout(DW.timer); DW.ink = []; DW.live = null; DW.items = []; DW.last = null;
+  dwDrawInk(); dwRenderLine(); dwEl('dwAlts').classList.add('faded');
+}
+const dwIPA = () => DW.items.map(it => it.sp ? ' ' : it.nl ? '\n' : it.ch).join('');
+
+/* ---------- open / close / settings ---------- */
+function dwApplyPrefs(){
+  dwEl('dw').classList.toggle('labels', !!DW.prefs.labels);
+  dwEl('dwLabels').classList.toggle('on', !!DW.prefs.labels);
+  dwEl('dwDelay').value = DW.prefs.delay; dwEl('dwDelayV').textContent = (DW.prefs.delay / 1000).toFixed(2) + ' s';
+  dwEl('dwSize').value = DW.prefs.size;
+}
+function dwOpen(){
+  dwBuildTemplates(); dwApplyPrefs(); dwRenderLine();
+  DW.open = true; dwEl('dw').classList.add('open'); document.body.style.overflow = 'hidden';
+}
+function dwClose(){
+  if (DW.ink.length) dwCommit();
+  DW.open = false; dwEl('dw').classList.remove('open', 'clean'); document.body.style.overflow = '';
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+}
+dwEl('dwLabels').onclick = () => { DW.prefs.labels = !DW.prefs.labels; dwSavePrefs(); dwApplyPrefs(); };
+dwEl('dwDelay').addEventListener('input', e => { DW.prefs.delay = +e.target.value; dwSavePrefs(); dwApplyPrefs(); });
+dwEl('dwSize').addEventListener('input', e => { DW.prefs.size = +e.target.value; dwSavePrefs(); dwRenderLine(); });
+dwEl('dwUndo').onclick = dwUndo;
+dwEl('dwClear').onclick = dwClear;
+dwEl('dwClose').onclick = dwClose;
+dwEl('dwCopy').onclick = function(){
+  const t = dwIPA(); if (!navigator.clipboard) return;
+  navigator.clipboard.writeText(t).then(() => { this.textContent = 'Copied'; setTimeout(() => { this.textContent = 'Copy IPA'; }, 1200); }).catch(() => {});
+};
+dwEl('dwSend').onclick = () => {
+  dwEl('ipain').value = dwIPA().replace(/\n/g, ' '); renderLine(); dwClose();
+  document.getElementById('compose').scrollIntoView({ behavior: 'smooth' });
+};
+// keys run before the page's own shortcuts while draw mode is open
+window.addEventListener('keydown', e => {
+  if (!DW.open) return;
+  if (/INPUT|TEXTAREA/.test(document.activeElement.tagName) && document.activeElement.type !== 'range') return;
+  const k = e.key, mod = e.ctrlKey || e.metaKey;
+  let used = true;
+  if (k === 'Escape'){ if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); else dwClose(); }
+  else if (k === ' '){ if (DW.ink.length) dwCommit(); else { dwAppend({ sp: 1 }); DW.last = null; } }
+  else if (k === 'Enter'){ if (DW.ink.length) dwCommit(); dwAppend({ nl: 1 }); DW.last = null; }
+  else if (k === 'Backspace' || (mod && k.toLowerCase() === 'z')) dwUndo();
+  else if (k === 'Delete') dwClear();
+  else if (!mod && /^[1-4]$/.test(k)) dwPickAlt(+k);
+  else if (!mod && k.toLowerCase() === 'l') dwEl('dwLabels').click();
+  else if (!mod && k.toLowerCase() === 'h') dwEl('dw').classList.toggle('clean');
+  else if (!mod && k.toLowerCase() === 'f'){
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else dwEl('dw').requestFullscreen && dwEl('dw').requestFullscreen().catch(() => {});
+  }
+  else used = false;
+  if (used){ e.preventDefault(); e.stopImmediatePropagation(); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
+}, true);
+dwEl('bDraw').onclick = dwOpen;
+if (location.hash === '#draw') dwOpen();
 </script>
 </body>
 </html>
