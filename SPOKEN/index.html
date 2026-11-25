@@ -162,18 +162,18 @@
       <tbody>
       <tr><td>Control Flow</td><td><code>if</code>, <code>else</code>, <code>while</code>, <code>stop</code></td><td>Conditional branching and execution bounds</td></tr>
       <tr><td>Instruction Pointer</td><td><code>jump</code>, <code>next</code></td><td>Restarts the top of an <code>each</code>/<code>while</code> loop (jump) or exits it (next)</td></tr>
-      <tr><td>Variables &amp; Storage</td><td><code>make</code>, <code>del</code>, <code>take</code>, <code>open</code>, <code>save</code>, <code>download</code></td><td>Declares, deletes, reads input into, or exports local data. <code>take x</code> reads input; inside a class, <code>take.method()</code> calls the parent's method. <code>open</code> is an alias of <code>take</code>. <code>make b a</code> copies a number or text, but a list, dictionary or object is shared: change <code>b</code> and you've changed <code>a</code></td></tr>
-      <tr><td>Names &amp; Types</td><td><code>a</code> / <code>an</code>, <code>as</code>, <code>with</code></td><td><code>make rex a Dog with "Rex", "Husky"</code> creates an object named <code>rex</code> (<code>a</code>/<code>an</code> only counts before a class name; <code>make a Dog</code> with no name calls the variable <code>dog</code>). <code>x as v</code> gives a value a second name. When the word after <code>as</code> is a type, it converts instead: <code>take x as number</code>, <code>make n text as int</code>, <code>total as string</code> (types: string, number, int, float, bool, list, dict). <code>with</code> lists parameters: <code>define add with a, b</code>, <code>class Dog with breed</code>. <code>with</code> is only for these declaration lines. Calls use parentheses: <code>add(2, 3)</code>, <code>name.replace("a", "b")</code>, and a call with no arguments needs none: <code>answer</code>, <code>rex.speak</code>, <code>name.upper</code></td></tr>
-      <tr><td>Functions &amp; OOP</td><td><code>define</code>, <code>give</code>, <code>class</code></td><td>Functions, returns and classes. Declarations use <code>with</code> (<code>define add with a, b</code>); calls use parentheses (<code>add(2, 3)</code>), so the two look different on the page. Parameters come after <code>with</code>, and a class's header params become its fields: <code>class Dog with breed extends Animal</code> (<code>extends</code> names the parent). There is no <code>init</code>: any line in a class body that is not a <code>define</code> is setup code that runs when an object is made (the parent's first), e.g. <code>make self.shout label.upper()</code></td></tr>
+      <tr><td>Variables &amp; Input</td><td><code>make</code>, <code>del</code>, <code>take</code></td><td><code>make total 0</code> creates or changes a variable, <code>del total</code> removes it, and <code>take name</code> asks the person running the program to type something into it (<code>take age as number</code> converts what they type). <code>make b a</code> copies a number or text, but a list, dictionary or object is shared: change <code>b</code> and you've changed <code>a</code></td></tr>
+      <tr><td>Names &amp; Types</td><td><code>a</code> / <code>an</code>, <code>as</code>, <code>with</code></td><td><code>make rex a Dog with "Rex", "Husky"</code> creates an object named <code>rex</code> (<code>a</code>/<code>an</code> only counts before a class name; <code>make a Dog</code> with no name calls the variable <code>dog</code>). <code>as</code> converts a value to a type: <code>take x as number</code>, <code>make n text as int</code>, and on a line by itself <code>total as string</code> converts the variable in place (types: string, number, int, float, bool, list, dict). It does nothing else: to give a value a second name, write <code>make b a</code>, and to name a package, see Packages. <code>with</code> lists parameters: <code>define add with a, b</code>, <code>class Dog with breed</code>. <code>with</code> is only for these declaration lines. Calls use parentheses: <code>add(2, 3)</code>, <code>name.replace("a", "b")</code>, and a call with no arguments needs none: <code>answer</code>, <code>rex.speak</code>, <code>name.upper</code></td></tr>
+      <tr><td>Functions &amp; OOP</td><td><code>define</code>, <code>give</code>, <code>class</code>, <code>extends</code>, <code>super</code></td><td>Functions, returns and classes. Declarations use <code>with</code> (<code>define add with a, b</code>); calls use parentheses (<code>add(2, 3)</code>), so the two look different on the page. Parameters come after <code>with</code>, and a class's header params become its fields: <code>class Dog with breed extends Animal</code> (<code>extends</code> names the parent). Inside a method, <code>super.speak</code> runs the parent's version of a method, e.g. <code>give super.speak + " barks!"</code> (with arguments: <code>super.add(a, b)</code>). There is no <code>init</code>: any line in a class body that is not a <code>define</code> is setup code that runs when an object is made (the parent's first), e.g. <code>make self.shout label.upper()</code></td></tr>
       <tr><td>Output &amp; Speech</td><td><code>print</code>, <code>say</code></td><td>Console printing and browser SpeechSynthesis output</td></tr>
       <tr><td>Comments</td><td><code>note</code></td><td>Comment: everything after note to the end of the line is ignored</td></tr>
       <tr><td>Visual Anchors</td><td><code>pin</code></td><td>Zero-cost visual canvas anchor node</td></tr>
       <tr><td>Math &amp; Text</td><td><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>//</code>, <code>%</code>, <code>^</code></td><td>Arithmetic. <code>//</code> divides and rounds down (<code>7 // 2</code> is 3, <code>-7 // 2</code> is -4), <code>%</code> is the remainder, <code>^</code> is power. <code>+</code> also joins text, and turns the other side into text: <code>"Total: " + 5</code>, <code>"ok: " + yes</code></td></tr>
       <tr><td>Data &amp; Logic</td><td><code>each</code>, <code>in</code>, <code>yes</code>, <code>no</code>, <code>none</code>, <code>is</code>, <code>same</code>, <code>mostly</code>, <code>not</code>, <code>and</code>, <code>or</code></td><td>Iteration (<code>each 3</code>, <code>each n in items</code>), boolean literals, equality, <code>list mostly yes</code> (true when more than half the list matches; a tie is no), and logical operators</td></tr>
       <tr><td>Screen &amp; Events</td><td><code>#name</code>, <code>bind</code>, <code>on</code>, <code>every</code></td><td>Every <code>#name</code> in a program is an element on the Screen (above the console), made when the program starts. A name ending in <code>-btn</code> is a button, <code>-input</code> a text box, <code>-canvas</code> a drawing area; otherwise it's decided by use (clicked or given a <code>label</code>: button, given a <code>value</code> or typed into with <code>on type</code>/<code>on enter</code>: text box, drawn on: canvas, else a label). <code>bind #app.text counter</code> keeps <code>#app</code> showing <code>counter</code> as it changes. <code>make #title.text "Hi"</code> sets it once. <code>#user-input.text</code> reads what's typed in a box. <code>on click "#submit-btn"</code> runs the indented lines on each click (also <code>on type</code>, <code>on change</code>, <code>on enter</code>, <code>on hover</code>, and <code>on key</code> for the keyboard, which gives you <code>key</code>). <code>every 1 second</code> repeats its lines (<code>ms</code>, <code>seconds</code>, <code>minutes</code>). A program with <code>on</code> or <code>every</code> keeps running until you press Stop. Properties: <code>text</code>, <code>color</code>, <code>background</code>, <code>size</code>, <code>visible</code>, <code>width</code>, <code>height</code>. Canvas: <code>#pad-canvas.circle(x, y, r, "red")</code>, <code>.rect(x, y, w, h, color)</code>, <code>.line(x1, y1, x2, y2, color)</code>, <code>.write(x, y, "text", color)</code>, <code>.clear</code>. A trailing <code>then</code> on a block's first line and an <code>ok</code> line after a block are allowed, but the indentation is what counts</td></tr>
-      <tr><td>Packages</td><td><code>use</code></td><td>Brings in code from elsewhere. <code>use python numpy as np</code> loads a Python package (the standard library, packages like numpy and pandas, or pure-Python packages from PyPI; the first Python import takes a few seconds). <code>use js lodash as lo</code> loads a JavaScript package from npm. <code>use "https://example.com/tools.vx"</code> runs a Mutter file and gives you its functions (add <code>as tools</code> to keep them under <code>tools.</code>). With no <code>as</code>, the name is the package's: <code>use js date-fns</code> gives <code>date_fns</code>. Package functions use the normal call syntax: <code>np.mean([1, 2, 3])</code>, <code>df["age"].max()</code>. If the install name differs from the import name, use the install name: <code>use python python-slugify as slugify</code>. Only use packages you trust: they run with the same access as this page</td></tr>
-      <tr><td>Error Handling</td><td><code>try</code>, <code>catch</code></td><td>Exception blocks and exception variable binding</td></tr>
-      <tr><td>Timing &amp; Automation</td><td><code>wait</code>, <code>every</code>, <code>from</code></td><td>Execution delays and event triggers</td></tr>
+      <tr><td>Packages</td><td><code>use</code></td><td>Brings in code from elsewhere. <code>make np use python numpy</code> loads a Python package and calls it <code>np</code> (the standard library, packages like numpy and pandas, or pure-Python packages from PyPI; the first Python import takes a few seconds). <code>use js lodash as lo</code> loads a JavaScript package from npm. <code>use "https://example.com/tools.vx"</code> runs a Vertex file and gives you its functions; <code>make tools use "https://example.com/tools.vx"</code> keeps them under <code>tools.</code> instead. <code>use js lodash as lo</code> becomes <code>make lo use js lodash</code>. Without <code>make</code>, the name is the package's own: <code>use python numpy</code> gives <code>numpy</code>, <code>use js date-fns</code> gives <code>date_fns</code>. Package functions use the normal call syntax: <code>np.mean([1, 2, 3])</code>, <code>df["age"].max()</code>. If the install name differs from the import name, use the install name: <code>make slugify use python python-slugify</code>. Only use packages you trust: they run with the same access as this page</td></tr>
+      <tr><td>Error Handling</td><td><code>try</code>, <code>catch</code>, <code>always</code></td><td>The lines under <code>try</code> run; if one of them fails, the program jumps to the lines under <code>catch</code> instead of stopping. <code>catch problem</code> puts the error message in <code>problem</code> (with no name it's <code>err</code>). The lines under <code>always</code> run last no matter what: after the try succeeds, after the catch, and even when a <code>give</code>, <code>next</code> or <code>stop</code> is leaving the block. Use <code>catch</code>, <code>always</code> or both, at the same indentation as <code>try</code>. With <code>always</code> and no <code>catch</code>, the error still stops the program once the always lines have run</td></tr>
+      <tr><td>Timing</td><td><code>wait</code>, <code>every</code></td><td><code>wait 2 seconds</code> pauses the program (<code>ms</code>, <code>seconds</code>, <code>minutes</code>). <code>every 1 second</code> repeats the indented lines under it until you press Stop (see Screen &amp; Events)</td></tr>
       <tr><td>Loop Variables</td><td><code>i</code>, <code>ii</code>, <code>j</code>, <code>jj</code>, <code>k</code>, <code>kk</code></td><td>Automatic names inside <code>each</code>. In the outer loop <code>i</code> is the item (or the count) and <code>ii</code> is its position (or, over a dictionary, <code>i</code> is the key and <code>ii</code> the value). A loop inside it uses <code>j</code>/<code>jj</code>, and one inside that uses <code>k</code>/<code>kk</code></td></tr>
       </tbody>
     </table></div>
@@ -324,7 +324,7 @@
         <tr><td><code>print double five pair</code></td><td><code>print double(5)</code></td></tr>
         <tr><td><code>name dot upper</code></td><td><code>name.upper</code> -- <code>dot</code> glues to the word before it; a method with no arguments needs no parentheses</td></tr>
         <tr><td><code>items dot push 3 pair</code></td><td><code>items.push(3)</code></td></tr>
-        <tr><td><code>take dot speak pair</code></td><td><code>take.speak()</code>, the parent call</td></tr>
+        <tr><td><code>super dot speak</code></td><td><code>super.speak</code>, the parent's version of the method</td></tr>
         <tr><td><code>index zero pair</code></td><td><code>[0]</code></td></tr>
         <tr><td><code>make x quote hello world quote so</code></td><td><code>make x "hello world"</code> and a new line</td></tr>
         <tr><td><code>each ten then print I</code></td><td><code>each 10</code>, then <code>print i</code> indented under it</td></tr>
@@ -377,16 +377,17 @@ const KEYWORDS = new Set([
   // Functions
   'define', 'class', 'give',
   // OOP
+  'super',
   // Data
-  'make', 'del', 'take', 'open', 'say', 'print', 'save', 'download',
-  // Visual Anchors & Imports
-  'pin', 'from',
+  'make', 'del', 'take', 'say', 'print',
+  // Visual Anchors
+  'pin',
   // Logic / literals
   'not', 'and', 'or', 'same', 'is', 'yes', 'no', 'none',
   // Iteration
   'in', 'each', 'mostly', 'with', 'as', 'extends',
   // Other / Handling
-  'wait', 'note', 'try', 'catch', 'every', 'on', 'bind',
+  'wait', 'note', 'try', 'catch', 'always', 'every', 'on', 'bind',
   // Network / AI
   'ask', 'post', 'use', 'get',
   // Google services
@@ -675,11 +676,14 @@ const BINARY_OPS = new Set(Object.keys(PREC).filter(k => k !== 'not'));
 
 // ── friendly error helpers ─────────────────────────────────────────────
 const OLD_WORDS = {
-  init: "'init' isn't needed any more -- put constructor params in the class header (class Dog with name extends Animal) and setup lines straight in the class body", loop: "'loop' is now 'each'", super: "'super' is now 'take' -- write take.method() inside a class", fun: "'fun' is now 'define'", err: "'err' is now 'catch'",
+  init: "'init' isn't needed any more -- put constructor params in the class header (class Dog with name extends Animal) and setup lines straight in the class body", loop: "'loop' is now 'each'", fun: "'fun' is now 'define'", err: "'err' is now 'catch'",
   end: "'end' isn't needed any more -- a block ends when the indentation steps back",
   dot: "'dot' isn't part of Vertex any more", fork: "'fork' isn't part of Vertex any more",
   prev: "'prev' isn't part of Vertex any more", by: "'by' isn't part of Vertex any more",
   key: "'key' isn't part of Vertex any more",
+  open: "'open' isn't part of Vertex any more -- use take to read input",
+  save: "'save' isn't part of Vertex any more", download: "'download' isn't part of Vertex any more",
+  from: "'from' isn't part of Vertex any more -- to load Vertex code from a link, write: use \"https://.../file.vx\"",
 };
 function editDistance(a, b) {
   const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
@@ -787,9 +791,6 @@ class Parser {
       take: () => this.parseTake(),
       on: () => this.parseOn(),
       bind: () => this.parseBind(),
-      open: () => this.parseTake(), // Open reuses take file handling
-      save: () => this.parseSave(),
-      download: () => this.parseDownload(),
       give: () => this.parseGive(),
       wait: () => this.parseWait(),
       every: () => this.parseEvery(),
@@ -818,8 +819,9 @@ class Parser {
         this.eatNewline();
         return Node('Next', { line: tok.line });
       },
-      from: () => this.parseFrom(),
       try: () => this.parseTry(),
+      catch: () => { const t = this.advance(); this.error("'catch' goes right after a try block, at the same indentation as its 'try'", t); this.skipLineAndBlock(); return null; },
+      always: () => { const t = this.advance(); this.error("'always' goes right after a try block (or its catch), at the same indentation as its 'try'", t); this.skipLineAndBlock(); return null; },
     };
   }
 
@@ -856,6 +858,8 @@ class Parser {
   }
 
   skipNewlines() { while (this.check(T.NEWLINE)) this.advance(); }
+  // after an error on a block header: drop the rest of the line and the block under it
+  skipLineAndBlock() { this.recover(); this.eatNewline(); if (this.check(T.INDENT)) this.parseBlock(); }
 
   parseBlock() {
     if (!this.eat(T.INDENT)) {
@@ -885,11 +889,15 @@ class Parser {
       return Node('Assign', { name: tok.value, target: idn(), expr: Node('Convert', { expr: idn(), conv: TYPE_WORDS[String(tt.value).toLowerCase()], line: tok.line, col: tok.col }), lazy: false, line: tok.line, col: tok.col });
     }
     if (tok.type === T.IDENTIFIER && this.peek(1).type === T.KEYWORD && this.peek(1).value === 'as' && this.peek(2).type === T.IDENTIFIER) {
-      this.advance(); this.advance();                       // <name> as
-      const aliasTok = this.advance();                      // <alias>
+      // 'as' only converts types. Giving a value a second name is make's job.
+      const other = this.peek(2);
+      this.error(`'${other.value}' isn't a type, and 'as' only converts types (${TYPE_LIST_HINT}). To give '${tok.value}' another name, write: make ${other.value} ${tok.value}`, other);
+      return null;
+    }
+    if (tok.type === T.IDENTIFIER && tok.value === 'from' && this.peek(1).type === T.STRING) {
+      this.error(OLD_WORDS.from + '.', tok);
       this.eatNewline();
-      return Node('Assign', { name: aliasTok.value, target: Node('Identifier', { name: aliasTok.value, line: aliasTok.line, col: aliasTok.col }),
-        expr: Node('Identifier', { name: tok.value, line: tok.line, col: tok.col }), lazy: false, line: tok.line, col: tok.col });
+      return null;
     }
     if (tok.type === T.KEYWORD) {
       const parseStmt = this._statementParsers[tok.value];
@@ -932,6 +940,13 @@ class Parser {
     if (nameTok.type !== T.IDENTIFIER && !isLazy && nameTok.type !== T.SELECTOR) {
       this.error("Expected variable name after 'make'", nameTok);
       return null;
+    }
+    if (nameTok.type === T.IDENTIFIER && this.peek(1).type === T.KEYWORD && this.peek(1).value === 'use') {
+      // make np use python numpy   -- load a package under the name you choose
+      this.advance();
+      const lib = this.parseUseImport();
+      if (lib && lib.type === 'Library') { lib.alias = nameTok.value; lib.line = tok.line; lib.col = tok.col; }
+      return lib;
     }
     let target = nameTok.type === T.SELECTOR
       ? Node('Element', { name: this.advance().value, line: nameTok.line, col: nameTok.col })
@@ -993,7 +1008,7 @@ class Parser {
   }
 
   parseTake() {
-    if (this.peek(1).type === T.OP && this.peek(1).value === '.') return this.parseExprStatement();   // take.method() = parent call
+    if (this.peek(1).type === T.OP && this.peek(1).value === '.') return this.parseExprStatement();   // take.method -> error pointing at super
     const tok = this.advance();
     const nameTok = this.peek();
     if (nameTok.type === T.IDENTIFIER && ['int', 'flt', 'str', 'bin', 'list', 'dict'].includes(nameTok.value) && this.peek(1).type === T.LPAREN) {
@@ -1118,60 +1133,6 @@ class Parser {
   }
 
   _parseTrigger(tok, recurring) {
-    const next = this.peek();
-    if ((next.type === T.KEYWORD || next.type === T.IDENTIFIER) && next.value === 'email') {
-      this.advance();
-      const filters = {};
-      if (this.check(T.LPAREN)) {
-        this.advance();
-        while (!this.check(T.RPAREN) && !this.check(T.EOF)) {
-          const keyTok = this.advance();
-          const key = keyTok.value;
-          if (this.check(T.OP) && this.peek().value === '=') this.advance();
-          filters[key] = this.parsePrimary();
-          this.eat(T.COMMA);
-        }
-        this.expect(T.RPAREN, undefined, "Expected ')' after email filters");
-      }
-      let source = null;
-      if (this.checkKw('from')) { this.advance(); source = this.parseExpr(); }
-      this.eatNewline();
-      const body = this.check(T.INDENT) ? this.parseBlock() : [];
-      return Node('WaitBlock', { trigger: 'email', source, filters, body, recurring, line: tok.line, col: tok.col });
-    }
-
-    if ((next.type === T.KEYWORD || next.type === T.IDENTIFIER) && next.value === 'sheets') {
-      this.advance();
-      const name = this.parseExpr();
-      let event = 'row added';
-      if (this.checkKw('from')) {
-        this.advance();
-        const parts = [];
-        while (!this.check(T.NEWLINE) && !this.check(T.EOF) && !this.check(T.DEDENT)) {
-          parts.push(this.advance().value ?? '');
-        }
-        if (parts.length) event = parts.join(' ');
-      }
-      this.eatNewline();
-      const body = this.check(T.INDENT) ? this.parseBlock() : [];
-      return Node('WaitBlock', { trigger: 'sheets', source: name, event, body, recurring, line: tok.line, col: tok.col });
-    }
-
-    if ((next.type === T.KEYWORD || next.type === T.IDENTIFIER) && next.value === 'time') {
-      this.advance();
-      const source = this.parseExpr();
-      this.eatNewline();
-      const body = this.check(T.INDENT) ? this.parseBlock() : [];
-      return Node('WaitBlock', { trigger: 'time', source, body, recurring, line: tok.line, col: tok.col });
-    }
-
-    if ((next.type === T.KEYWORD || next.type === T.IDENTIFIER) && next.value === 'http') {
-      this.advance();
-      this.eatNewline();
-      const body = this.check(T.INDENT) ? this.parseBlock() : [];
-      return Node('WaitBlock', { trigger: 'http', source: null, body, recurring, line: tok.line, col: tok.col });
-    }
-
     const expr = this.parseExpr();
     const unitMs = this._timeUnit();
     this.eatNewline();
@@ -1220,12 +1181,12 @@ class Parser {
       // package names can hold - . / @ (date-fns, os.path, @turf/turf): glue the raw tokens back together
       while (!atEnd() && !this.checkKw('as')) spec += String(this.advance().value ?? '');
     }
-    let alias = null;
+    const alias = null;          // a chosen name comes from make: make np use python numpy
     if (this.checkKw('as')) {
-      this.advance();
-      const at = this.peek();
-      if (at.type !== T.IDENTIFIER) { this.error("Expected a name after 'as'", at); return null; }
-      alias = this.advance().value;
+      const at = this.peek(1);
+      const nm = at.type === T.IDENTIFIER ? at.value : 'name';
+      this.error(`Name a package with make, not 'as'. Write: make ${nm} use ${lang ? (lang === 'js' ? 'js ' : 'python ') : ''}${isString ? '"' + spec + '"' : spec}`, this.peek());
+      return null;
     }
     if (!spec) { this.error("Say which package to use, e.g. use python numpy", this.peek()); return null; }
     const isUrl = /^https?:\/\//i.test(spec);
@@ -1235,92 +1196,6 @@ class Parser {
     }
     this.eatNewline();
     return Node('Library', { lang, spec, alias, isUrl, line: tok.line, col: tok.col });
-  }
-
-  _parseSavePayload(target, line, col) {
-    if (this.check(T.NEWLINE) || this.check(T.EOF) || this.check(T.DEDENT)) {
-      this.error("Expected value or filename after 'save'", this.peek());
-      return null;
-    }
-
-    const first = this.parseExpr();
-    if (!first) {
-      this.error("Expected value or filename after 'save'", this.peek());
-      return null;
-    }
-
-    if (first.type === 'Identifier' && this.checkOp('.')) {
-      const filenameExpr = this._parseBareFilename(first.name, first.line, first.col);
-      if (!filenameExpr) return null;
-      this.eatNewline();
-      return Node('Save', { valueExpr: null, filenameExpr, target, line, col });
-    }
-
-    if (first.type === 'StringLit' &&
-      !this.check(T.NEWLINE) && !this.check(T.EOF) && !this.check(T.DEDENT)) {
-      const valueExpr = this._parseSaveFilenameExpr();
-      this.eatNewline();
-      return Node('Save', { valueExpr, filenameExpr: first, target, line, col });
-    }
-    if (first.type === 'StringLit') {
-      this.eatNewline();
-      return Node('Save', { valueExpr: null, filenameExpr: first, target, line, col });
-    }
-
-    if (first.type === 'Identifier' &&
-      (this.check(T.NEWLINE) || this.check(T.EOF) || this.check(T.DEDENT))) {
-      const autoFilename = Node('StringLit', { value: first.name, line: first.line, col: first.col });
-      this.eatNewline();
-      return Node('Save', { valueExpr: first, filenameExpr: autoFilename, autoName: true, target, line, col });
-    }
-
-    let valueExpr = first;
-    const filenameExpr = this._parseSaveFilenameExpr();
-    if (!filenameExpr) {
-      this.error("Expected filename after value in 'save'", this.peek());
-      return null;
-    }
-
-    this.eatNewline();
-    return Node('Save', { valueExpr, filenameExpr, target, line, col });
-  }
-
-  parseSave() {
-    const tok = this.advance();
-    return this._parseSavePayload('drive', tok.line, tok.col);
-  }
-
-  _parseBareFilename(initial, line, col) {
-    let name = initial;
-    while (this.checkOp('.')) {
-      this.advance();
-      const part = this.peek();
-      if ([T.IDENTIFIER, T.KEYWORD, T.NUMBER].includes(part.type)) {
-        name += '.' + String(this.advance().value ?? '');
-      } else {
-        this.error("Expected filename segment after '.'", part);
-        return null;
-      }
-    }
-    return Node('StringLit', { value: name, line, col });
-  }
-
-  _parseSaveFilenameExpr() {
-    const tok = this.peek();
-    if (tok.type === T.STRING) {
-      this.advance();
-      return Node('StringLit', { value: tok.value, line: tok.line, col: tok.col });
-    }
-    if (tok.type === T.IDENTIFIER) {
-      const id = this.advance();
-      return this._parseBareFilename(id.value, id.line, id.col);
-    }
-    return this.parseExpr();
-  }
-
-  parseDownload() {
-    const tok = this.advance();
-    return this._parseSavePayload('local', tok.line, tok.col);
   }
 
   parseIf() {
@@ -1427,13 +1302,15 @@ class Parser {
     return Node('Fun', { name, params, body, line: tok.line, col: tok.col });
   }
 
+  // try / catch [name] / always   -- catch, always, or both; always runs last, whatever happened
   parseTry() {
     const tok = this.advance();
     this.eatNewline();
     const body = this.parseBlock();
 
     let errVar = 'err';
-    let errBody = [];
+    let errBody = null;
+    let alwaysBody = null;
 
     this.skipNewlines();
     if (this.checkKw('catch')) {
@@ -1443,9 +1320,18 @@ class Parser {
       }
       this.eatNewline();
       errBody = this.parseBlock();
+      this.skipNewlines();
+    }
+    if (this.checkKw('always')) {
+      this.advance(); // eat 'always'
+      this.eatNewline();
+      alwaysBody = this.parseBlock();
+    }
+    if (errBody === null && alwaysBody === null) {
+      this.errors.push({ line: tok.line, col: tok.col, message: "A try block needs a 'catch' (what to do if something goes wrong), an 'always' (what to do no matter what), or both, right after it" });
     }
 
-    return Node('Try', { body, errVar, errBody, line: tok.line, col: tok.col });
+    return Node('Try', { body, errVar, errBody: errBody ?? [], hasCatch: errBody !== null, alwaysBody, line: tok.line, col: tok.col });
   }
 
   _parseParamsAfterLparen(paren = true) {
@@ -1542,41 +1428,6 @@ class Parser {
       this.eatNewline();
     }
     return Node('Stop', { stmt, line: tok.line, col: tok.col });
-  }
-
-  parseFrom() {
-    const tok = this.advance();
-    if (this.check(T.STRING)) {
-      const urlTok = this.advance();
-      const url = urlTok.value;
-      const names = [];
-      if (this.checkKw('use')) {
-        this.advance();
-        while (!this.check(T.NEWLINE) && !this.check(T.EOF)) {
-          if (this.check(T.IDENTIFIER)) names.push(this.advance().value);
-          this.eat(T.COMMA);
-        }
-      }
-      this.eatNewline();
-      return Node('Import', { url, names, line: tok.line, col: tok.col });
-    }
-
-    const pathParts = [];
-    let via = null;
-    while (!this.check(T.NEWLINE) && !this.check(T.EOF)) {
-      if (this.checkKw('from')) {
-        this.advance();
-        const viaParts = [];
-        while (!this.check(T.NEWLINE) && !this.check(T.EOF)) {
-          viaParts.push(this.advance().value ?? '');
-        }
-        via = viaParts.join(' ');
-        break;
-      }
-      pathParts.push(this.advance().value ?? '');
-    }
-    this.eatNewline();
-    return Node('Import', { path: pathParts.join(' '), via, line: tok.line, col: tok.col });
   }
 
   parseExprStatement() {
@@ -1837,18 +1688,21 @@ class Parser {
       this.expect(T.RPAREN, undefined, "Expected ')'");
       return this.parsePostfix(expr);
     }
-    if (tok.type === T.IDENTIFIER && tok.value === 'super') {
-      this.error(OLD_WORDS.super, tok);
-      this.advance();
-      return null;
-    }
     if (tok.type === T.IDENTIFIER) {
       this.advance();
       return this.parsePostfix(Node('Identifier', { name: tok.value, line: tok.line, col: tok.col }));
     }
-    if (tok.type === T.KEYWORD && tok.value === 'take' && this.peek(1).type === T.OP && this.peek(1).value === '.') {
+    if (tok.type === T.KEYWORD && tok.value === 'super') {
       this.advance();
+      if (!(this.peek().type === T.OP && this.peek().value === '.')) {
+        this.error("Say which of the parent's methods to use, e.g. super.speak", tok);
+        return null;
+      }
       return this.parsePostfix(Node('Super', { line: tok.line, col: tok.col }));
+    }
+    if (tok.type === T.KEYWORD && tok.value === 'take' && this.peek(1).type === T.OP && this.peek(1).value === '.') {
+      this.error("The parent class is 'super' now. Write: super." + (this.peek(2).value ?? 'method'), tok);
+      return null;
     }
     if (tok.type === T.LAZY) {
       this.advance();
@@ -3853,7 +3707,7 @@ function inferImmutables(ast) {
     if (node.type === 'For') { scanBlock(node.body); return; }
     if (node.type === 'Fun') { scanBlock(node.body); return; }
     if (node.type === 'Class') { scanBlock(node.body); return; }
-    if (node.type === 'Try') { scanBlock(node.body); scanBlock(node.errBody); return; }
+    if (node.type === 'Try') { scanBlock(node.body); scanBlock(node.errBody); scanBlock(node.alwaysBody); return; }
     if (node.type === 'Print' || node.type === 'Text' || node.type === 'Give') { scanExpr(node.expr); return; }
     if (node.type === 'ExprStatement') { scanExpr(node.expr); return; }
     if (Array.isArray(node.body)) scanBlock(node.body);   // on / every / other blocks
@@ -4118,11 +3972,6 @@ class Interpreter {
         return await this._executePost(node, env, { storeResponse: true });
       }
 
-      case 'Save': {
-        await this._executeSave(node, env);
-        break;
-      }
-
       case 'TakeFile': {
         // take file.csv — browser file picker
         const result = await new Promise((resolve, reject) => {
@@ -4178,12 +4027,6 @@ class Interpreter {
           if (node.unitMs) await new Promise(r => setTimeout(r, Math.max(0, Number(cycles) * node.unitMs)));
           else await this.onWait(Number(cycles) || 1);
         }
-        break;
-      }
-
-      case 'WaitBlock': {
-        // WaitBlock is a declaration — deployed to Apps Script automatically.
-        // The browser never executes it directly, just like 'fun' doesn't run its body.
         break;
       }
 
@@ -4291,19 +4134,28 @@ class Interpreter {
       }
 
       case 'Try': {
+        // A signal is give / stop / jump / next leaving the block; it passes through, after 'always' runs.
+        let signal = null;
+        let pending = null;               // an error still on its way out (no catch, or the catch itself failed)
         try {
-          const result = await this.execBlock(node.body, env);
-          if (result instanceof ReturnSignal || result instanceof EndSignal) return result;
+          signal = await this.execBlock(node.body, env) ?? null;
         } catch (e) {
-          const msg = e instanceof RuntimeError ? e.message : (e?.message ?? String(e));
-          const errEnv = env.child();
-          errEnv.define(node.errVar ?? 'err', msg);
-          this.globals.set('err', msg);
-          if (node.errBody?.length) {
-            const result = await this.execBlock(node.errBody, errEnv);
-            if (result instanceof ReturnSignal || result instanceof EndSignal) return result;
+          if (this._aborted || !node.hasCatch) pending = e;      // pressing Stop is never caught
+          else {
+            const msg = e instanceof RuntimeError ? e.message : (e?.message ?? String(e));
+            const errEnv = env.child();
+            errEnv.define(node.errVar ?? 'err', msg);
+            this.globals.set('err', msg);
+            try { signal = await this.execBlock(node.errBody, errEnv) ?? null; }
+            catch (e2) { pending = e2; }
           }
         }
+        if (node.alwaysBody && !this._aborted) {
+          const r = await this.execBlock(node.alwaysBody, env.child());
+          if (r) return r;                  // a give / stop / jump / next inside always wins
+        }
+        if (pending) throw pending;
+        if (signal) return signal;
         break;
       }
 
@@ -4316,32 +4168,6 @@ class Interpreter {
         // Connector — no-op at runtime
         break;
 
-      case 'Import': {
-        if (!node.url) break;
-        let url = node.url;
-        if (url.startsWith('http:')) throw new RuntimeError("Insecure protocol: HTTPS is mandatory for KH modules.", node.line);
-        if (!url.startsWith('http')) url = 'https://' + url;
-
-        try {
-          const src = await this._fetchPinned(url, node);
-          const modEnv = this.globals.child();
-          const parsed = parse(src);
-          await this.execBlock(parsed.ast.body, modEnv);
-          if (node.names && node.names.length > 0) {
-            for (const name of node.names) {
-              const val = modEnv.get(name);
-              if (val === undefined) throw new RuntimeError(`This module doesn't have '${name}' — check the spelling or the module docs`, node.line);
-              env.set(name, val);
-            }
-          } else {
-            for (const [k, v] of modEnv.vars) env.set(k, v);
-          }
-        } catch (e) {
-          throw new RuntimeError(`Import failed from ${node.url}: ${e.message}`, node.line);
-        }
-        break;
-      }
-
       case 'Library': {
         const status = (msg) => { try { this.onStatus && this.onStatus(msg); } catch (e) {} };
         FOREIGN.out = (line) => this.onOutput(line);
@@ -4349,7 +4175,7 @@ class Interpreter {
         const lower = spec.toLowerCase().split(/[?#]/)[0];
         let kind = node.lang;
         if (!kind) kind = /\.(m?js)$/.test(lower) ? 'js' : /\.py$/.test(lower) ? 'python' : 'mutter';
-        // name to bind: what follows 'as', else the package's last part (date-fns -> date_fns, os.path -> path)
+        // name to bind: the one make gave (make np use python numpy), else the package's last part (date-fns -> date_fns, os.path -> path)
         let name = node.alias;
         if (!name) {
           let base = spec.replace(/[?#].*$/, '').replace(/\/+$/, '');
@@ -4360,7 +4186,7 @@ class Interpreter {
           name = base.replace(/[^A-Za-z0-9_]/g, '_');
           if (/^[0-9]/.test(name)) name = '_' + name;
           if (KEYWORDS.has(name)) {
-            throw new RuntimeError(`'${name}' is a Mutter word, so it can't be the package's name here. Write: use ${node.lang ? node.lang + ' ' : ''}${spec} as ${name}_lib`, node.line);
+            throw new RuntimeError(`'${name}' is a Mutter word, so it can't be the package's name here. Write: make ${name}_lib use ${node.lang ? node.lang + ' ' : ''}${node.isUrl ? '"' + spec + '"' : spec}`, node.line);
           }
         }
         if (kind === 'mutter') {
@@ -4727,7 +4553,7 @@ class Interpreter {
   async _evalSuperExpr(node, env) {
     const target = env.get('super');
     if (target instanceof IVXSuperProxy) return target;
-    throw new RuntimeError(`'take.' (the parent class) only works inside a subclass method`, node.line, node.col);
+    throw new RuntimeError(`'super' (the parent class) only works inside a method of a class that extends another`, node.line, node.col);
   }
 
   async _evalIdentifierExpr(node, env) {
@@ -6275,17 +6101,17 @@ for (const m of ['ask', '_executePost', '_executeGet', '_evalAskExpr', '_evalShe
       '  make <name> <expr>        -- declare or assign a variable',
       '  if <cond>  /  else        -- conditional (indented body)',
       '  while <cond>              -- loop while a condition holds',
-      '  each <n>                  -- repeat n times; implicit counters: i (the item or count) and ii (its position) in the outer loop, j/jj one level in, k/kk two levels in; jump restarts the loop header, next exits the loop; stop halts the script; catch binds an error in try/catch',
+      '  each <n>                  -- repeat n times; implicit counters: i (the item or count) and ii (its position) in the outer loop, j/jj one level in, k/kk two levels in; jump restarts the loop header, next exits the loop; stop halts the script; try / catch <name> / always handles errors (always runs last, no matter what)',
       '  each <item> in <list>     -- iterate a list',
       '  print <expr>              -- print to the console',
       '  say <expr>                -- speak text aloud',
       '  take <name>               -- read user input into a variable',
       '  define <name> with <params>  -- define a function; give <value> returns from it',
-      '  class <Name> with <params>   -- define a class (params become fields); class <Name> with <params> extends <Parent> inherits; take.<method>() calls the parent; call functions as name(args), or just name with no args',
+      '  class <Name> with <params>   -- define a class (params become fields); class <Name> with <params> extends <Parent> inherits; super.<method> calls the parent version; call functions as name(args), or just name with no args',
       '  #name is an element on the Screen (-btn button, -input text box, -canvas drawing area, else a label); bind #app.text counter keeps it showing a value; make #app.text "hi" sets it; #box.text reads a text box',
       '  + adds numbers or joins text; // divides rounding down; built-in functions are only: random, randint, pick, min, max, abs, round, floor, ceil, sqrt, pi, sin, cos, tan, atan2, range, now, time, type -- everything else is a method (s.upper, s.length, items.sort, d.keys) or as (x as int)',
       '  on click "#submit-btn"  (or on type / change / enter / hover / key) then indented lines run per event; every 1 second repeats indented lines; such programs run until Stop',
-      '  use python <package> [as <name>] / use js <package> [as <name>] / use "<https url to a .vx file>"  -- import a Python, npm or Mutter package, then call it normally: np.mean([1, 2])',
+      '  use python <package> / use js <package> / use "<https url to a .vx file>"  -- import a Python, npm or Vertex package; make <name> use python <package> picks its name (make np use python numpy), then call it normally: np.mean([1, 2]). as is only for type conversion (x as int)',
       '  make <name> a <Class> with <args>  -- create an object; <list> mostly yes -- true when most items are yes',
       'Comparisons: = != < > <= >= is (is means the same thing as =). Logic: and or not same.',
       'Strings use double quotes. Lists use [1, 2, 3]. Comments start with note and run to the end of the line.',

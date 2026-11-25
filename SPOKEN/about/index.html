@@ -82,7 +82,7 @@
           "name": "What programming language does SPOKEN use?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "It uses Vertex, an English-like language with keywords such as make, define, give, each and with. It supports functions, classes with inheritance, lists, text methods, and error handling with try and catch."
+            "text": "It uses Vertex, an English-like language with keywords such as make, define, give, each and with. It supports functions, classes with inheritance, lists, text methods, and error handling with try, catch and always."
           }
         },
         {
@@ -236,9 +236,9 @@ print double(5)</code></pre>
           <h2 id="lang-title">Vertex, the English-like programming language</h2>
           <p>Vertex is designed to read like English and to be comfortable to say out loud. A few of its choices:</p>
           <ul>
-            <li><code>make total 0</code> declares a variable. <code>make a Dog as rex with "Husky"</code> creates an object.</li>
+            <li><code>make total 0</code> declares a variable. <code>make rex a Dog with "Husky"</code> creates an object.</li>
             <li><code>with</code> introduces parameters for functions and classes: <code>define add with a, b</code>.</li>
-            <li><code>as</code> converts types: <code>take x as number</code> reads input as a number.</li>
+            <li><code>as</code> only converts types: <code>take x as number</code> reads input as a number. Packages are named with <code>make</code> instead: <code>make np use python numpy</code>.</li>
             <li><code>each 3</code> loops three times, and the loop variable is always <code>i</code> (then <code>j</code>, then <code>k</code> for nested loops), so there is nothing to name.</li>
             <li><code>mostly</code> asks a list a question: <code>if votes mostly yes</code> is true when more than half the list is <code>yes</code>.</li>
             <li><code>say</code> speaks a value aloud with the browser's speech synthesis, and <code>note</code> starts a comment.</li>
@@ -247,8 +247,8 @@ print double(5)</code></pre>
           <pre><code>class Dog with breed
     define speak
         give "Woof from a " + self.breed
-make a Dog as rex with "Husky"
-print rex.speak()</code></pre>
+make rex a Dog with "Husky"
+print rex.speak</code></pre>
           <pre><code>Woof from a Husky</code></pre>
         </section>
 
@@ -273,7 +273,7 @@ print rex.speak()</code></pre>
       <dt>Does SPOKEN send my voice to a server?</dt>
       <dd>SPOKEN uses your browser's built-in speech recognition. This site runs no server of its own for audio, but some browsers send speech to their own recognition service, so check your browser's privacy policy if that matters to you.</dd>
       <dt>What programming language does SPOKEN use?</dt>
-      <dd>It uses Vertex, an English-like language with keywords such as <code>make</code>, <code>define</code>, <code>give</code>, <code>each</code> and <code>with</code>. It supports functions, classes with inheritance, lists, text methods, and error handling with <code>try</code> and <code>catch</code>.</dd>
+      <dd>It uses Vertex, an English-like language with keywords such as <code>make</code>, <code>define</code>, <code>give</code>, <code>each</code> and <code>with</code>. It supports functions, classes with inheritance, lists, text methods, and error handling with <code>try</code>, <code>catch</code> and <code>always</code>.</dd>
       <dt>Which browsers support voice input?</dt>
       <dd>Browsers with Web Speech API recognition, such as Chrome, Edge and Safari. In other browsers you can still type and run Vertex code.</dd>
       <dt>What if a variable name collides with a voice command?</dt>

@@ -14,7 +14,7 @@ class Animal with name
 
 class Dog with breed extends Animal
     define speak
-        give take.speak + " barks!"
+        give super.speak + " barks!"
 
 make rex a Dog with "Rex", "Husky"
 print rex.speak
@@ -23,12 +23,13 @@ print greet("Ada")
 
 ## What it does
 
-- **Reads like English.** Blocks are indentation, `make` sets a variable, `give` returns, `each` loops, `if votes mostly yes` asks a list a question. Declarations use `with` (`define add with a, b`); calls use parentheses (`add(2, 3)`), or nothing when there are no arguments (`name.upper`).
+- **Reads like English.** Blocks are indentation, `make` sets a variable, `give` returns, `each` loops, `if votes mostly yes` asks a list a question. Declarations use `with` (`define add with a, b`), a subclass calls its parent with `super.speak`; calls use parentheses (`add(2, 3)`), or nothing when there are no arguments (`name.upper`).
 - **Voice input.** Tap the mic and talk. Spoken words like `pair`, `quote`, `dot`, `comma`, `then` and `tag` type the symbols, so you can write a program without the keyboard. The Voice Guide lists them all.
 - **Plain-language errors.** Mistakes point at the line and say what to write instead.
-- **Packages from other languages.** `use python numpy as np` loads Python in the browser (the standard library, numpy, pandas, and pure-Python packages from PyPI). `use js lodash as lo` loads an npm package. `use "https://.../file.vx"` loads Mutter code.
+- **Packages from other languages.** `make np use python numpy` loads Python in the browser (the standard library, numpy, pandas, and pure-Python packages from PyPI). `make lo use js lodash` loads an npm package. `use "https://.../file.vx"` loads Vertex code.
+- **Errors you can handle.** `try`, `catch` and `always`: the `always` lines run last no matter what happened.
 - **Screen and events.** Every `#name` is an element on the Screen: a label, button, text box or canvas. `bind #app.text counter` keeps it up to date, `on click "#go-btn"` and `every 30 ms` run blocks, and the program keeps running until you press Stop.
-- **Methods and built-ins.** Text, list and dictionary methods (`s.replace("a", "b")`, `items.sort`, `d.keys`), conversions with `as` (`x as int`), and a small set of built-in functions (`random`, `pick`, `min`, `max`, `round`, `range`, ...).
+- **Methods and built-ins.** Text, list and dictionary methods (`s.replace("a", "b")`, `items.sort`, `d.keys`), type conversions with `as` (`x as int`, the only thing `as` does), and a small set of built-in functions (`random`, `pick`, `min`, `max`, `round`, `range`, ...).
 
 ## Running it
 
